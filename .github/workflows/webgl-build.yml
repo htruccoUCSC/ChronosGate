@@ -1,4 +1,4 @@
-name: Build Project
+name: Build Project WebGL
 
 permissions:
   contents: read
@@ -51,8 +51,7 @@ jobs:
           UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
         with:
           targetPlatform: WebGL
-          unityVersion: 6000.2.10f1
-          allowDirtyBuild: true
+          unityVersion: 6000.3.4f1
 
       # Output
       - uses: actions/upload-artifact@v4
