@@ -7,7 +7,28 @@ Each section contains the major concepts as well as some important DO / DO NOT e
 
 ## Git
 
-We use Git LFS to track large assets (images/audio/video) efficiencly. To install: visit [this link](https://git-lfs.com/).
+We use Git LFS to track large assets (images/audio/video) efficiencly.  
+To install:
+
+- Visit [this link](https://git-lfs.com/) to download git lfs
+- Run the installer on your local machine
+- Inside the repository run `git lfs install`
+- That's it
+
+We use Unity Smart Merge to merge scenes and prefabs.  
+To setup:
+
+- Ensure a Unity editor is installed on your local machine
+- Locate `UnityYAMLMerge.exe` on your machine likely located at:
+  - Windows: `C:\Program Files\Unity\Editor\Data\Tools\UnityYAMLMerge.exe`
+  - Mac: `/Applications/Unity/Unity.app/Contents/Helpers/UnityYAMLMerge`
+- Run the following command inside of the repository on your local machine with your UnityYAMLMerge path:
+
+```(bash)
+git config --local merge.tool unityyamlmerge
+git config --local mergetool.unityyamlmerge.cmd '<UnityYAMLMerge path here>' merge -p "$BASE" "$REMOTE" "$LOCAL" "$MERGED"
+git config --local mergetool.unityyamlmerge.trustExitCode false
+```
 
 ## Code Style
 
