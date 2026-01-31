@@ -1,44 +1,35 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
 
+// example unit spanwer that spawns archers on click
+// this can be adapted later to be part of our reroll ui
 public class UnitSpawner : MonoBehaviour
 {
     public DatabaseLoader database;
-    private string selectedID = "archer_01"; // Hardcoded for testing
+    public string currentSelectedID = "archer_01";
 
     void Update()
     {
-        // Left Click to Spawn
         if (Mouse.current.leftButton.wasPressedThisFrame)
         {
-            SpawnUnit();
+            if (database.UnitLookup.TryGetValue(currentSelectedID, out UnitDefinition def))
+            {
+                // 1. create unique runtime instance
+                UnitInstance newInstance = UnitInstance.CreateRuntimeInstance(def);
+
+                // 2. create the prefab
+                GameObject prefab = Resources.Load<GameObject>(def.PrefabPath);
+                GameObject go = Instantiate(prefab, GetMouseWorldPos(), Quaternion.identity);
+
+                // 3. link the two together
+                go.GetComponent<BaseUnit>().Initialize(newInstance);
+            }
         }
     }
 
-    void SpawnUnit()
+    Vector3 GetMouseWorldPos()
     {
-        // 1. Get Mouse Position
-        Vector2 mousePos = Mouse.current.position.ReadValue();
-        Vector3 worldPos = Camera.main.ScreenToWorldPoint(mousePos);
-        worldPos.z = 0;
-
-        // 2. Snap to Grid (Optional)
-        worldPos.x = Mathf.Round(worldPos.x);
-        worldPos.y = Mathf.Round(worldPos.y);
-
-        // 3. Get Data & Spawn
-        if (database.UnitLookup.TryGetValue(selectedID, out UnitData data))
-        {
-            GameObject prefab = Resources.Load<GameObject>(data.PrefabPath);
-            if (prefab != null)
-            {
-                GameObject newUnit = Instantiate(prefab, worldPos, Quaternion.identity);
-
-                // We get BaseUnit because ArcherUnit inherits from it
-                newUnit.GetComponent<BaseUnit>().Initialize(data);
-
-                Debug.Log($"Spawned {data.Name}");
-            }
-        }
+        Vector3 pos = Camera.main.ScreenToWorldPoint(Mouse.current.position.ReadValue());
+        return new Vector3(Mathf.Round(pos.x), Mathf.Round(pos.y), 0);
     }
 }

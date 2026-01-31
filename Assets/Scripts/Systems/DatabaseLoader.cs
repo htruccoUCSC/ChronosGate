@@ -7,8 +7,8 @@ public class DatabaseLoader : MonoBehaviour
 {
     public string fileName = "units.json";
 
-    // This is where we will store the units for easy access
-    public Dictionary<string, UnitData> UnitLookup = new Dictionary<string, UnitData>();
+    // where units definitions are stored after loading
+    public Dictionary<string, UnitDefinition> UnitLookup = new Dictionary<string, UnitDefinition>();
 
     void Start()
     {
@@ -17,25 +17,41 @@ public class DatabaseLoader : MonoBehaviour
 
     public void LoadData()
     {
-        // 1. Find the file path
         string filePath = Path.Combine(Application.streamingAssetsPath, fileName);
 
         if (File.Exists(filePath))
         {
-            // 2. Read the raw text from the file
             string jsonText = File.ReadAllText(filePath);
 
-            // 3. The Magic: Convert text into C# objects
-            // We wrap it in our UnitDatabase class
-            UnitDatabase db = JsonConvert.DeserializeObject<UnitDatabase>(jsonText);
+            UnitDatabase dataBatch = JsonConvert.DeserializeObject<UnitDatabase>(jsonText);
 
-            // 4. Organize it into a Dictionary for fast searching
             UnitLookup.Clear();
-            foreach (var unit in db.AllUnits)
+
+            foreach (var unit in dataBatch.AllUnits)
             {
-                UnitLookup.Add(unit.UnitID, unit);
-                Debug.Log($"Imported: {unit.Name}");
+                // creates unity scriptable object instance
+                UnitDefinition unitDef = ScriptableObject.CreateInstance<UnitDefinition>();
+
+                // c sharp reflection (some bullshit) to copy fields from raw data to scriptable object
+                // this is done to write less repetitive code assigning each field one by one
+                var rawFields = typeof(UnitRawData).GetFields();
+                var defType = typeof(UnitDefinition);
+
+                foreach (var field in rawFields)
+                { 
+                    var targetField = defType.GetField(field.Name);
+
+                    if (targetField != null)
+                    {
+                        targetField.SetValue(unitDef, field.GetValue(unit));
+                    }
+
+                }
+                
+                UnitLookup.Add(unitDef.UnitID, unitDef);
             }
+
+
         }
         else
         {

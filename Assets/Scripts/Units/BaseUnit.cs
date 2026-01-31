@@ -1,76 +1,57 @@
 using UnityEngine;
 
-public class BaseUnit : MonoBehaviour
+public abstract class BaseUnit : MonoBehaviour
 {
-    protected UnitData stats;
-    protected float currentMana;
+    // our units unique data instance
+    public UnitInstance myData;
     protected float attackTimer;
     protected Transform currentTarget;
 
-    // Initialize is called by the Spawner
-    public virtual void Initialize(UnitData data)
+    public virtual void Initialize(UnitInstance instance)
     {
-        stats = data;
-        currentMana = stats.StartingMana;
-        // Convert "Attacks Per Second" to a delay
-        attackTimer = 1f / stats.AttackSpeed;
+        myData = instance;
+        attackTimer = 1f / myData.GetModifiedAttackSpeed();
     }
 
-    void Update()
+    // example update loop which will probably be entirely scrapped later
+    protected virtual void Update()
     {
-        if (stats == null) return;
+        if (myData == null) return;
 
         ScanTargeting();
 
         if (currentTarget != null)
         {
             attackTimer -= Time.deltaTime;
-
             if (attackTimer <= 0)
             {
-                if (currentMana >= stats.MaxMana)
+                if (myData.CurrentMana >= myData.BaseDef.MaxMana)
                 {
                     CastAbility();
-                    currentMana = 0;
+                    myData.CurrentMana = 0;
                 }
                 else
                 {
                     PerformBasicAttack();
-                    currentMana += 10;
+                    myData.CurrentMana += 10;
                 }
-
-                attackTimer = 1f / stats.AttackSpeed;
+                attackTimer = 1f / myData.GetModifiedAttackSpeed();
             }
         }
     }
 
-    // Default targeting scan (can be overridden by children)
-    // uess a raycast to find enemies in front of the unit 
-    // we should replace this with a system using our tilemap later
     protected virtual void ScanTargeting()
     {
+        // Raycast based lane scanning that needs to be updated to use the tilemap later
         int layerMask = LayerMask.GetMask("Enemies");
+        RaycastHit2D hit = Physics2D.Raycast(transform.position, Vector2.right, myData.BaseDef.Range, layerMask);
+        currentTarget = hit.collider ? hit.transform : null;
 
-        // Default behavior: Look straight ahead in one lane
-        RaycastHit2D hit = Physics2D.Raycast(transform.position, Vector2.right, stats.Range, layerMask);
-
-        if (hit.collider != null)
-        {
-            currentTarget = hit.transform;
-        }
-        else
-        {
-            currentTarget = null;
-        }
-
-        // Debugging the scan visually
-        Debug.DrawRay(transform.position, Vector2.right * stats.Range, Color.red);
+        Debug.DrawRay(transform.position, Vector2.right * myData.BaseDef.Range, Color.red);
     }
 
-    // --- Virtual Methods for Children --- 
-    // These can be overridden by child classes to provide specific behavior
-    // We should implement default behavior here for generic units
-    protected virtual void PerformBasicAttack() { Debug.Log("Base Attack"); }
-    // It might not be possible to make a generic ability, but well see lol
-    protected virtual void CastAbility() { Debug.Log("Base Ability"); }
+    // "abstract" methods that need to be implemented on a unit to unit basis
+    // we may look into having some predefined basic attack scripts later
+    protected abstract void PerformBasicAttack();
+    protected abstract void CastAbility();
 }
