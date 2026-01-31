@@ -7,10 +7,30 @@ public abstract class BaseUnit : MonoBehaviour
     protected float attackTimer;
     protected Transform currentTarget;
 
+    // how much of the tile we want the unit to fill
+    private const float TILE_FILL_RATIO = 1.0f;
+
     public virtual void Initialize(UnitInstance instance)
     {
         myData = instance;
         attackTimer = 1f / myData.GetModifiedAttackSpeed();
+        NormalizeSpriteSize();
+    }
+
+    // scales the unit to fit nicely in a tile based on its sprite size
+    private void NormalizeSpriteSize()
+    {
+        SpriteRenderer sr = GetComponentInChildren<SpriteRenderer>();
+        if (sr == null) return;
+        transform.localScale = Vector3.one;
+        if (sr.transform != transform) sr.transform.localScale = Vector3.one;
+        Vector3 spriteSize = sr.bounds.size;
+        float maxDimension = Mathf.Max(spriteSize.x, spriteSize.y);
+        if (maxDimension > 0)
+        {
+            float scaleFactor = TILE_FILL_RATIO / maxDimension;
+            transform.localScale = Vector3.one * scaleFactor;
+        }
     }
 
     // example update loop which will probably be entirely scrapped later

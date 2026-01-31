@@ -10,7 +10,7 @@ public class DatabaseLoader : MonoBehaviour
     // where units definitions are stored after loading
     public Dictionary<string, UnitDefinition> UnitLookup = new Dictionary<string, UnitDefinition>();
 
-    void Start()
+    void Awake()
     {
         LoadData();
     }

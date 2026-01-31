@@ -3,53 +3,33 @@ using UnityEngine.InputSystem;
 
 public class UnitSpawner : MonoBehaviour
 {
-    public DatabaseLoader database;
-    public BoardManager board; // Reference to the new script
+    public BoardManager board;
 
-    public string currentSelectedID = "archer_01";
-
-    void Update()
+    // CHANGED: Now accepts a Definition, creates the Instance internally
+    public bool TrySpawnFromInventory(UnitDefinition def)
     {
-        if (Mouse.current.leftButton.wasPressedThisFrame)
-        {
-            SpawnUnitOnTile();
-        }
-    }
-
-    void SpawnUnitOnTile()
-    {
-        // get raw mouse position in world space
         Vector3 rawWorldPos = Camera.main.ScreenToWorldPoint(Mouse.current.position.ReadValue());
-
-        // get the cell position from the tilemap
+        rawWorldPos.z = 0;
         Vector3Int cellPos = board.GameTilemap.WorldToCell(rawWorldPos);
 
-        // chceck if the cell is walkable
         if (board.IsWalkable(cellPos))
         {
-            // get the exact center position of the cell from the tilemap
             Vector3 snapPos = board.GameTilemap.GetCellCenterWorld(cellPos);
 
-            if (database.UnitLookup.TryGetValue(currentSelectedID, out UnitDefinition def))
-            {
-                // Create Data
-                UnitInstance newInstance = UnitInstance.CreateRuntimeInstance(def);
+            // create unique instance for this unit
+            UnitInstance newInstance = UnitInstance.CreateRuntimeInstance(def);
 
-                // Create Visual
-                GameObject prefab = Resources.Load<GameObject>(def.PrefabPath);
-                GameObject go = Instantiate(prefab, snapPos, Quaternion.identity);
+            // create visuals
+            GameObject prefab = Resources.Load<GameObject>(def.PrefabPath);
+            GameObject go = Instantiate(prefab, snapPos, Quaternion.identity);
 
-                // Initialize
-                go.GetComponent<BaseUnit>().Initialize(newInstance);
+            // add unit to board
+            go.GetComponent<BaseUnit>().Initialize(newInstance);
+            board.RegisterUnit(cellPos, go);
 
-                board.RegisterUnit(cellPos, go);
-
-                Debug.Log($"Spawned unit at Grid: {cellPos}");
-            }
+            return true;
         }
-        else
-        {
-            Debug.Log("Cannot place unit here (Wall or Empty).");
-        }
+
+        return false;
     }
 }

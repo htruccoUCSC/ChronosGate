@@ -10,6 +10,47 @@ public class UnitDefinition : ScriptableObject
     public string Name;
     public string PrefabPath;
 
+    // Icon logic for inventory and UI
+    // I think this is better than just constantly accessing the prefab each time we need the icon
+    private Sprite _cachedIcon;
+
+    public Sprite Icon
+    {
+        get
+        {
+            if (_cachedIcon != null) return _cachedIcon;
+
+            // check if path exists
+            if (string.IsNullOrEmpty(PrefabPath))
+            {
+                Debug.LogError($"[UnitDef] PrefabPath is empty for {Name}!");
+                return null;
+            }
+
+            GameObject prefab = Resources.Load<GameObject>(PrefabPath);
+
+            // check if Prefab loaded
+            if (prefab == null)
+            {
+                Debug.LogError($"[UnitDef] Could not load Prefab at path: '{PrefabPath}' for {Name}. Check spelling or Resources folder!");
+                return null;
+            }
+
+            // check for Renderer
+            SpriteRenderer sr = prefab.GetComponentInChildren<SpriteRenderer>(true);
+            if (sr != null)
+            {
+                _cachedIcon = sr.sprite;
+            }
+            else
+            {
+                Debug.LogError($"[UnitDef] Prefab '{prefab.name}' loaded, but has NO SpriteRenderer on it or its children!");
+            }
+
+            return _cachedIcon;
+        }
+    }
+
     [Header("Generic Stats")]
     public int Cost;
     public float Range;

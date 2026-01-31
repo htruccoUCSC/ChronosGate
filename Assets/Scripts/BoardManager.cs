@@ -29,15 +29,18 @@ public class BoardManager : MonoBehaviour
         // Auto-create buckets if you forgot to make them in Editor
         if (UnitsParent == null)
         {
-            UnitsParent = new GameObject("Units_Container").transform;
+            UnitsParent = new GameObject("Units").transform;
             UnitsParent.SetParent(this.transform);
         }
         if (EnemyParent == null)
         {
-            EnemyParent = new GameObject("Enemies_Container").transform;
+            EnemyParent = new GameObject("Enemies").transform;
             EnemyParent.SetParent(this.transform);
+        
         }
+
         GenerateBoard();
+        CenterCamera();
     }
     void GenerateBoard()
     {
@@ -92,5 +95,18 @@ public class BoardManager : MonoBehaviour
     {
         occupiedTiles[cellPos] = unit;
         unit.transform.SetParent(UnitsParent);
+    }
+
+    void CenterCamera()
+    {
+        // 1. Get the Board's current starting position (e.g., if you moved it to 100, 100)
+        float startX = transform.position.x;
+        float startY = transform.position.y;
+
+        // 2. Add half the width/height to that starting point
+        Vector3 boardCenter = new Vector3(startX + (Width / 2f), startY + (Height / 2f), -10);
+
+        Camera.main.transform.position = boardCenter;
+        Camera.main.orthographicSize = (Height / 2f) + 2f;
     }
 }
