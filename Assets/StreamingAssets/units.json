@@ -1,0 +1,16 @@
+{
+  "AllUnits": [
+    {
+      "UnitID": "archer_01",
+      "Name": "Archer",
+      "PrefabPath": "Prefabs/Units/Archer",
+      "Cost": 100,
+      "Range": 5,
+      "AttackSpeed": 1,
+      "AttackDamage": 10,
+      "AbilityPower": 50,
+      "MaxMana": 30,
+      "StartingMana": 0
+    }
+  ]
+}
