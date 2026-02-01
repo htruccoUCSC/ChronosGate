@@ -54,6 +54,7 @@ public class UnitDefinition : ScriptableObject
     [Header("Generic Stats")]
     public int Cost;
     public float Range;
+    public int HP;
 
     [Header("Basic Attack Stats")]
     public float AttackSpeed;
@@ -61,7 +62,7 @@ public class UnitDefinition : ScriptableObject
 
     [Header("Basic Ability Stats")]
     public float AbilityPower;
-    public float MaxMana;
+    public float AbilityManaCost;
     public float StartingMana;
 }
 
@@ -82,11 +83,18 @@ public class UnitRawData
     public string UnitID;
     public string Name;
     public string PrefabPath;
+
+    public int HP;
     public int Cost;
     public float Range;
     public float AttackSpeed;
     public float AttackDamage;
     public float AbilityPower;
-    public float MaxMana;
+    public float AbilityManaCost;
+
+    public float AbilityFunction;
     public float StartingMana;
+    public string AttackFunction;
+
+
 }
