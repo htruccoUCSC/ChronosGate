@@ -22,7 +22,7 @@ public class UnitSpawner : MonoBehaviour
             // create visuals
             GameObject prefab = Resources.Load<GameObject>(def.PrefabPath);
             GameObject go = Instantiate(prefab, snapPos, Quaternion.identity);
-
+            
             // add unit to board
             go.GetComponent<BaseUnit>().Initialize(newInstance);
             board.RegisterUnit(cellPos, go);
