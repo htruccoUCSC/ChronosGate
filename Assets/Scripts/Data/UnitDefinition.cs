@@ -2,6 +2,13 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
+public enum BasicAttackType
+{
+    None,
+    Melee,
+    Projectile
+}
+
 [CreateAssetMenu(fileName = "NewUnitDef", menuName = "Game/Unit Definition")]
 public class UnitDefinition : ScriptableObject
 {
@@ -51,6 +58,10 @@ public class UnitDefinition : ScriptableObject
         }
     }
 
+    [Header("Combat Behavior")]
+    public BasicAttackType AttackFunction;
+    public float LaunchAngle;
+
     [Header("Generic Stats")]
     public int Cost;
     public float Range;
@@ -92,9 +103,9 @@ public class UnitRawData
     public float AbilityPower;
     public float AbilityManaCost;
 
-    public float AbilityFunction;
     public float StartingMana;
-    public string AttackFunction;
-
+    // this is an exception to the naming convention since it's an enum in UnitDefinition
+    public string AttackType;
+    public float LaunchAngle;
 
 }

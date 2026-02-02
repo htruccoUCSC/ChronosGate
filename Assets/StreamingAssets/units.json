@@ -12,8 +12,8 @@
       "AbilityPower": 50,
       "AbilityManaCost": 30,
       "StartingMana": 0,
-      "AttackFunction": "none",
-       "AbilityFunction": "none"
+      "AttackType": "Projectile",
+      "LaunchAngle": 60
     }
   ]
 }
