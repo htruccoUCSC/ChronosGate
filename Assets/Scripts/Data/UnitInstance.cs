@@ -8,7 +8,7 @@ public class UnitInstance : ScriptableObject
     // modifiable runtime values
     public float CurrentHP;
     public float CurrentMana;
-
+    public float ManaCost;   
     // modifiers from augments and shit
     public float DamageFlatMod = 0;
     public float SpeedMultMod = 1.0f;
@@ -18,6 +18,7 @@ public class UnitInstance : ScriptableObject
         UnitInstance instance = ScriptableObject.CreateInstance<UnitInstance>();
         instance.BaseDef = def;
         instance.CurrentMana = def.StartingMana;
+        instance.ManaCost = def.MaxMana;
         // I forgot health but we'll add it later, is important LOL
         // instance.CurrentHP = def.BaseHealth; 
         return instance;
