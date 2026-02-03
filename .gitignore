@@ -15,6 +15,7 @@
 # Dev Asset Folder
 
 /[Aa]ssets/_DEV/
+/[Aa]ssets/_DEV.meta
 
 # By default unity supports Blender asset imports, *.blend1 blender files do not need to be commited to version control.
 *.blend1
