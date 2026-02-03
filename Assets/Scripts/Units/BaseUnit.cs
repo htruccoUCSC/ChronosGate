@@ -19,7 +19,7 @@ public abstract class BaseUnit : MonoBehaviour
         attackTimer = 1f / myData.GetModifiedAttackSpeed();
 
         // getting projectile sprite from prefab if applicable
-        Transform template = transform.Find("Projectile");
+        Transform template = transform.Find("ProjectileSprite");
         if (template != null)
         {
             SpriteRenderer sr = template.GetComponent<SpriteRenderer>();
@@ -49,7 +49,7 @@ public abstract class BaseUnit : MonoBehaviour
 
         // scales the projectile template to match the unit's size
         // i'm not entirely happy with this implementation but it will do for now
-        Transform projTemplate = transform.Find("ProjectileTemplate");
+        Transform projTemplate = transform.Find("ProjectileSprite");
         if (projTemplate != null)
         {
             SpriteRenderer projSR = projTemplate.GetComponent<SpriteRenderer>();
@@ -134,7 +134,7 @@ public abstract class BaseUnit : MonoBehaviour
         switch (myData.BaseDef.AttackFunction)
         {
             case BasicAttackType.Melee:
-                // exampe melee attack logic doesn't do anything rn
+                // example melee attack logic doesn't do anything rn
                 if (Vector2.Distance(transform.position, currentTarget.position) <= myData.BaseDef.Range + 0.5f)
                 {
                     // ApplyDamage(currentTarget, damage);
@@ -184,7 +184,7 @@ public abstract class BaseUnit : MonoBehaviour
             // for projectiles with a launch angle we need to calculate the required speed
             if (launchAngle > 0)
             {
-                // scale gravity to maatch projectile.cs
+                // scale gravity to match projectile.cs
                 float gravity = Physics2D.gravity.y * 3f;
                 // make gravity positive for calculation
                 gravity = Mathf.Abs(gravity);
@@ -212,7 +212,7 @@ public abstract class BaseUnit : MonoBehaviour
         //v = Sqrt( (dist * g) / Sin(2 * theta) )
         float bottom = Mathf.Sin(2 * angleRad);
 
-        // saftey guard to avoid divide by zero
+        // safety guard to avoid divide by zero
         if (Mathf.Abs(bottom) < 0.01f) return 10f;
 
         float v2 = (distance * gravity) / bottom;

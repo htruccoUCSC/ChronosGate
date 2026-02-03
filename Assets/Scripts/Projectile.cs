@@ -1,4 +1,3 @@
-using UnityEditor.ShaderGraph.Internal;
 using UnityEngine;
 
 [RequireComponent(typeof(Rigidbody2D))]
@@ -28,7 +27,7 @@ public class Projectile : MonoBehaviour
             _rb.bodyType = RigidbodyType2D.Kinematic;
             _rb.gravityScale = 0f;
 
-            // fully horionztal velocity
+            // fully horizontal velocity
             _rb.linearVelocity = direction * speed;
 
             // rotates the visual but we should just make our sprites face right by default and avoid this dumbness
