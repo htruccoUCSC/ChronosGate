@@ -15,6 +15,8 @@ public class UnitDefinition : ScriptableObject
     [Header("Identity")]
     public string UnitID;
     public string Name;
+    public string Description;
+    public string Faction;
     public string PrefabPath;
 
     // Icon logic for inventory and UI
@@ -65,7 +67,7 @@ public class UnitDefinition : ScriptableObject
     [Header("Generic Stats")]
     public int Cost;
     public float Range;
-    public int HP;
+    public int Health;
 
     [Header("Basic Attack Stats")]
     public float AttackSpeed;
@@ -93,10 +95,12 @@ public class UnitRawData
 {
     public string UnitID;
     public string Name;
+    public string Description;
     public string PrefabPath;
+    public string Faction;
 
-    public int HP;
     public int Cost;
+    public int Health;
     public float Range;
     public float AttackSpeed;
     public float AttackDamage;
@@ -107,5 +111,4 @@ public class UnitRawData
     // this is an exception to the naming convention since it's an enum in UnitDefinition
     public string AttackType;
     public float LaunchAngle;
-
 }
