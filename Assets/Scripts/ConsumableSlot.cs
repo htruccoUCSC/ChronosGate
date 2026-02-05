@@ -11,20 +11,13 @@ public class ConsumableSlot : MonoBehaviour, IPointerEnterHandler, IPointerExitH
     [SerializeField] private TextMeshProUGUI costText;
     [SerializeField] private Button button;
     
-    [Header("Tooltip (Optional)")]
-    [SerializeField] private GameObject tooltipPanel;
-    [SerializeField] private TextMeshProUGUI tooltipText;
-    
     private ConsumableData consumableData;
+    private ShopManager shopManager;
     
     private void Awake()
     {
         button.onClick.AddListener(OnSlotClicked);
-        
-        if (tooltipPanel != null)
-        {
-            tooltipPanel.SetActive(false);
-        }
+        shopManager = GetComponentInParent<ShopManager>();
     }
     
     public void Setup(ConsumableData data)
@@ -56,18 +49,17 @@ public class ConsumableSlot : MonoBehaviour, IPointerEnterHandler, IPointerExitH
     
     public void OnPointerEnter(PointerEventData eventData)
     {
-        if (consumableData != null && tooltipPanel != null)
+        if (consumableData != null && shopManager != null)
         {
-            tooltipPanel.SetActive(true);
-            tooltipText.text = consumableData.description;
+            shopManager.ShowConsumableTooltip(consumableData.description);
         }
     }
     
     public void OnPointerExit(PointerEventData eventData)
     {
-        if (tooltipPanel != null)
+        if (shopManager != null)
         {
-            tooltipPanel.SetActive(false);
+            shopManager.HideConsumableTooltip();
         }
     }
     

@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.UI;
+using TMPro;
 
 public class ShopManager : MonoBehaviour
 {
@@ -10,49 +11,91 @@ public class ShopManager : MonoBehaviour
     [SerializeField] private Button nextRoundButton;
     
     [Header("Shop Slots")]
-    [SerializeField] private ConsumableSlot[] consumableSlots;
-    [SerializeField] private TowerSlot[] towerSlots;
+    [SerializeField] private ConsumableSlot[] consumableSlots = new ConsumableSlot[2];
+    [SerializeField] private TowerSlot[] towerSlots = new TowerSlot[6];
+    
+    [Header("Tooltip")]
+    [SerializeField] private GameObject consumableTooltip;
+    [SerializeField] private TextMeshProUGUI tooltipText;
     
     private bool isShopOpen = false;
-    private bool shopUsed = false; // Track if shop was closed via Next Round
+    private bool shopUsed = false;
     
     private void Start()
     {
-        // Setup button listeners
         toggleButton.onClick.AddListener(ToggleShop);
         nextRoundButton.onClick.AddListener(CloseShopPermanently);
         rerollButton.onClick.AddListener(RerollShop);
         
-        // Initially hide shop
         shopPanel.SetActive(false);
+        consumableTooltip.SetActive(false); // Hide tooltip initially
     }
     
     public void ToggleShop()
     {
-        if (shopUsed) return; // Don't allow reopening after Next Round
+        if (shopUsed) return;
         
         isShopOpen = !isShopOpen;
         shopPanel.SetActive(isShopOpen);
+        
+        if (!isShopOpen)
+        {
+            HideConsumableTooltip(); // Hide tooltip when closing shop
+        }
     }
     
     private void CloseShopPermanently()
     {
         shopUsed = true;
         shopPanel.SetActive(false);
+        HideConsumableTooltip();
         
-        // Optional: Disable or hide the toggle button
         toggleButton.interactable = false;
-        // OR: toggleButton.gameObject.SetActive(false);
     }
     
     private void RerollShop()
     {
-        // Placeholder for future implementation
         Debug.Log("Reroll functionality to be implemented");
+    }
+    
+    // NEW: Show consumable tooltip
+    public void ShowConsumableTooltip(string description)
+    {
+        if (consumableTooltip != null && tooltipText != null)
+        {
+            tooltipText.text = description;
+            consumableTooltip.SetActive(true);
+        }
+    }
+    
+    // NEW: Hide consumable tooltip
+    public void HideConsumableTooltip()
+    {
+        if (consumableTooltip != null)
+        {
+            consumableTooltip.SetActive(false);
+        }
+    }
+    
+    [ContextMenu("Auto-Assign Slots")]
+    private void AutoAssignSlots()
+    {
+        ConsumableSlot[] foundConsumables = shopPanel.GetComponentsInChildren<ConsumableSlot>();
+        if (foundConsumables.Length > 0)
+        {
+            consumableSlots = foundConsumables;
+            Debug.Log($"Assigned {consumableSlots.Length} consumable slots");
+        }
         
-        // When implemented, this will:
-        // 1. Generate new random consumables
-        // 2. Generate new random towers
-        // 3. Update all shop slots
+        TowerSlot[] foundTowers = shopPanel.GetComponentsInChildren<TowerSlot>();
+        if (foundTowers.Length > 0)
+        {
+            towerSlots = foundTowers;
+            Debug.Log($"Assigned {towerSlots.Length} tower slots");
+        }
+        
+        #if UNITY_EDITOR
+        UnityEditor.EditorUtility.SetDirty(this);
+        #endif
     }
 }
