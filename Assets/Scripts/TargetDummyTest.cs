@@ -2,20 +2,44 @@ using UnityEngine;
 
 public class TargetDummyTest : MonoBehaviour
 {
-    [Header("Movement Settings")]
-    public float moveSpeed = 0.5f;
-    public float moveDistance = 0.75f;
-    private Vector3 _startPos;
+    [Header("Movement")]
+    public float moveSpeed = 1f;
+    public float spawnX = 12f;
+
+    [Header("Health")]
+    public int maxHealth = 10;
+    private int currentHealth;
 
     void Start()
     {
-        _startPos = transform.position;
+        currentHealth = maxHealth;
+
+        // Spawn on the right
+        transform.position = new Vector3(
+            spawnX,
+            transform.position.y,
+            transform.position.z
+        );
     }
 
     void Update()
     {
-        float newX = Mathf.Sin(Time.time * moveSpeed) * moveDistance;
+        // Move right → left
+        transform.position += Vector3.left * moveSpeed * Time.deltaTime;
+    }
 
-        transform.position = _startPos + new Vector3(newX, 0, 0);
+    public void TakeDamage(int damage)
+    {
+        currentHealth -= damage;
+
+        if (currentHealth <= 0)
+        {
+            Die();
+        }
+    }
+
+    private void Die()
+    {
+        Destroy(gameObject);
     }
 }
