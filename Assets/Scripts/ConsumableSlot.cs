@@ -17,7 +17,13 @@ public class ConsumableSlot : MonoBehaviour, IPointerEnterHandler, IPointerExitH
     private void Awake()
     {
         button.onClick.AddListener(OnSlotClicked);
-        shopManager = GetComponentInParent<ShopManager>();
+    }
+    
+    // NEW: Let ShopManager set itself
+    public void Initialize(ShopManager manager)
+    {
+        shopManager = manager;
+        Debug.Log($"ShopManager initialized for {gameObject.name}");
     }
     
     public void Setup(ConsumableData data)
@@ -31,6 +37,8 @@ public class ConsumableSlot : MonoBehaviour, IPointerEnterHandler, IPointerExitH
             nameText.text = data.consumableName;
             costText.text = $"Cost: {data.cost}";
             button.interactable = true;
+            
+            Debug.Log($"Consumable slot setup: {data.consumableName}");
         }
         else
         {
@@ -49,14 +57,23 @@ public class ConsumableSlot : MonoBehaviour, IPointerEnterHandler, IPointerExitH
     
     public void OnPointerEnter(PointerEventData eventData)
     {
+        Debug.Log($"Pointer entered {gameObject.name}");
+        
         if (consumableData != null && shopManager != null)
         {
+            Debug.Log($"Showing tooltip for: {consumableData.consumableName}");
             shopManager.ShowConsumableTooltip(consumableData.description);
+        }
+        else
+        {
+            Debug.LogWarning($"Cannot show tooltip - consumableData: {consumableData != null}, shopManager: {shopManager != null}");
         }
     }
     
     public void OnPointerExit(PointerEventData eventData)
     {
+        Debug.Log($"Pointer exited {gameObject.name}");
+        
         if (shopManager != null)
         {
             shopManager.HideConsumableTooltip();
@@ -68,7 +85,6 @@ public class ConsumableSlot : MonoBehaviour, IPointerEnterHandler, IPointerExitH
         if (consumableData != null)
         {
             Debug.Log($"Clicked consumable: {consumableData.consumableName}");
-            // Future: Check cost, deduct currency, add to inventory
         }
     }
 }

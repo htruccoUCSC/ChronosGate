@@ -18,6 +18,10 @@ public class ShopManager : MonoBehaviour
     [SerializeField] private GameObject consumableTooltip;
     [SerializeField] private TextMeshProUGUI tooltipText;
     
+    [Header("Test Data")]
+    [SerializeField] private ConsumableData[] testConsumableData;
+    [SerializeField] private TowerData[] testTowerData; // ADD THIS
+    
     private bool isShopOpen = false;
     private bool shopUsed = false;
     
@@ -28,7 +32,58 @@ public class ShopManager : MonoBehaviour
         rerollButton.onClick.AddListener(RerollShop);
         
         shopPanel.SetActive(false);
-        consumableTooltip.SetActive(false); // Hide tooltip initially
+        consumableTooltip.SetActive(false);
+        
+        // Initialize all consumable slots with reference to this manager
+        foreach (ConsumableSlot slot in consumableSlots)
+        {
+            if (slot != null)
+            {
+                slot.Initialize(this);
+            }
+        }
+        
+        // Setup consumable slots with test data
+        if (testConsumableData != null && testConsumableData.Length > 0)
+        {
+            Debug.Log($"Setting up {testConsumableData.Length} consumable slots");
+            for (int i = 0; i < consumableSlots.Length && i < testConsumableData.Length; i++)
+            {
+                if (consumableSlots[i] != null && testConsumableData[i] != null)
+                {
+                    consumableSlots[i].Setup(testConsumableData[i]);
+                }
+                else
+                {
+                    Debug.LogWarning($"Consumable slot {i} or data is null - Slot: {consumableSlots[i] != null}, Data: {testConsumableData[i] != null}");
+                }
+            }
+        }
+        else
+        {
+            Debug.LogWarning("testConsumableData is null or empty! No consumable slots will be populated.");
+        }
+        
+        // NEW: Setup tower slots with test data
+        if (testTowerData != null && testTowerData.Length > 0)
+        {
+            for (int i = 0; i < towerSlots.Length && i < testTowerData.Length; i++)
+            {
+                if (towerSlots[i] != null && testTowerData[i] != null)
+                {
+                    Debug.Log($"Setting up tower slot {i} with {testTowerData[i].towerName}");
+                    towerSlots[i].Setup(testTowerData[i]);
+                }
+                else
+                {
+                    Debug.LogWarning($"Tower slot {i} or data is null - Slot: {towerSlots[i] != null}, Data: {testTowerData[i] != null}");
+                }
+            }
+        }
+        else
+        {
+            Debug.LogWarning("No test tower data assigned!");
+        }
     }
     
     public void ToggleShop()
@@ -40,7 +95,7 @@ public class ShopManager : MonoBehaviour
         
         if (!isShopOpen)
         {
-            HideConsumableTooltip(); // Hide tooltip when closing shop
+            HideConsumableTooltip();
         }
     }
     
@@ -58,19 +113,31 @@ public class ShopManager : MonoBehaviour
         Debug.Log("Reroll functionality to be implemented");
     }
     
-    // NEW: Show consumable tooltip
     public void ShowConsumableTooltip(string description)
     {
-        if (consumableTooltip != null && tooltipText != null)
+        Debug.Log($"ShowConsumableTooltip called with: {description}");
+        
+        if (consumableTooltip == null)
         {
-            tooltipText.text = description;
-            consumableTooltip.SetActive(true);
+            Debug.LogError("consumableTooltip is null!");
+            return;
         }
+        
+        if (tooltipText == null)
+        {
+            Debug.LogError("tooltipText is null!");
+            return;
+        }
+        
+        tooltipText.text = description;
+        consumableTooltip.SetActive(true);
+        Debug.Log("Tooltip should now be visible");
     }
     
-    // NEW: Hide consumable tooltip
     public void HideConsumableTooltip()
     {
+        Debug.Log("HideConsumableTooltip called");
+        
         if (consumableTooltip != null)
         {
             consumableTooltip.SetActive(false);

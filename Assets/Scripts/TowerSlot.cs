@@ -34,9 +34,14 @@ public class TowerSlot : MonoBehaviour
             costText.text = $"Cost: {data.cost}";
             descriptionText.text = data.description;
             button.interactable = true;
+                        
+            Debug.Log($"Tower slot setup complete for: {data.towerName}"); // DEBUG
+
         }
         else
         {
+            Debug.LogWarning($"TowerData is null for {gameObject.name}");
+
             ClearSlot();
         }
     }
