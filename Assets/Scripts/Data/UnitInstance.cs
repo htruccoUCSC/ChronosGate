@@ -11,6 +11,7 @@ public class UnitInstance : ScriptableObject
 
     // modifiers from augments and shit
     public float DamageFlatMod = 0;
+    public float SpeedFlatMod = 0;
     public float SpeedMultMod = 1.0f;
 
     // this is basically a constructor for creating runtime instances
@@ -27,5 +28,5 @@ public class UnitInstance : ScriptableObject
 
     // equations for modified stats, we will change these later
     public float GetModifiedDamage() => (BaseDef.AttackDamage + DamageFlatMod) * SpeedMultMod;
-    public float GetModifiedAttackSpeed() => BaseDef.AttackSpeed * SpeedMultMod;
+    public float GetModifiedAttackSpeed() => (BaseDef.AttackSpeed + SpeedFlatMod) * SpeedMultMod;
 }

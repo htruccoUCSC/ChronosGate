@@ -11,4 +11,12 @@ public BoardManager board;
         u.DamageFlatMod+= amount;
 
     }
+
+      public void AddAttackSpeed(UnitInstance u,float amount)
+    {
+        u.SpeedFlatMod+= amount;
+
     }
+
+}
+    
