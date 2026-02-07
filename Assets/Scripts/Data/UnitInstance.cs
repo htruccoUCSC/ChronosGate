@@ -10,6 +10,7 @@ public class UnitInstance : ScriptableObject
     public float CurrentMana;
 
     // modifiers from augments and shit
+    public float DamageMultMod = 1.0f;
     public float DamageFlatMod = 0;
     public float SpeedFlatMod = 0;
     public float SpeedMultMod = 1.0f;
@@ -27,6 +28,6 @@ public class UnitInstance : ScriptableObject
     }
 
     // equations for modified stats, we will change these later
-    public float GetModifiedDamage() => (BaseDef.AttackDamage + DamageFlatMod) * SpeedMultMod;
+    public float GetModifiedDamage() => (BaseDef.AttackDamage + DamageFlatMod) * DamageMultMod;
     public float GetModifiedAttackSpeed() => (BaseDef.AttackSpeed + SpeedFlatMod) * SpeedMultMod;
 }
