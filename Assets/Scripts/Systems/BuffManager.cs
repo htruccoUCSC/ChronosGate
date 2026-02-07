@@ -36,4 +36,15 @@ public class BuffManager : MonoBehaviour
             }
         }
     }
+    private void NewRoundBuffUpdate()
+    {
+        // Iterate through all units and update their round buffs
+        foreach (BaseUnit unit in board.unitList)
+        {
+            foreach (Buff buff in unit.roundBuffs)
+            {
+                buffs.RemoveRoundBuff(unit, buff); // Remove buff from unit
+            }
+        }
+    }
 }
