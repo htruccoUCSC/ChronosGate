@@ -1,7 +1,8 @@
-using UnityEngine;
+using System;
+using System.Collections.Generic;
 using System.IO;
 using Newtonsoft.Json;
-using System.Collections.Generic;
+using UnityEngine;
 
 public class DatabaseLoader : MonoBehaviour
 {
@@ -47,7 +48,18 @@ public class DatabaseLoader : MonoBehaviour
                     }
 
                 }
-                
+
+                // parse attack type string to enum
+                if (Enum.TryParse(unit.AttackType, out BasicAttackType type))
+                {
+                    unitDef.AttackFunction = type;
+                }
+                else
+                {
+                    // if parsing fails, set to none
+                    unitDef.AttackFunction = BasicAttackType.None;
+                }
+
                 UnitLookup.Add(unitDef.UnitID, unitDef);
             }
 

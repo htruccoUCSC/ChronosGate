@@ -13,6 +13,8 @@ public class UnitInstance : ScriptableObject
     public float DamageFlatMod = 0;
     public float SpeedMultMod = 1.0f;
 
+    // this is basically a constructor for creating runtime instances
+    // needs to copy more data over and return modified values
     public static UnitInstance CreateRuntimeInstance(UnitDefinition def)
     {
         UnitInstance instance = ScriptableObject.CreateInstance<UnitInstance>();
