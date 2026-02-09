@@ -7,6 +7,8 @@ public class Projectile : MonoBehaviour
     public float speed = 10f;
     public float lifetime = 5f;
 
+    // we still keep _damage because your existing system calls Setup(damage, ...)
+    // BUT for this assignment requirement we will force hits to deal 5 damage on enemies
     private float _damage;
     private Rigidbody2D _rb;
 
@@ -57,6 +59,13 @@ public class Projectile : MonoBehaviour
     {
         if (other.CompareTag("Enemy"))
         {
+            // Deal 5 damage every time we hit an enemy
+            TargetDummyTest enemy = other.GetComponent<TargetDummyTest>();
+            if (enemy != null)
+            {
+                enemy.TakeDamage(5);
+            }
+
             Destroy(gameObject);
         }
     }
