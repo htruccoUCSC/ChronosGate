@@ -132,10 +132,17 @@ public class ItemInventoryUI : MonoBehaviour
         if (m_ItemSpawner.TryPlaceFromInventory(item))
         {
             SetItem(index, null);
+            m_ItemSpawner.SetPreviewItem(null);
             return true;
         }
 
         return false;
+    }
+
+    public void SetPreviewItem(ItemDefinition item)
+    {
+        if (m_ItemSpawner == null) return;
+        m_ItemSpawner.SetPreviewItem(item);
     }
 }
 
@@ -157,6 +164,8 @@ public class ItemInventorySlotDrag : MonoBehaviour, IBeginDragHandler, IDragHand
     {
         var item = m_InventoryUI.GetItem(m_Index);
         if (item == null) return;
+
+        m_InventoryUI.SetPreviewItem(item);
 
         // Create Drag Visual
         var canvas = m_InventoryUI.GetComponentInParent<Canvas>();
@@ -186,6 +195,8 @@ public class ItemInventorySlotDrag : MonoBehaviour, IBeginDragHandler, IDragHand
     public void OnEndDrag(PointerEventData eventData)
     {
         if (m_DragObject != null) Destroy(m_DragObject);
+
+        m_InventoryUI.SetPreviewItem(null);
 
         if (eventData.pointerCurrentRaycast.gameObject != null) return;
 
