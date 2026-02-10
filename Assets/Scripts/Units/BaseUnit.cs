@@ -1,12 +1,14 @@
 using UnityEngine;
 
+using System.Collections.Generic;
 public abstract class BaseUnit : MonoBehaviour
 {
     // our units unique data instance
     public UnitInstance myData;
     protected float attackTimer;
     protected Transform currentTarget;
-
+     public List<Buff> roundBuffs = new List<Buff>();
+    public List<Buff> activeBuffs = new List<Buff>();
     private Sprite _projectileSprite;
     private Vector3 _projectileScale = Vector3.one;
 
@@ -202,7 +204,24 @@ public abstract class BaseUnit : MonoBehaviour
 
     // ability needs to be implemented by each unit type
     protected abstract void CastAbility();
+    public void AddTempBuff(Buff buff)
+    {
+        activeBuffs.Add(buff);
+    }
 
+    public void RemoveTempBuff(Buff buff)
+    {
+        activeBuffs.Remove(buff);
+    }
+        public void AddRoundBuff(Buff buff)
+    {
+        roundBuffs.Add(buff);
+    }
+
+    public void RemoveRoundBuff(Buff buff)
+    {
+        roundBuffs.Remove(buff);
+    }
     // solves standard projectile motion equation for Velocity
     private float CalculateBallisticSpeed(float distance, float angleDeg, float gravity)
     {
