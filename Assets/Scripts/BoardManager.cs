@@ -95,7 +95,10 @@ public class BoardManager : MonoBehaviour
     public void RegisterUnit(Vector3Int cellPos, GameObject unit)
     {
         occupiedTiles[cellPos] = unit;
-        unitList.Add(GetComponent<BaseUnit>());
+        if (unit.TryGetComponent(out BaseUnit baseUnit))
+        {
+            unitList.Add(baseUnit);
+        }
         unit.transform.SetParent(UnitsParent);
     }
 
