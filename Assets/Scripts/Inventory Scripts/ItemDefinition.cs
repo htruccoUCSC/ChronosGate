@@ -17,26 +17,19 @@ public class ItemDefinition : ScriptableObject
     public string Description => m_Description;
     public int DamageValue => m_DamageValue;
     public string PrefabPath => m_PrefabPath;
-
+    // Icon logic
     public Sprite Icon
-    {
+    { 
         get
         {
             if (m_CachedIcon != null) return m_CachedIcon;
 
-            if (string.IsNullOrEmpty(m_PrefabPath))
-            {
-                Debug.LogError($"[ItemDef] PrefabPath is empty for {m_DisplayName}!");
-                return null;
-            }
-
+            if (string.IsNullOrEmpty(m_PrefabPath)){return null;}
+            // load prefab
             GameObject prefab = Resources.Load<GameObject>(m_PrefabPath);
-            if (prefab == null)
-            {
-                Debug.LogError($"[ItemDef] Could not load Prefab at path: '{m_PrefabPath}' for {m_DisplayName}. Check spelling or Resources folder!");
-                return null;
-            }
 
+            if (prefab == null) {return null;}
+            
             SpriteRenderer sr = prefab.GetComponentInChildren<SpriteRenderer>(true);
             if (sr != null)
             {
@@ -44,7 +37,6 @@ public class ItemDefinition : ScriptableObject
                 return m_CachedIcon;
             }
 
-            Debug.LogError($"[ItemDef] Prefab '{prefab.name}' loaded, but has no SpriteRenderer on it or its children!");
             return null;
         }
     }
