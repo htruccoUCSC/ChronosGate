@@ -4,7 +4,6 @@ using UnityEngine;
 [Serializable]
 public class Augment
 {
-    // Function that applies the augment to a unit
     public Action Apply;
 
 

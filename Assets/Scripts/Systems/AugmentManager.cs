@@ -16,4 +16,17 @@ public class AugmentManager : MonoBehaviour
             augmentList.activeAugments[i].Apply();
         }
     }
+    public void AddAugment(Augment newAugment)
+    {
+        augmentList.activeAugments.Add(newAugment);
+    }
+
+        public void RemoveAugmentByIndex(int index)
+    {
+        if (index >= 0 && index < augmentList.activeAugments.Count)
+        {
+            augmentList.activeAugments.RemoveAt(index);
+        }
+    }
 }
+
