@@ -4,19 +4,14 @@ public class AugmentManager : MonoBehaviour
 {
     public AugmentList augmentList = new AugmentList();
 
-<<<<<<< Updated upstream
-  private float timer = 0f;   // internal timer
-    private float interval = 1f; // 1 second interval
-=======
     // Temp timer logic
     private float timer = 0f;
     public float interval = 1f;
 
     void Start()
     {
-        ApplyAllActiveAugments();
+        ApplyAllAugments();
     }
->>>>>>> Stashed changes
 
     public void ApplyAllAugments()
     {
@@ -25,9 +20,6 @@ public class AugmentManager : MonoBehaviour
             augmentList.activeAugments[i].Apply();
         }
     }
-<<<<<<< Updated upstream
-    public void AddAugment(Augment newAugment)
-=======
 
     public void ApplyAllRoundStartAugments()
     {
@@ -38,27 +30,17 @@ public class AugmentManager : MonoBehaviour
     }
 
     public void AddActiveAugment(Augment newAugment)
->>>>>>> Stashed changes
     {
         augmentList.activeAugments.Add(newAugment);
     }
 
-<<<<<<< Updated upstream
-        public void RemoveAugmentByIndex(int index)
-=======
     public void RemoveActiveAugmentByIndex(int index)
->>>>>>> Stashed changes
     {
         if (index >= 0 && index < augmentList.activeAugments.Count)
         {
             augmentList.activeAugments.RemoveAt(index);
         }
     }
-<<<<<<< Updated upstream
-      void Update()
-    {
-
-=======
 
     public void AddRoundStartAugment(Augment newAugment)
     {
@@ -102,7 +84,6 @@ public class AugmentManager : MonoBehaviour
     void Update()
     {
         // Temp logic REMOVE LATER WHEN INROUND LOGIC IS THERE
->>>>>>> Stashed changes
         timer += Time.deltaTime;
 
         if (timer >= interval)
@@ -111,8 +92,4 @@ public class AugmentManager : MonoBehaviour
             ApplyAllAugments();
         }
     }
-<<<<<<< Updated upstream
-
-=======
->>>>>>> Stashed changes
 }
