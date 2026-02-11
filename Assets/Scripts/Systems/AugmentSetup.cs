@@ -7,13 +7,13 @@ public class AugmentSetup : MonoBehaviour
 
     void Start()
     {
-         Augment testAugmentWrapper = new Augment(() => testAugment.Test(),"Test Augment");
+         Augment testAugmentWrapper = new Augment(() => testAugment.Test());
          augmentManager.AddActiveAugment(testAugmentWrapper);
     }
     public void PurchaseTestAugment()
     {
         // Create augment using the constructor that takes an Action
-        Augment testAugmentWrapper = new Augment(() => testAugment.Test(),"Test Augment");
+        Augment testAugmentWrapper = new Augment(() => testAugment.Test());
 
         // Add it to your AugmentManager
         augmentManager.AddActiveAugment(testAugmentWrapper);
