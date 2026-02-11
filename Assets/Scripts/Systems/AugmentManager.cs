@@ -4,10 +4,8 @@ public class AugmentManager : MonoBehaviour
 {
     public AugmentList augmentList = new AugmentList();
 
-    void Start()
-    {
-        ApplyAllAugments();
-    }
+  private float timer = 0f;   // internal timer
+    private float interval = 1f; // 1 second interval
 
     public void ApplyAllAugments()
     {
@@ -28,5 +26,18 @@ public class AugmentManager : MonoBehaviour
             augmentList.activeAugments.RemoveAt(index);
         }
     }
+      void Update()
+    {
+
+        timer += Time.deltaTime;
+
+        if (timer >= interval)
+        {
+
+            timer = 0f;
+            ApplyAllAugments();
+        }
+    }
+
 }
 
