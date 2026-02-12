@@ -9,8 +9,8 @@ public abstract class BaseUnit : MonoBehaviour
     protected Transform currentTarget;
      public List<Buff> roundBuffs = new List<Buff>();
     public List<Buff> activeBuffs = new List<Buff>();
-    private Sprite _projectileSprite;
-    private Vector3 _projectileScale = Vector3.one;
+    protected Sprite _projectileSprite;
+    protected Vector3 _projectileScale = Vector3.one;
 
     // how much of the tile we want the unit to fill
     private const float TILE_FILL_RATIO = 1.0f;
@@ -155,51 +155,51 @@ public abstract class BaseUnit : MonoBehaviour
         }
     }
 
-    // spawns a generic projectile towards the current target
-    private void SpawnGenericProjectile(float damage)
+    protected virtual GameObject LoadProjectilePrefab()
     {
-        if (currentTarget == null) return;
+        return Resources.Load<GameObject>("Prefabs/BaseProjectile");
+    }
 
-        GameObject genericPrefab = Resources.Load<GameObject>("Prefabs/BaseProjectile");
-        if (genericPrefab == null) return;
+    protected void SpawnProjectile(GameObject prefab, float damage, bool isAOE)
+    {
+        if (currentTarget == null || prefab == null) return;
 
-        GameObject proj = Instantiate(genericPrefab, transform.position, Quaternion.identity);
+        GameObject proj = Instantiate(prefab, transform.position, Quaternion.identity);
 
         if (_projectileSprite != null)
         {
             var sr = proj.GetComponentInChildren<SpriteRenderer>();
-            sr.sprite = _projectileSprite;
+            var animator = proj.GetComponentInChildren<Animator>();
+            if (sr != null && animator == null) sr.sprite = _projectileSprite;
             proj.transform.localScale = Vector3.Scale(transform.localScale, _projectileScale);
         }
 
-        if (proj.TryGetComponent(out Projectile projScript))
+        Projectile projScript = proj.GetComponentInChildren<Projectile>();
+        if (projScript == null) return;
+
+        Vector2 diff = currentTarget.position - transform.position;
+        float distance = diff.magnitude;
+        Vector2 direction = diff.normalized;
+        float launchAngle = myData.BaseDef.LaunchAngle;
+
+        float finalSpeed = projScript.speed;
+
+        if (launchAngle > 0)
         {
-            // --- DIRECTION LOGIC ---
-            Vector2 diff = currentTarget.position - transform.position;
-            float distance = diff.magnitude;
-            Vector2 direction = diff.normalized;
-            float launchAngle = myData.BaseDef.LaunchAngle;
+            float gravity = Physics2D.gravity.y * 3f;
+            gravity = Mathf.Abs(gravity);
 
-            // start with the default speed from the prefab settings
-            float finalSpeed = projScript.speed;
-
-            // for projectiles with a launch angle we need to calculate the required speed
-            if (launchAngle > 0)
-            {
-                // scale gravity to match projectile.cs
-                float gravity = Physics2D.gravity.y * 3f;
-                // make gravity positive for calculation
-                gravity = Mathf.Abs(gravity);
-
-                finalSpeed = CalculateBallisticSpeed(distance, launchAngle, gravity);
-
-                // overwrite the projectile speed for ballistic projectiles
-                projScript.speed = finalSpeed;
-            }
-
-            // launch the projectile
-            projScript.Setup(damage, direction, launchAngle);
+            finalSpeed = CalculateBallisticSpeed(distance, launchAngle, gravity);
+            projScript.speed = finalSpeed;
         }
+
+        projScript.Setup(damage, direction, launchAngle, transform.position, isAOE);
+    }
+
+    // spawns a generic projectile towards the current target
+    private void SpawnGenericProjectile(float damage)
+    {
+        SpawnProjectile(LoadProjectilePrefab(), damage, false);
     }
 
     // ability needs to be implemented by each unit type
@@ -223,7 +223,7 @@ public abstract class BaseUnit : MonoBehaviour
         roundBuffs.Remove(buff);
     }
     // solves standard projectile motion equation for Velocity
-    private float CalculateBallisticSpeed(float distance, float angleDeg, float gravity)
+    protected float CalculateBallisticSpeed(float distance, float angleDeg, float gravity)
     {
         // convert angle to radians
         float angleRad = angleDeg * Mathf.Deg2Rad;

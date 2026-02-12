@@ -22,6 +22,7 @@ public class InventoryUI : MonoBehaviour
     [Header("Starter Settings")]
     public DatabaseLoader database;
     public string starterUnitID = "archer_01";
+    public string starterUnitID2 = "rock_01";
 
     private void Start()
     {
@@ -39,6 +40,18 @@ public class InventoryUI : MonoBehaviour
             else
             {
                 Debug.LogError($"Could not find Starter Unit: {starterUnitID}");
+            }
+        }
+
+        if (database != null && !string.IsNullOrEmpty(starterUnitID2))
+        {
+            if (database.UnitLookup.TryGetValue(starterUnitID2, out UnitDefinition def))
+            {
+                AddUnit(def);
+            }
+            else
+            {
+                Debug.LogError($"Could not find Starter Unit: {starterUnitID2}");
             }
         }
     }

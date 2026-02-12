@@ -23,6 +23,8 @@ public class ItemInventoryUI : MonoBehaviour
         m_Items = new ItemDefinition[m_Capacity];
         Build();
         AddItem(m_testItem); // Test item
+        AddItem(m_testItem);
+        AddItem(m_testItem);
     }
 
     // Build the inventory UI
