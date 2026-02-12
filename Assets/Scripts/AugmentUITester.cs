@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 public class AugmentUITester : MonoBehaviour
 {
@@ -6,7 +7,7 @@ public class AugmentUITester : MonoBehaviour
     [SerializeField] private AugmentSelectionUI augmentUI;
     
     [Header("Test Settings")]
-    [SerializeField] private KeyCode testKey = KeyCode.Space;
+    [SerializeField] private Key testKey = Key.Space;
     [SerializeField] private bool showOnStart = false;
     
     private void Start()
@@ -27,7 +28,7 @@ public class AugmentUITester : MonoBehaviour
     private void Update()
     {
         // Press test key to show augment UI
-        if (Input.GetKeyDown(testKey) && augmentUI != null)
+        if (Keyboard.current != null && Keyboard.current[testKey].wasPressedThisFrame && augmentUI != null)
         {
             Debug.Log($"[TEST] Showing Augment UI (Press {testKey} to toggle)");
             augmentUI.ShowAugmentSelection();

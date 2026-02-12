@@ -16,6 +16,7 @@ public class BoardManager : MonoBehaviour
 
     // dictionary to keep track of occupied tiles
     // this is way faster than looping through every object on the board
+    public List<BaseUnit> unitList = new List<BaseUnit>();
     private Dictionary<Vector3Int, GameObject> occupiedTiles = new Dictionary<Vector3Int, GameObject>();
 
     public Transform UnitsParent;
@@ -94,6 +95,10 @@ public class BoardManager : MonoBehaviour
     public void RegisterUnit(Vector3Int cellPos, GameObject unit)
     {
         occupiedTiles[cellPos] = unit;
+        if (unit.TryGetComponent(out BaseUnit baseUnit))
+        {
+            unitList.Add(baseUnit);
+        }
         unit.transform.SetParent(UnitsParent);
     }
 
