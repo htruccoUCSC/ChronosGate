@@ -26,6 +26,9 @@ public class WaveManager : MonoBehaviour
 
     private readonly HashSet<TargetDummyTest> aliveEnemies = new HashSet<TargetDummyTest>(); // tracks living enemies
     private bool gameOver = false; // stops spawning when you hit 0 lives
+    private bool waveActive = false;
+    // bool that enables the old automatic wave behavior
+    private bool autoRunWaves = false;
 
     private float leftLoseX = 0f; // world X where enemies count as "reached the end"
 
@@ -46,8 +49,12 @@ public class WaveManager : MonoBehaviour
 
         // compute map end threshold once at start
         RecomputeMapEndX();
-
-        StartCoroutine(RunWaves()); // start the wave loop
+        
+        // If you want the old behavior (auto waves), set autoRunWaves to true
+        if (autoRunWaves)
+        {
+            StartCoroutine(RunWaves());
+        }
     }
 
     private void RecomputeMapEndX()
@@ -112,6 +119,47 @@ public class WaveManager : MonoBehaviour
             currentWave++;
             enemiesPerWave += enemiesAddedPerWave;
         }
+    }
+
+    // function for the gameloop manager to start a wave
+    public void StartNextWave()
+    {
+        if (gameOver || waveActive) return;
+        
+        StartCoroutine(RunSingleWave());
+    }
+
+    // returns true if the current wave is fully cleared
+    public bool IsWaveComplete()
+    {
+        return !waveActive && aliveEnemies.Count == 0;
+    }
+
+    // run wave helper function that only runs one wave and then stops
+    private IEnumerator RunSingleWave()
+    {
+        waveActive = true;
+        Debug.Log($"--- WAVE {currentWave} START ---");
+
+        // spawn enemies for this wave
+        for (int i = 0; i < enemiesPerWave; i++)
+        {
+            if (gameOver)
+            {
+                waveActive = false;
+                yield break;
+            }
+            TrySpawnEnemyOnTile();
+            yield return new WaitForSeconds(spawnDelay);
+        }
+
+        yield return new WaitUntil(() => aliveEnemies.Count == 0 || gameOver);
+
+        Debug.Log($"--- WAVE {currentWave} CLEARED ---");
+        
+        currentWave++;
+        enemiesPerWave += enemiesAddedPerWave;
+        waveActive = false;
     }
 
     private void TrySpawnEnemyOnTile()
