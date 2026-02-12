@@ -5,15 +5,15 @@ using UnityEngine.Tilemaps;
 
 public class WaveManager : MonoBehaviour
 {
-    public static WaveManager Instance { get; private set; } // global access so enemies can register
+    public static WaveManager Instance { get; private set; } // global access so enemies can register / report escapes
 
     [Header("References")]
     public GameObject enemyPrefab; // what enemy gets spawned
-    public Tilemap tilemap;        // tilemap used to figure out spawn positions (this took me too long to find out)
+    public Tilemap tilemap;        // tilemap used to figure out spawn + map edges
 
     [Header("Spawn")]
-    public int spawnOffsetCells = 0; // how far past the right edge enemies spawn
-    public float spawnDelay = 0.75f; // delay between enemy spawns in a wave
+    public int spawnOffsetCells = 0;   // how far past the right edge enemies spawn
+    public float spawnDelay = 0.75f;   // delay between enemy spawns in a wave
 
     [Header("Waves")]
     public int currentWave = 1;          // current wave number
@@ -21,7 +21,13 @@ public class WaveManager : MonoBehaviour
     public int enemiesAddedPerWave = 0;  // extra enemies added each new wave
     public float timeBetweenWaves = 2f;  // wait time between waves
 
+    [Header("Lives")]
+    public int lives = 3; // you start with 3 lives
+
     private readonly HashSet<TargetDummyTest> aliveEnemies = new HashSet<TargetDummyTest>(); // tracks living enemies
+    private bool gameOver = false; // stops spawning when you hit 0 lives
+
+    private float leftLoseX = 0f; // world X where enemies count as "reached the end"
 
     void Awake()
     {
@@ -37,29 +43,73 @@ public class WaveManager : MonoBehaviour
     void Start()
     {
         Debug.Log("WaveManager started.");
+
+        // compute map end threshold once at start
+        RecomputeMapEndX();
+
         StartCoroutine(RunWaves()); // start the wave loop
+    }
+
+    private void RecomputeMapEndX()
+    {
+        if (tilemap == null)
+        {
+            Debug.LogError("WaveManager: tilemap not assigned.");
+            return;
+        }
+
+        BoundsInt bounds = tilemap.cellBounds;
+
+        // find the leftmost column that actually has tiles
+        int leftmostXWithTile = int.MaxValue;
+        for (int x = bounds.xMin; x < bounds.xMax; x++)
+        {
+            for (int y = bounds.yMin; y < bounds.yMax; y++)
+            {
+                Vector3Int cell = new Vector3Int(x, y, 0);
+                if (tilemap.HasTile(cell) && x < leftmostXWithTile)
+                    leftmostXWithTile = x;
+            }
+        }
+
+        if (leftmostXWithTile == int.MaxValue)
+        {
+            Debug.LogError("WaveManager: Tilemap has no tiles.");
+            return;
+        }
+
+        // left edge "lose line" is the center of that leftmost tile column
+        leftLoseX = tilemap.GetCellCenterWorld(new Vector3Int(leftmostXWithTile, 0, 0)).x;
+    }
+
+    public float GetLoseLineX()
+    {
+        return leftLoseX; // enemies use this to know when they reached the end
     }
 
     private IEnumerator RunWaves()
     {
-        while (true)
+        while (!gameOver)
         {
             Debug.Log($"--- WAVE {currentWave} START ---");
 
             // spawn enemies for this wave
             for (int i = 0; i < enemiesPerWave; i++)
             {
+                if (gameOver) yield break;
                 TrySpawnEnemyOnTile();
                 yield return new WaitForSeconds(spawnDelay);
             }
 
-            // wait until all enemies are dead
-            yield return new WaitUntil(() => aliveEnemies.Count == 0);
+            // wait until all enemies are dead or escaped
+            yield return new WaitUntil(() => aliveEnemies.Count == 0 || gameOver);
+
+            if (gameOver) yield break;
 
             Debug.Log($"--- WAVE {currentWave} CLEARED ---");
 
             yield return new WaitForSeconds(timeBetweenWaves);
-            currentWave++;                       // move to next wave
+            currentWave++;
             enemiesPerWave += enemiesAddedPerWave;
         }
     }
@@ -79,7 +129,7 @@ public class WaveManager : MonoBehaviour
             return;
         }
 
-        BoundsInt bounds = tilemap.cellBounds; // tilemap grid bounds
+        BoundsInt bounds = tilemap.cellBounds;
 
         // find the rightmost column that actually has tiles
         int rightmostXWithTile = int.MinValue;
@@ -99,9 +149,9 @@ public class WaveManager : MonoBehaviour
             return;
         }
 
-        int spawnX = rightmostXWithTile + spawnOffsetCells; // final spawn column
+        int spawnX = rightmostXWithTile + spawnOffsetCells;
 
-        // collect all valid Y rows in that column
+        // collect all valid Y rows in that rightmost tile column
         List<int> validYs = new List<int>();
         for (int y = bounds.yMin; y < bounds.yMax; y++)
         {
@@ -138,6 +188,24 @@ public class WaveManager : MonoBehaviour
 
     public void UnregisterEnemy(TargetDummyTest enemy)
     {
-        aliveEnemies.Remove(enemy); // called when an enemy dies
+        aliveEnemies.Remove(enemy); // called when an enemy dies or gets destroyed
+    }
+
+    public void EnemyReachedEnd(TargetDummyTest enemy)
+    {
+        if (gameOver) return;
+
+        lives -= 1;
+        Debug.Log($"Enemy reached the end! Lives left: {lives}");
+
+        // destroy the enemy so it unregisters (OnDestroy in TargetDummy handles it)
+        if (enemy != null)
+            Destroy(enemy.gameObject);
+
+        if (lives <= 0)
+        {
+            gameOver = true;
+            Debug.Log("GAME OVER (0 lives).");
+        }
     }
 }
