@@ -12,40 +12,45 @@ public class TowerSlot : MonoBehaviour
     [SerializeField] private TextMeshProUGUI costText;
     [SerializeField] private TextMeshProUGUI descriptionText;
     [SerializeField] private Button button;
-    
-    private TowerData towerData;
-    
+
+    private UnitDefinition unitDefinition;
+    private InventoryUI inventoryUI;
+
     private void Awake()
     {
         button.onClick.AddListener(OnSlotClicked);
     }
-    
-    public void Setup(TowerData data)
+
+    public void Initialize(InventoryUI inventory)
     {
-        towerData = data;
-        
+        inventoryUI = inventory;
+    }
+
+    public void Setup(UnitDefinition data)
+    {
+        unitDefinition = data;
+
         if (data != null)
         {
-            eraText.text = data.era;
-            towerNameText.text = data.towerName;
-            typeText.text = data.type;
-            iconImage.sprite = data.icon;
+            eraText.text = data.Faction;
+            towerNameText.text = data.Name;
+            typeText.text = data.AttackFunction.ToString();
+            iconImage.sprite = data.Icon;
             iconImage.color = Color.white;
-            costText.text = $"Cost: {data.cost}";
-            descriptionText.text = data.description;
+            costText.text = $"Cost: {data.Cost}";
+            descriptionText.text = data.Description;
             button.interactable = true;
-                        
-            Debug.Log($"Tower slot setup complete for: {data.towerName}"); // DEBUG
 
+            Debug.Log($"Tower slot setup complete for: {data.Name}");
         }
         else
         {
-            Debug.LogWarning($"TowerData is null for {gameObject.name}");
+            Debug.LogWarning($"UnitDefinition is null for {gameObject.name}");
 
             ClearSlot();
         }
     }
-    
+
     private void ClearSlot()
     {
         eraText.text = "";
@@ -57,13 +62,27 @@ public class TowerSlot : MonoBehaviour
         descriptionText.text = "";
         button.interactable = false;
     }
-    
+
     private void OnSlotClicked()
     {
-        if (towerData != null)
+        if (unitDefinition == null)
         {
-            Debug.Log($"Clicked tower: {towerData.towerName}");
-            // Future: Check cost, deduct currency, add to inventory
+            return;
+        }
+
+        if (inventoryUI == null)
+        {
+            Debug.LogWarning("InventoryUI not assigned for tower slot.");
+            return;
+        }
+
+        if (inventoryUI.AddUnit(unitDefinition))
+        {
+            Setup(null);
+        }
+        else
+        {
+            Debug.Log("Inventory is full.");
         }
     }
 }

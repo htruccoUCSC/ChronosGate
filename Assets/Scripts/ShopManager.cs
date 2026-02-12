@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
+using System.Collections.Generic;
 
 public class ShopManager : MonoBehaviour
 {
@@ -13,6 +14,10 @@ public class ShopManager : MonoBehaviour
     [Header("Shop Slots")]
     [SerializeField] private ConsumableSlot[] consumableSlots = new ConsumableSlot[2];
     [SerializeField] private TowerSlot[] towerSlots = new TowerSlot[6];
+
+    [Header("Data Sources")]
+    [SerializeField] private DatabaseLoader databaseLoader;
+    [SerializeField] private InventoryUI inventoryUI;
     
     [Header("Tooltip")]
     [SerializeField] private GameObject consumableTooltip;
@@ -20,7 +25,6 @@ public class ShopManager : MonoBehaviour
     
     [Header("Test Data")]
     [SerializeField] private ConsumableData[] testConsumableData;
-    [SerializeField] private TowerData[] testTowerData; // ADD THIS
     
     private bool isShopOpen = false;
     private bool shopUsed = false;
@@ -40,6 +44,19 @@ public class ShopManager : MonoBehaviour
             if (slot != null)
             {
                 slot.Initialize(this);
+            }
+        }
+
+        if (inventoryUI == null)
+        {
+            inventoryUI = FindFirstObjectByType<InventoryUI>();
+        }
+
+        foreach (TowerSlot slot in towerSlots)
+        {
+            if (slot != null)
+            {
+                slot.Initialize(inventoryUI);
             }
         }
         
@@ -63,27 +80,13 @@ public class ShopManager : MonoBehaviour
         {
             Debug.LogWarning("testConsumableData is null or empty! No consumable slots will be populated.");
         }
-        
-        // NEW: Setup tower slots with test data
-        if (testTowerData != null && testTowerData.Length > 0)
+
+        if (databaseLoader == null)
         {
-            for (int i = 0; i < towerSlots.Length && i < testTowerData.Length; i++)
-            {
-                if (towerSlots[i] != null && testTowerData[i] != null)
-                {
-                    Debug.Log($"Setting up tower slot {i} with {testTowerData[i].towerName}");
-                    towerSlots[i].Setup(testTowerData[i]);
-                }
-                else
-                {
-                    Debug.LogWarning($"Tower slot {i} or data is null - Slot: {towerSlots[i] != null}, Data: {testTowerData[i] != null}");
-                }
-            }
+            databaseLoader = FindFirstObjectByType<DatabaseLoader>();
         }
-        else
-        {
-            Debug.LogWarning("No test tower data assigned!");
-        }
+
+        PopulateTowerSlots();
     }
     
     public void ToggleShop()
@@ -110,7 +113,75 @@ public class ShopManager : MonoBehaviour
     
     private void RerollShop()
     {
-        Debug.Log("Reroll functionality to be implemented");
+        PopulateTowerSlots();
+    }
+
+    // This method populates tower slots with random eligible UnitDefinitions from the database
+    // We could consider chaning this to take a list of UnitDefinitions as a parameter if we want more control over what gets shown in the shop
+    // For now, it will just pull all UnitDefinitions that have valid prefabs and randomly assign them to the tower slots so as we add units theyll show up in the shop without needing to update this code
+
+    private void PopulateTowerSlots()
+    {
+        if (towerSlots == null || towerSlots.Length == 0)
+        {
+            return;
+        }
+
+        if (databaseLoader == null)
+        {
+            Debug.LogWarning("DatabaseLoader not assigned. Cannot populate tower slots.");
+            for (int i = 0; i < towerSlots.Length; i++)
+            {
+                if (towerSlots[i] != null)
+                {
+                    towerSlots[i].Setup(null);
+                }
+            }
+            return;
+        }
+
+        var eligibleUnits = new List<UnitDefinition>();
+        foreach (var unitDef in databaseLoader.UnitLookup.Values)
+        {
+            if (HasValidPrefab(unitDef))
+            {
+                eligibleUnits.Add(unitDef);
+            }
+        }
+
+        if (eligibleUnits.Count == 0)
+        {
+            Debug.LogWarning("No eligible UnitDefinitions with prefabs found to populate tower slots.");
+            for (int i = 0; i < towerSlots.Length; i++)
+            {
+                if (towerSlots[i] != null)
+                {
+                    towerSlots[i].Setup(null);
+                }
+            }
+            return;
+        }
+
+        for (int i = 0; i < towerSlots.Length; i++)
+        {
+            if (towerSlots[i] == null)
+            {
+                continue;
+            }
+
+            UnitDefinition randomUnit = eligibleUnits[Random.Range(0, eligibleUnits.Count)];
+            towerSlots[i].Setup(randomUnit);
+        }
+    }
+
+    private static bool HasValidPrefab(UnitDefinition unitDef)
+    {
+        if (unitDef == null || string.IsNullOrWhiteSpace(unitDef.PrefabPath))
+        {
+            return false;
+        }
+
+        return Resources.Load<GameObject>(unitDef.PrefabPath) != null;
     }
     
     public void ShowConsumableTooltip(string description)
