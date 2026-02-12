@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.Tilemaps;
 
 [RequireComponent(typeof(Rigidbody2D))]
 public class Projectile : MonoBehaviour
@@ -10,16 +11,21 @@ public class Projectile : MonoBehaviour
     // we still keep _damage because your existing system calls Setup(damage, ...)
     // BUT for this assignment requirement we will force hits to deal 5 damage on enemies
     private float _damage;
+    private bool _isAoe;
     private Rigidbody2D _rb;
+    private int _originRow;
+    private bool _hasOriginRow;
 
     void Awake()
     {
         _rb = GetComponent<Rigidbody2D>();
     }
 
-    public void Setup(float damage, Vector2 direction, float angleInDegrees)
+    public void Setup(float damage, Vector2 direction, float angleInDegrees, Vector3 originWorldPos, bool isAOE = false)
     {
         _damage = damage;
+        _isAoe = isAOE;
+        CacheOriginRow(originWorldPos);
         Destroy(gameObject, lifetime);
 
         // straight shot
@@ -57,16 +63,55 @@ public class Projectile : MonoBehaviour
 
     void OnTriggerEnter2D(Collider2D other)
     {
-        if (other.CompareTag("Enemy"))
+        // should only hit enemies in the same row pass through enemies in other lanes
+        if (other.CompareTag("Enemy") && IsSameRow(other.transform))
         {
             // Deal 5 damage every time we hit an enemy
             TargetDummyTest enemy = other.GetComponent<TargetDummyTest>();
-            if (enemy != null)
+            if (_isAoe)
             {
-                enemy.TakeDamage(5);
+                // If it's an AOE projectile, we want to hit all enemies in a radius
+                Collider2D[] hits = Physics2D.OverlapCircleAll(transform.position, 1f); // Adjust radius as needed 1f is just an example
+                foreach (Collider2D hit in hits)
+                {
+                    if (hit.CompareTag("Enemy") && IsSameRow(hit.transform))
+                    {
+                        TargetDummyTest aoeEnemy = hit.GetComponent<TargetDummyTest>();
+                        if (aoeEnemy != null)
+                        {
+                            aoeEnemy.TakeDamage(Mathf.RoundToInt(_damage)); //use passed damage
+                        }
+                    }
+                }
+            }
+            if (!_isAoe && enemy != null)
+            {
+                enemy.TakeDamage(Mathf.RoundToInt(_damage)); //use passed damage
             }
 
             Destroy(gameObject);
         }
+    }
+
+    private bool IsSameRow(Transform target)
+    {
+        Tilemap tilemap = WaveManager.Instance != null ? WaveManager.Instance.tilemap : null;
+        if (tilemap == null || !_hasOriginRow) return true;
+
+        int targetRow = tilemap.WorldToCell(target.position).y;
+        return targetRow == _originRow;
+    }
+
+    private void CacheOriginRow(Vector3 originWorldPos)
+    {
+        Tilemap tilemap = WaveManager.Instance != null ? WaveManager.Instance.tilemap : null;
+        if (tilemap == null)
+        {
+            _hasOriginRow = false;
+            return;
+        }
+
+        _originRow = tilemap.WorldToCell(originWorldPos).y;
+        _hasOriginRow = true;
     }
 }

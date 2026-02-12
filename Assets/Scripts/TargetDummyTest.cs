@@ -6,7 +6,7 @@ public class TargetDummyTest : MonoBehaviour
     public float moveSpeed = 1f;
 
     [Header("Health")]
-    public int maxHealth = 10;
+    public int maxHealth = 15;
     private int currentHealth;
 
     private bool registered = false;
