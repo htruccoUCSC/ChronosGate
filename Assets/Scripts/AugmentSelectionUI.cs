@@ -7,7 +7,6 @@ public class AugmentSelectionUI : MonoBehaviour
 {
     [Header("UI Panels")]
     [SerializeField] private GameObject augmentSelectionPanel;
-    [SerializeField] private GameObject toggleButton; // Changed from Button to GameObject
     
     [Header("Augment Cards")]
     [SerializeField] private Button augment1SelectButton;
@@ -25,19 +24,12 @@ public class AugmentSelectionUI : MonoBehaviour
     // Events that other systems can subscribe to
     public event Action<int> OnAugmentSelected;
 
-    private Button toggleButtonComponent; // Cache the button component
-
     private void Start()
     {
-        // Get the button component from the GameObject
-        toggleButtonComponent = toggleButton.GetComponent<Button>();
-        
-        // Start with panel hidden but toggle button visible
+        // Start with panel hidden
         augmentSelectionPanel.SetActive(false);
-        toggleButton.SetActive(false); // Hidden initially until ShowAugmentSelection is called
         
-        // Hook up buttons
-        toggleButtonComponent.onClick.AddListener(ToggleAugmentPanel);
+        // Hook up augment selection buttons
         augment1SelectButton.onClick.AddListener(() => SelectAugment(0));
         augment2SelectButton.onClick.AddListener(() => SelectAugment(1));
         augment3SelectButton.onClick.AddListener(() => SelectAugment(2));
@@ -65,20 +57,16 @@ public class AugmentSelectionUI : MonoBehaviour
     public void ShowAugmentSelection()
     {
         augmentSelectionPanel.SetActive(true);
-        toggleButton.SetActive(true); // Show the toggle button
         Time.timeScale = 0f; // Pause the game
     }
 
     /// <summary>
-    /// Toggle the visibility of the augment panel (button stays visible)
+    /// Explicitly hide the augment selection panel
     /// </summary>
-    private void ToggleAugmentPanel()
+    public void HideAugmentSelection()
     {
-        bool newState = !augmentSelectionPanel.activeSelf;
-        augmentSelectionPanel.SetActive(newState);
-        
-        // Toggle button stays visible, only pause state changes
-        Time.timeScale = newState ? 0f : 1f;
+        augmentSelectionPanel.SetActive(false);
+        Time.timeScale = 1f; // Resume game
     }
 
     /// <summary>
@@ -88,13 +76,11 @@ public class AugmentSelectionUI : MonoBehaviour
     {
         Debug.Log($"Augment {augmentIndex} selected!");
         
+        // Hide the panel first
+        HideAugmentSelection();
+        
         // Trigger event for other systems
         OnAugmentSelected?.Invoke(augmentIndex);
-        
-        // Hide both the panel AND the toggle button
-        augmentSelectionPanel.SetActive(false);
-        toggleButton.SetActive(false);
-        Time.timeScale = 1f; // Resume game
     }
 
     /// <summary>
@@ -116,10 +102,6 @@ public class AugmentSelectionUI : MonoBehaviour
     private void OnDestroy()
     {
         // Clean up button listeners
-        if (toggleButtonComponent != null)
-        {
-            toggleButtonComponent.onClick.RemoveAllListeners();
-        }
         augment1SelectButton.onClick.RemoveAllListeners();
         augment2SelectButton.onClick.RemoveAllListeners();
         augment3SelectButton.onClick.RemoveAllListeners();

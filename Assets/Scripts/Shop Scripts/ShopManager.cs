@@ -27,12 +27,11 @@ public class ShopManager : MonoBehaviour
     [SerializeField] private ConsumableData[] testConsumableData;
     
     private bool isShopOpen = false;
-    private bool shopUsed = false;
     
     private void Start()
     {
         toggleButton.onClick.AddListener(ToggleShop);
-        nextRoundButton.onClick.AddListener(CloseShopPermanently);
+        nextRoundButton.onClick.AddListener(OnNextRoundButtonClicked);
         rerollButton.onClick.AddListener(RerollShop);
         
         shopPanel.SetActive(false);
@@ -91,8 +90,6 @@ public class ShopManager : MonoBehaviour
     
     public void ToggleShop()
     {
-        if (shopUsed) return;
-        
         isShopOpen = !isShopOpen;
         shopPanel.SetActive(isShopOpen);
         
@@ -101,14 +98,30 @@ public class ShopManager : MonoBehaviour
             HideConsumableTooltip();
         }
     }
-    
-    private void CloseShopPermanently()
+
+    // method for gameloopmanger to open a new shop at the start of each round - also rerolls the shop to show new options
+    public void OpenShop()
     {
-        shopUsed = true;
+        isShopOpen = true;
+        shopPanel.SetActive(true);
+        toggleButton.interactable = true;
+        
+        // Reroll shop for new round
+        PopulateTowerSlots();
+    }
+    
+    private void OnNextRoundButtonClicked()
+    {
+        // Close shop
         shopPanel.SetActive(false);
+        isShopOpen = false;
         HideConsumableTooltip();
         
-        toggleButton.interactable = false;
+        // Notify game loop manager
+        if (GameLoopManager.Instance != null)
+        {
+            GameLoopManager.Instance.OnNextRoundPressed();
+        }
     }
     
     private void RerollShop()

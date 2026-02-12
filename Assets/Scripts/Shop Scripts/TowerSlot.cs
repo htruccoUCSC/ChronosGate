@@ -12,6 +12,7 @@ public class TowerSlot : MonoBehaviour
     [SerializeField] private TextMeshProUGUI costText;
     [SerializeField] private TextMeshProUGUI descriptionText;
     [SerializeField] private Button button;
+    [SerializeField] private bool active = false;
 
     private UnitDefinition unitDefinition;
     private InventoryUI inventoryUI;
@@ -40,6 +41,7 @@ public class TowerSlot : MonoBehaviour
             costText.text = $"Cost: {data.Cost}";
             descriptionText.text = data.Description;
             button.interactable = true;
+            active = true;
 
             Debug.Log($"Tower slot setup complete for: {data.Name}");
         }
@@ -61,10 +63,15 @@ public class TowerSlot : MonoBehaviour
         costText.text = "";
         descriptionText.text = "";
         button.interactable = false;
+        active = false;
     }
 
     private void OnSlotClicked()
     {
+        if (active == false)
+        {
+            return;
+        }
         if (unitDefinition == null)
         {
             return;
@@ -78,7 +85,7 @@ public class TowerSlot : MonoBehaviour
 
         if (inventoryUI.AddUnit(unitDefinition))
         {
-            Setup(null);
+            ClearSlot();
         }
         else
         {
