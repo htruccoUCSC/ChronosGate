@@ -3,19 +3,19 @@ using UnityEngine;
 public class TargetDummyTest : MonoBehaviour
 {
     [Header("Movement")]
-    public float moveSpeed = 1f;
+    public float moveSpeed = 1f; // how fast it moves left
 
     [Header("Health")]
     public int maxHealth = 15;
     private int currentHealth;
 
     private bool registered = false;
+    private bool alreadyCountedAsEscape = false; // prevents double life loss
 
     void Start()
     {
         currentHealth = maxHealth;
 
-        // WaveManager controls spawn position (tilemap). Do NOT set position here.
         if (WaveManager.Instance != null)
         {
             WaveManager.Instance.RegisterEnemy(this);
@@ -30,6 +30,17 @@ public class TargetDummyTest : MonoBehaviour
     void Update()
     {
         transform.position += Vector3.left * moveSpeed * Time.deltaTime;
+
+        // if crossed the left end of the map, lose a life once
+        if (!alreadyCountedAsEscape && WaveManager.Instance != null)
+        {
+            float loseX = WaveManager.Instance.GetLoseLineX();
+            if (transform.position.x <= loseX)
+            {
+                alreadyCountedAsEscape = true;
+                WaveManager.Instance.EnemyReachedEnd(this);
+            }
+        }
     }
 
     public void TakeDamage(int damage)
@@ -43,7 +54,6 @@ public class TargetDummyTest : MonoBehaviour
 
     private void OnDestroy()
     {
-        // Always unregister even if destroyed by something else
         if (registered && WaveManager.Instance != null)
         {
             WaveManager.Instance.UnregisterEnemy(this);
