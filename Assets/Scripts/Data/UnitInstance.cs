@@ -4,8 +4,8 @@ public class UnitInstance : ScriptableObject
 {
     // pointer to the base definition (shared data)
     public UnitDefinition BaseDef;
+    public string Faction;
 
-    // modifiable runtime values
     public float CurrentHP;
     public float CurrentMana;
 
@@ -22,6 +22,7 @@ public class UnitInstance : ScriptableObject
         UnitInstance instance = ScriptableObject.CreateInstance<UnitInstance>();
         instance.BaseDef = def;
         instance.CurrentMana = def.StartingMana;
+        instance.Faction= def.Faction;
         // I forgot health but we'll add it later, is important LOL
         // instance.CurrentHP = def.BaseHealth; 
         return instance;

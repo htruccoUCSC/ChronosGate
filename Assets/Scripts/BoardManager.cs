@@ -29,8 +29,8 @@ public class BoardManager : MonoBehaviour
     private void Awake()
     {
         GameTilemap = GetComponentInChildren<Tilemap>();
-        Width = TileMapManager.width;
-        Height = TileMapManager.height;
+        Width = TileMapManager.Width;
+        Height = TileMapManager.Height;
 
           unitGrid = new BaseUnit[Height, Width];
         // Auto-create buckets if you forgot to make them in Editor

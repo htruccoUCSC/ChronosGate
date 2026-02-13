@@ -12,7 +12,7 @@ public class AugmentSetup : MonoBehaviour
     {
         // Create augment using the constructor that takes an Action
         Augment testAugmentWrapper = new Augment(() => testAugment.Test(),"Test Augment","if your a player whos see this oopsie");
-        Augment ApeTogetherStrongWrapper = new Augment(() => ApeTogetherStrong.ApeTogetherStrongCall(),"Ape Together Strong","For each column of the board, if there is an prehistoric in that column, give all rockmen in that column +20% Attack for each other rockman for the round.");
+        Augment ApeTogetherStrongWrapper = new Augment(() => ApeTogetherStrong.ApeTogetherStrongCall(),"Ape Together Strong","For each column of the board, if there is an prehistoric in that column, give all prehistoric in that column +20% Attack for each other prehistoric for the round.");
         Augment ReserveADWrapper = new Augment(() => reserveAD.ReserveADCall(),"Reserve AD","All towers gain +1 Attack for the round for every 5 gold you have.");
         Augment ReserveASWrapper = new Augment(() => reserveAS.ReserveASCall(),"Reserve AS","All towers gain +1 Attack Speed for the round for every 5 gold you have.");
 
@@ -20,8 +20,13 @@ public class AugmentSetup : MonoBehaviour
         augmentManager.AddInactiveAugment(ApeTogetherStrongWrapper);
         augmentManager.AddInactiveAugment(ReserveADWrapper);
         augmentManager.AddInactiveAugment(ReserveASWrapper);
+
+
+        //ACTIVE FOR TESTING ONLY IF STARTED HERE, DELETE LATER
         augmentManager.AddActiveAugment(testAugmentWrapper);
-        // Add it to your AugmentManager
+        augmentManager.AddActiveAugment(ApeTogetherStrongWrapper);
+
+
        
     }
 }
