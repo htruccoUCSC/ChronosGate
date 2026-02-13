@@ -2,25 +2,17 @@ using UnityEngine;
 
 public class TileMapManager : MonoBehaviour
 {
-    public int x;
-    public int y;
-    
+    public int height;
+    public int width;
+
     // Setters
-    public void SetX(int newX)
+    public void SetHeight(int newHeight)
     {
-        x = newX;
+        height = newHeight;
     }
-
-    public void SetY(int newY)
+    public void SetWidth(int newWidth)
     {
-        y = newY;
-    }
-
-    // Set both at once
-    public void SetPosition(int newX, int newY)
-    {
-        x = newX;
-        y = newY;
+        width = newWidth;
     }
 }
 
