@@ -1,5 +1,5 @@
 using UnityEngine;
-
+using System;
 public class Buffs : MonoBehaviour
 {
     public BoardManager board;
@@ -11,7 +11,8 @@ public class Buffs : MonoBehaviour
         float attackSpeedFlat,
         float attackDamageFlat,
         float attackDamageMult,
-        int duration)
+        int duration,
+        Action OnHit)
     {
         Buff buff = new Buff
         {
@@ -19,7 +20,8 @@ public class Buffs : MonoBehaviour
             AttackSpeedFlat = attackSpeedFlat,
             AttackDamageFlat = attackDamageFlat,
             AttackDamageMult = attackDamageMult,
-            duration = duration
+            duration = duration,
+            OnHit  = OnHit
         };
 
         math.AddAttackDamage(unit.myData, attackDamageFlat);
@@ -35,7 +37,8 @@ public class Buffs : MonoBehaviour
         float attackSpeedMult,
         float attackSpeedFlat,
         float attackDamageFlat,
-        float attackDamageMult)
+        float attackDamageMult,
+        Action OnHit)
     {
         Buff buff = new Buff
         {
@@ -43,7 +46,8 @@ public class Buffs : MonoBehaviour
             AttackSpeedFlat = attackSpeedFlat,
             AttackDamageFlat = attackDamageFlat,
             AttackDamageMult = attackDamageMult,
-            duration = 0f
+            duration = 0f,
+            OnHit = OnHit
         };
 
         math.AddAttackDamage(unit.myData, attackDamageFlat);

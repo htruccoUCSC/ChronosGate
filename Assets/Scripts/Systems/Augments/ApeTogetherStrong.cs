@@ -30,7 +30,7 @@ for (int x = 0; x <tileMapManager.Height; x++)
         if (unit == null) continue;
          if (unit.myData.Faction == "Prehistoric")
         {
-            buffs.AddRoundBuff(unit,0,0,buffAmount,0);
+            buffs.AddRoundBuff(unit,0,0,buffAmount,0,null);
              Debug.Log(buffAmount);
         }
     }

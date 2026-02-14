@@ -1,3 +1,5 @@
+using System;
+using UnityEngine;
 [System.Serializable]
 public class Buff
 {
@@ -6,6 +8,7 @@ public class Buff
     public float AttackSpeedMult;
     public float AttackDamageMult;
     public float duration;
+    public Action OnHit;
 
     public Buff() { }
 
@@ -14,12 +17,14 @@ public class Buff
         float AttackDamageFlat,
         float AttackSpeedMult,
         float AttackDamageMult,
-        float duration)
+        float duration,
+        Action OnHit )
     {
         this.AttackSpeedFlat = AttackSpeedFlat;
         this.AttackDamageFlat = AttackDamageFlat;
         this.AttackSpeedMult = AttackSpeedMult;
         this.AttackDamageMult = AttackDamageMult;
         this.duration = duration;
+        this.OnHit = OnHit;
     }
 }
