@@ -4,9 +4,11 @@ public class TargetDummyTest : MonoBehaviour
 {
     [Header("Movement")]
     public float moveSpeed = 1f; // how fast it moves left
+    private float m_SlowMultiplier = 1f;
+    private float m_SlowTimeRemaining;
 
     [Header("Health")]
-    public int maxHealth = 15;
+    public int maxHealth = 50;
     private int currentHealth;
 
     private bool registered = false;
@@ -29,7 +31,17 @@ public class TargetDummyTest : MonoBehaviour
 
     void Update()
     {
-        transform.position += Vector3.left * moveSpeed * Time.deltaTime;
+        transform.position += Vector3.left * moveSpeed * m_SlowMultiplier * Time.deltaTime;
+
+        if (m_SlowTimeRemaining > 0f)
+        {
+            m_SlowTimeRemaining -= Time.deltaTime;
+            if (m_SlowTimeRemaining <= 0f)
+            {
+                m_SlowTimeRemaining = 0f;
+                m_SlowMultiplier = 1f;
+            }
+        }
 
         // if crossed the left end of the map, lose a life once
         if (!alreadyCountedAsEscape && WaveManager.Instance != null)
@@ -50,6 +62,15 @@ public class TargetDummyTest : MonoBehaviour
         {
             Destroy(gameObject);
         }
+    }
+
+    public void ApplySlow(float slowPercent, float duration)
+    {
+        float clampedPercent = Mathf.Clamp(slowPercent, 0f, 0.95f);
+        float newMultiplier = 1f - clampedPercent;
+
+        m_SlowMultiplier = Mathf.Min(m_SlowMultiplier, newMultiplier);
+        m_SlowTimeRemaining = Mathf.Max(m_SlowTimeRemaining, duration);
     }
 
     private void OnDestroy()
