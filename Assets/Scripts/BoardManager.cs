@@ -7,12 +7,14 @@ public class BoardManager : MonoBehaviour
 {
     // I hade to change this to public get so other scripts can access the tilemap
     public Tilemap GameTilemap { get; private set; }
-
+    public TileMapManager TileMapManager;
     public bool occupied;
     public int Width;
     public int Height;
     public Tile[] GroundTiles;
     public Tile[] WallTiles;
+
+    public BaseUnit[,] unitGrid;
 
     // dictionary to keep track of occupied tiles
     // this is way faster than looping through every object on the board
@@ -27,6 +29,10 @@ public class BoardManager : MonoBehaviour
     private void Awake()
     {
         GameTilemap = GetComponentInChildren<Tilemap>();
+        Width = TileMapManager.Width;
+        Height = TileMapManager.Height;
+
+          unitGrid = new BaseUnit[Height, Width];
         // Auto-create buckets if you forgot to make them in Editor
         if (UnitsParent == null)
         {
@@ -94,9 +100,11 @@ public class BoardManager : MonoBehaviour
 
     public void RegisterUnit(Vector3Int cellPos, GameObject unit)
     {
+       
         occupiedTiles[cellPos] = unit;
         if (unit.TryGetComponent(out BaseUnit baseUnit))
         {
+            unitGrid[cellPos.x, cellPos.y] = baseUnit;
             unitList.Add(baseUnit);
         }
         unit.transform.SetParent(UnitsParent);

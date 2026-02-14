@@ -7,23 +7,33 @@ public class AugmentManager : MonoBehaviour
   private float timer = 0f;   // internal timer
     private float interval = 1f; // 1 second interval
 
-    public void ApplyAllAugments()
+    public void ApplyAllActiveAugments()
     {
         for (int i = 0; i < augmentList.activeAugments.Count; i++)
         {
             augmentList.activeAugments[i].Apply();
         }
     }
-    public void AddAugment(Augment newAugment)
+    public void AddActiveAugment(Augment newAugment)
     {
         augmentList.activeAugments.Add(newAugment);
     }
-
-        public void RemoveAugmentByIndex(int index)
+    public void AddInactiveAugment(Augment newAugment)
+    {
+        augmentList.inactiveAugments.Add(newAugment);
+    }
+        public void RemoveActiveAugmentByIndex(int index)
     {
         if (index >= 0 && index < augmentList.activeAugments.Count)
         {
             augmentList.activeAugments.RemoveAt(index);
+        }
+    }
+            public void RemoveInactiveAugmentByIndex(int index)
+    {
+        if (index >= 0 && index < augmentList.activeAugments.Count)
+        {
+            augmentList.inactiveAugments.RemoveAt(index);
         }
     }
       void Update()
@@ -35,7 +45,7 @@ public class AugmentManager : MonoBehaviour
         {
 
             timer = 0f;
-            ApplyAllAugments();
+            ApplyAllActiveAugments();
         }
     }
 
