@@ -7,6 +7,7 @@ public class AugmentSetup : MonoBehaviour
     public ReserveAD reserveAD;
     public ToTheMoon toTheMoon;
     public ReserveAS reserveAS;
+    public Renovations renovations;
     public AugmentManager augmentManager;
 
     void Start()
@@ -17,6 +18,7 @@ public class AugmentSetup : MonoBehaviour
         Augment ReserveADWrapper = new Augment(() => reserveAD.ReserveADCall(),"Reserve AD","All towers gain +1 Attack for the round for every 5 gold you have.");
         Augment ReserveASWrapper = new Augment(() => reserveAS.ReserveASCall(),"Reserve AS","All towers gain +1 Attack Speed for the round for every 5 gold you have.");
         Augment ToTheMoonWrapper = new Augment(() => toTheMoon.ToTheMoonCall(),"To The Moon","Gain 8 gold for 3 rounds, increase your max interest by to 100.");
+         Augment renovationsWrapper = new Augment(() => renovations.RenovationsCall(),"Renovations","Reduce board height by 2 and increase board width by 2. (same amounnt of enemies)");
 
          augmentManager.AddInactiveAugment(ToTheMoonWrapper);
         augmentManager.AddInactiveAugment(testAugmentWrapper);
