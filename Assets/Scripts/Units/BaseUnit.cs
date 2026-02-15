@@ -5,7 +5,7 @@ public abstract class BaseUnit : MonoBehaviour
 {
     // our units unique data instance
     public UnitInstance myData;
-    protected float attackTimer;
+    public float attackTimer;
     protected Transform currentTarget;
      public List<Buff> roundBuffs = new List<Buff>();
     public List<Buff> activeBuffs = new List<Buff>();
@@ -193,7 +193,7 @@ public abstract class BaseUnit : MonoBehaviour
             projScript.speed = finalSpeed;
         }
 
-        projScript.Setup(damage, direction, launchAngle, transform.position, isAOE);
+        projScript.Setup(damage, direction, launchAngle, transform.position, isAOE,this);
     }
 
     // spawns a generic projectile towards the current target
@@ -236,5 +236,21 @@ public abstract class BaseUnit : MonoBehaviour
 
         float v2 = (distance * gravity) / bottom;
         return Mathf.Sqrt(Mathf.Abs(v2));
+    }
+
+    public void onHit()
+    {
+        for(int i = 0; i < roundBuffs.Count; i++){
+            roundBuffs[i].OnHit?.Invoke();
+        }
+    }
+    //TODO REMOVE THIS TO NEW FILE
+    public void LuckyShotPerformAutoAttack()
+    {
+        int randomChance = Random.Range(0, 2);
+        if(randomChance == 1){
+        Debug.Log("Lucky Shot Activated! Unit performs an immediate basic attack.");
+        PerformBasicAttack();
+        }
     }
 }

@@ -25,6 +25,7 @@ public class Projectile : MonoBehaviour
     private bool _applySlowOnHit;
     private float _slowPercent;
     private float _slowDuration;
+    BaseUnit unit;
 
     void Awake()
     {
@@ -32,15 +33,15 @@ public class Projectile : MonoBehaviour
         _boomerangBehavior = GetComponent<BoomerangProjectileBehavior>();
     }
 
-    public void Setup(float damage, Vector2 direction, float angleInDegrees, Vector3 originWorldPos, bool isAOE = false)
+    public void Setup(float damage, Vector2 direction, float angleInDegrees, Vector3 originWorldPos, bool isAOE = false, BaseUnit sourceUnit = null)
     {
         _damage = damage;
         _isAoe = isAOE;
+        unit = sourceUnit;
         CacheOriginRow(originWorldPos);
         _didApexRetarget = false;
         _previousVerticalSpeed = 0f;
         Destroy(gameObject, lifetime);
-
         // straight shot
         if (angleInDegrees <= 0)
         {
@@ -139,7 +140,7 @@ public class Projectile : MonoBehaviour
                 enemy.TakeDamage(Mathf.RoundToInt(_damage)); //use passed damage
                 ApplySlowIfConfigured(enemy);
             }
-
+            unit?.onHit();
             Destroy(gameObject);
         }
     }
