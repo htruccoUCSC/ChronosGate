@@ -15,11 +15,22 @@ public class Projectile : MonoBehaviour
     private Rigidbody2D _rb;
     private int _originRow;
     private bool _hasOriginRow;
-    private BaseUnit unit;
+    private bool _retargetAtApex;
+    private bool _didApexRetarget;
+    private bool _ignoreRowCheck;
+    private float _retargetRadius = 20f;
+    private LayerMask _retargetMask;
+    private float _previousVerticalSpeed;
+    private BoomerangProjectileBehavior _boomerangBehavior;
+    private bool _applySlowOnHit;
+    private float _slowPercent;
+    private float _slowDuration;
+    BaseUnit unit;
 
     void Awake()
     {
         _rb = GetComponent<Rigidbody2D>();
+        _boomerangBehavior = GetComponent<BoomerangProjectileBehavior>();
     }
 
     public void Setup(float damage, Vector2 direction, float angleInDegrees, Vector3 originWorldPos, bool isAOE = false, BaseUnit sourceUnit = null)
@@ -28,6 +39,8 @@ public class Projectile : MonoBehaviour
         _isAoe = isAOE;
         unit = sourceUnit;
         CacheOriginRow(originWorldPos);
+        _didApexRetarget = false;
+        _previousVerticalSpeed = 0f;
         Destroy(gameObject, lifetime);
         // straight shot
         if (angleInDegrees <= 0)
@@ -60,6 +73,37 @@ public class Projectile : MonoBehaviour
             // initial velocity is straight along the launch angle
             _rb.linearVelocity = launchDir * speed;
         }
+
+        _previousVerticalSpeed = _rb.linearVelocity.y;
+    }
+
+    public void EnableApexRetarget(LayerMask targetMask, float retargetRadius = 20f, bool ignoreRowCheck = true)
+    {
+        _retargetAtApex = true;
+        _retargetMask = targetMask;
+        _retargetRadius = Mathf.Max(0.1f, retargetRadius);
+        _ignoreRowCheck = ignoreRowCheck;
+    }
+
+    public void EnableOnHitSlow(float slowPercent, float duration)
+    {
+        _applySlowOnHit = true;
+        _slowPercent = Mathf.Clamp(slowPercent, 0f, 0.95f);
+        _slowDuration = Mathf.Max(0f, duration);
+    }
+
+    void Update()
+    {
+        if (!_retargetAtApex || _didApexRetarget || _rb == null) return;
+        if (_rb.bodyType != RigidbodyType2D.Dynamic) return;
+
+        float currentVerticalSpeed = _rb.linearVelocity.y;
+        if (_previousVerticalSpeed > 0f && currentVerticalSpeed <= 0f)
+        {
+            RetargetFromApex();
+        }
+
+        _previousVerticalSpeed = currentVerticalSpeed;
     }
 
     void OnTriggerEnter2D(Collider2D other)
@@ -67,6 +111,11 @@ public class Projectile : MonoBehaviour
         // should only hit enemies in the same row pass through enemies in other lanes
         if (other.CompareTag("Enemy") && IsSameRow(other.transform))
         {
+            if (_boomerangBehavior != null && _boomerangBehavior.HandleEnemyTrigger(other))
+            {
+                return;
+            }
+
             // Deal 5 damage every time we hit an enemy
             TargetDummyTest enemy = other.GetComponent<TargetDummyTest>();
             if (_isAoe)
@@ -81,6 +130,7 @@ public class Projectile : MonoBehaviour
                         if (aoeEnemy != null)
                         {
                             aoeEnemy.TakeDamage(Mathf.RoundToInt(_damage)); //use passed damage
+                            ApplySlowIfConfigured(aoeEnemy);
                         }
                     }
                 }
@@ -88,6 +138,7 @@ public class Projectile : MonoBehaviour
             if (!_isAoe && enemy != null)
             {
                 enemy.TakeDamage(Mathf.RoundToInt(_damage)); //use passed damage
+                ApplySlowIfConfigured(enemy);
             }
             unit?.onHit();
             Destroy(gameObject);
@@ -96,6 +147,8 @@ public class Projectile : MonoBehaviour
 
     private bool IsSameRow(Transform target)
     {
+        if (_ignoreRowCheck) return true;
+
         Tilemap tilemap = WaveManager.Instance != null ? WaveManager.Instance.tilemap : null;
         if (tilemap == null || !_hasOriginRow) return true;
 
@@ -114,5 +167,58 @@ public class Projectile : MonoBehaviour
 
         _originRow = tilemap.WorldToCell(originWorldPos).y;
         _hasOriginRow = true;
+    }
+
+    private void RetargetFromApex()
+    {
+        Transform newTarget = FindRetargetTarget();
+        if (newTarget == null) return;
+
+        Vector2 toTarget = (newTarget.position - transform.position);
+        if (toTarget.sqrMagnitude <= 0.0001f) return;
+
+        _rb.bodyType = RigidbodyType2D.Kinematic;
+        _rb.gravityScale = 0f;
+        _rb.linearVelocity = toTarget.normalized * speed;
+        _didApexRetarget = true;
+    }
+
+    private Transform FindRetargetTarget()
+    {
+        Collider2D[] hits = _retargetMask.value != 0
+            ? Physics2D.OverlapCircleAll(transform.position, _retargetRadius, _retargetMask)
+            : Physics2D.OverlapCircleAll(transform.position, _retargetRadius);
+
+        Transform closestTarget = null;
+        float closestDistance = float.MaxValue;
+
+        foreach (Collider2D hit in hits)
+        {
+            if (hit == null || !hit.CompareTag("Enemy")) continue;
+
+            float sqrDistance = (hit.transform.position - transform.position).sqrMagnitude;
+            if (sqrDistance < closestDistance)
+            {
+                closestDistance = sqrDistance;
+                closestTarget = hit.transform;
+            }
+        }
+
+        return closestTarget;
+    }
+
+    public float Damage => _damage;
+
+    public Rigidbody2D Body => _rb;
+
+    public void DisableApexRetarget()
+    {
+        _retargetAtApex = false;
+    }
+
+    private void ApplySlowIfConfigured(TargetDummyTest enemy)
+    {
+        if (!_applySlowOnHit || enemy == null) return;
+        enemy.ApplySlow(_slowPercent, _slowDuration);
     }
 }
