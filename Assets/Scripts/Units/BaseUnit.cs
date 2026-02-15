@@ -1,3 +1,4 @@
+// BaseUnit.cs
 using UnityEngine;
 
 using System.Collections.Generic;
@@ -15,10 +16,33 @@ public abstract class BaseUnit : MonoBehaviour
     // how much of the tile we want the unit to fill
     private const float TILE_FILL_RATIO = 1.0f;
 
+    // ----- Simple HP for allied troops -----
+    [Header("Combat")]
+    [SerializeField] private int maxHP = 10;
+    private int currentHP;
+
+    public bool IsDead => currentHP <= 0;
+
+    public virtual void TakeDamage(int damage)
+    {
+        currentHP -= damage;
+        if (currentHP <= 0)
+        {
+            Die();
+        }
+    }
+
+    protected virtual void Die()
+    {
+        Destroy(gameObject);
+    }
+
     public virtual void Initialize(UnitInstance instance)
     {
         myData = instance;
         attackTimer = 1f / myData.GetModifiedAttackSpeed();
+
+        currentHP = maxHP;
 
         // getting projectile sprite from prefab if applicable
         Transform template = transform.Find("ProjectileSprite");

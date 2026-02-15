@@ -1,15 +1,23 @@
+// TargetDummyTest.cs
 using UnityEngine;
 
 public class TargetDummyTest : MonoBehaviour
 {
     [Header("Movement")]
-    public float moveSpeed = 1f; // how fast it moves left
+    private float moveSpeed = 0.5f; // how fast it moves left
     private float m_SlowMultiplier = 1f;
     private float m_SlowTimeRemaining;
 
     [Header("Health")]
-    public int maxHealth = 50;
+    private int maxHealth = 5000; // set health here
     private int currentHealth;
+
+    [Header("Melee vs Troops")]
+    [SerializeField] private int damagePerSecond = 5;
+
+    private BaseUnit contactTroop;
+    private bool isAttackingTroop;
+    private float damageTickTimer;
 
     private bool registered = false;
     private bool alreadyCountedAsEscape = false; // prevents double life loss
@@ -31,7 +39,28 @@ public class TargetDummyTest : MonoBehaviour
 
     void Update()
     {
-        transform.position += Vector3.left * moveSpeed * m_SlowMultiplier * Time.deltaTime;
+        if (!isAttackingTroop)
+        {
+            transform.position += Vector3.left * moveSpeed * m_SlowMultiplier * Time.deltaTime;
+        }
+        else
+        {
+            // tick damage
+            if (contactTroop == null || contactTroop.IsDead)
+            {
+                contactTroop = null;
+                isAttackingTroop = false;
+            }
+            else
+            {
+                damageTickTimer += Time.deltaTime;
+                if (damageTickTimer >= 1f)
+                {
+                    damageTickTimer -= 1f;
+                    contactTroop.TakeDamage(damagePerSecond);
+                }
+            }
+        }
 
         if (m_SlowTimeRemaining > 0f)
         {
@@ -72,6 +101,36 @@ public class TargetDummyTest : MonoBehaviour
         m_SlowMultiplier = Mathf.Min(m_SlowMultiplier, newMultiplier);
         m_SlowTimeRemaining = Mathf.Max(m_SlowTimeRemaining, duration);
     }
+
+    private void OnTriggerEnter2D(Collider2D other)
+    {
+        BaseUnit troop = other.GetComponentInParent<BaseUnit>();
+        if (troop == null) return; // ignore projectiles, tilemap, etc.
+
+        Debug.Log("TRIGGER HIT TROOP: " + other.name);
+
+        if (isAttackingTroop) return;
+        if (troop.IsDead) return;
+
+        contactTroop = troop;
+        isAttackingTroop = true;
+        damageTickTimer = 0f;
+    }
+
+
+    private void OnTriggerExit2D(Collider2D other)
+    {
+        if (contactTroop == null) return;
+
+        BaseUnit troop = other.GetComponentInParent<BaseUnit>();
+        if (troop == contactTroop)
+        {
+            contactTroop = null;
+            isAttackingTroop = false;
+        }
+    }
+
+
 
     private void OnDestroy()
     {
