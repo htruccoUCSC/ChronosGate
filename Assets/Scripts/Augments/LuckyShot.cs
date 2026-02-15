@@ -16,7 +16,7 @@ for (int x = 0; x < board.unitGrid.GetLength(0); x++)
         BaseUnit unit = board.unitGrid[x, y];
         if (unit == null) continue;
 
-        buffs.AddRoundBuff(unit,0,0,0,0,unit.LuckyShotPerformAutoAttack);
+        buffs.AddRoundBuff(unit,0,0,0,0,0,unit.LuckyShotPerformAutoAttack);
 
     }
 

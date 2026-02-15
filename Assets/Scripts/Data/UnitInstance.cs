@@ -15,6 +15,7 @@ public class UnitInstance : ScriptableObject
     public float SpeedFlatMod = 0;
     public float SpeedMultMod = 1.0f;
     public float BaseAbilityPower = 0;
+    public float AbilityPower = 0;
 
 
     // this is basically a constructor for creating runtime instances
@@ -26,6 +27,7 @@ public class UnitInstance : ScriptableObject
         instance.CurrentMana = def.StartingMana;
         instance.Faction= def.Faction;
         instance.BaseAbilityPower = def.AbilityPower;
+        instance.AbilityPower = instance.BaseAbilityPower;
         instance.MaxHP = def.Health; 
         instance.CurrentHP = instance.MaxHP; 
         return instance;

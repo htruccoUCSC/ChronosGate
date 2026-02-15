@@ -10,6 +10,9 @@ public class AugmentSetup : MonoBehaviour
     public Renovations renovations;
     public AugmentManager augmentManager;
     public LuckyShot luckyShot;
+    public Unique Unique;
+
+    public OldSchool oldSchool;
 
     void Start()
     {
@@ -19,22 +22,27 @@ public class AugmentSetup : MonoBehaviour
         Augment ReserveADWrapper = new Augment(() => reserveAD.ReserveADCall(),"Reserve AD","All towers gain +1 Attack for the round for every 5 gold you have.");
         Augment ReserveASWrapper = new Augment(() => reserveAS.ReserveASCall(),"Reserve AS","All towers gain +1 Attack Speed for the round for every 5 gold you have.");
         Augment ToTheMoonWrapper = new Augment(() => toTheMoon.ToTheMoonCall(),"To The Moon","Gain 8 gold for 3 rounds, increase your max interest by to 100.");
-         Augment renovationsWrapper = new Augment(() => renovations.RenovationsCall(),"Renovations","Reduce board height by 2 and increase board width by 2. (same amounnt of enemies)");
-            Augment LuckyShotWrapper = new Augment(() => luckyShot.LuckyShotCall(),"Lucky Shot","At the start of each round, all units have a 10% chance to immediately perform a basic attack.");
+        Augment renovationsWrapper = new Augment(() => renovations.RenovationsCall(),"Renovations","Reduce board height by 2 and increase board width by 2. (same amounnt of enemies)");
+        Augment LuckyShotWrapper = new Augment(() => luckyShot.LuckyShotCall(),"Lucky Shot","At the start of each round, all units have a 10% chance to immediately perform a basic attack.");
+        Augment UniqueWrapper = new Augment(() => Unique.UniqueCall(),"Unique","If a unit is surrounded by different eras gain 3x mult on attack speed and damage with 50 AP");
+        Augment OldSchoolWrapper = new Augment(() => oldSchool.OldSchoolCall(),"OldSchool","All units gain 20% Attack Speed for the round.");
 
          augmentManager.AddInactiveAugment(ToTheMoonWrapper);
         augmentManager.AddInactiveAugment(testAugmentWrapper);
         augmentManager.AddInactiveAugment(ApeTogetherStrongWrapper);
         augmentManager.AddInactiveAugment(ReserveADWrapper);
         augmentManager.AddInactiveAugment(ReserveASWrapper);
-        augmentManager.AddInactiveAugment(LuckyShotWrapper);    
+        augmentManager.AddInactiveAugment(UniqueWrapper);
+        augmentManager.AddInactiveAugment(OldSchoolWrapper);    
 
 
         //ACTIVE FOR TESTING ONLY IF STARTED HERE, DELETE LATER
         augmentManager.AddActiveAugment(testAugmentWrapper);
         augmentManager.AddActiveAugment(ApeTogetherStrongWrapper);
         augmentManager.AddActiveAugment(ToTheMoonWrapper);
-        augmentManager.AddActiveAugment(LuckyShotWrapper);    
+        augmentManager.AddActiveAugment(LuckyShotWrapper);  
+         augmentManager.AddActiveAugment(UniqueWrapper);
+        augmentManager.AddActiveAugment(OldSchoolWrapper);      
        
     }
 }
