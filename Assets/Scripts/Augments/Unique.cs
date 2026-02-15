@@ -20,7 +20,7 @@ for (int x = 0; x <tileMapManager.Height; x++)
         if (unit == null) continue;
 
         string faction = unit.myData.Faction;
-        if (x>= 0)
+        if (x>= 1)
                 {
                     toCheck = board.unitGrid[x-1, y];
                     if (toCheck != null && toCheck.myData.Faction == faction)
@@ -28,7 +28,7 @@ for (int x = 0; x <tileMapManager.Height; x++)
                         break;
                     }
                 }
-                if (y>= 0)
+                if (y>= 1)
                 {
                     toCheck = board.unitGrid[x, y-1];
                     if (toCheck != null && toCheck.myData.Faction == faction)

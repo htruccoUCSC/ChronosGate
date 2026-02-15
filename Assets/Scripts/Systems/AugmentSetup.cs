@@ -37,12 +37,12 @@ public class AugmentSetup : MonoBehaviour
 
 
         //ACTIVE FOR TESTING ONLY IF STARTED HERE, DELETE LATER
-        augmentManager.AddActiveAugment(testAugmentWrapper);
-        augmentManager.AddActiveAugment(ApeTogetherStrongWrapper);
-        augmentManager.AddActiveAugment(ToTheMoonWrapper);
-        augmentManager.AddActiveAugment(LuckyShotWrapper);  
-         augmentManager.AddActiveAugment(UniqueWrapper);
-        augmentManager.AddActiveAugment(OldSchoolWrapper);      
+        // augmentManager.AddActiveAugment(testAugmentWrapper);
+        // augmentManager.AddActiveAugment(ApeTogetherStrongWrapper);
+        // augmentManager.AddActiveAugment(ToTheMoonWrapper);
+        // augmentManager.AddActiveAugment(LuckyShotWrapper);  
+        //  augmentManager.AddActiveAugment(UniqueWrapper);
+        // augmentManager.AddActiveAugment(OldSchoolWrapper);      
        
     }
 }
