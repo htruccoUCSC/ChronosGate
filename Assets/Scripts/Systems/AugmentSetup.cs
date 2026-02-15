@@ -9,6 +9,7 @@ public class AugmentSetup : MonoBehaviour
     public ReserveAS reserveAS;
     public Renovations renovations;
     public AugmentManager augmentManager;
+    public LuckyShot luckyShot;
 
     void Start()
     {
@@ -19,19 +20,21 @@ public class AugmentSetup : MonoBehaviour
         Augment ReserveASWrapper = new Augment(() => reserveAS.ReserveASCall(),"Reserve AS","All towers gain +1 Attack Speed for the round for every 5 gold you have.");
         Augment ToTheMoonWrapper = new Augment(() => toTheMoon.ToTheMoonCall(),"To The Moon","Gain 8 gold for 3 rounds, increase your max interest by to 100.");
          Augment renovationsWrapper = new Augment(() => renovations.RenovationsCall(),"Renovations","Reduce board height by 2 and increase board width by 2. (same amounnt of enemies)");
+            Augment LuckyShotWrapper = new Augment(() => luckyShot.LuckyShotCall(),"Lucky Shot","At the start of each round, all units have a 10% chance to immediately perform a basic attack.");
 
          augmentManager.AddInactiveAugment(ToTheMoonWrapper);
         augmentManager.AddInactiveAugment(testAugmentWrapper);
         augmentManager.AddInactiveAugment(ApeTogetherStrongWrapper);
         augmentManager.AddInactiveAugment(ReserveADWrapper);
         augmentManager.AddInactiveAugment(ReserveASWrapper);
+        augmentManager.AddInactiveAugment(LuckyShotWrapper);    
 
 
         //ACTIVE FOR TESTING ONLY IF STARTED HERE, DELETE LATER
         augmentManager.AddActiveAugment(testAugmentWrapper);
         augmentManager.AddActiveAugment(ApeTogetherStrongWrapper);
         augmentManager.AddActiveAugment(ToTheMoonWrapper);
-
+        augmentManager.AddActiveAugment(LuckyShotWrapper);    
        
     }
 }

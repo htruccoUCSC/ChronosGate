@@ -15,19 +15,20 @@ public class Projectile : MonoBehaviour
     private Rigidbody2D _rb;
     private int _originRow;
     private bool _hasOriginRow;
+    private BaseUnit unit;
 
     void Awake()
     {
         _rb = GetComponent<Rigidbody2D>();
     }
 
-    public void Setup(float damage, Vector2 direction, float angleInDegrees, Vector3 originWorldPos, bool isAOE = false)
+    public void Setup(float damage, Vector2 direction, float angleInDegrees, Vector3 originWorldPos, bool isAOE = false, BaseUnit sourceUnit = null)
     {
         _damage = damage;
         _isAoe = isAOE;
+        unit = sourceUnit;
         CacheOriginRow(originWorldPos);
         Destroy(gameObject, lifetime);
-
         // straight shot
         if (angleInDegrees <= 0)
         {
@@ -88,7 +89,7 @@ public class Projectile : MonoBehaviour
             {
                 enemy.TakeDamage(Mathf.RoundToInt(_damage)); //use passed damage
             }
-
+            unit?.onHit();
             Destroy(gameObject);
         }
     }

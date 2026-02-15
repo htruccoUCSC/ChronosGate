@@ -8,7 +8,7 @@ public class TargetDummyTest : MonoBehaviour
     [Header("Health")]
     public int maxHealth = 15;
     private int currentHealth;
-
+    
     private bool registered = false;
     private bool alreadyCountedAsEscape = false; // prevents double life loss
 
