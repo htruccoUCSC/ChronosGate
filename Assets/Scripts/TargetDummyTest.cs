@@ -6,9 +6,9 @@ public class TargetDummyTest : MonoBehaviour
     public float moveSpeed = 1f; // how fast it moves left
 
     [Header("Health")]
-    public int maxHealth = 15;
+    public int maxHealth = 199999999;
     private int currentHealth;
-    
+
     private bool registered = false;
     private bool alreadyCountedAsEscape = false; // prevents double life loss
 

@@ -247,10 +247,10 @@ public abstract class BaseUnit : MonoBehaviour
     //TODO REMOVE THIS TO NEW FILE
     public void LuckyShotPerformAutoAttack()
     {
-        int randomChance = Random.Range(0, 10);
+        int randomChance = Random.Range(0, 2);
         if(randomChance == 1){
         Debug.Log("Lucky Shot Activated! Unit performs an immediate basic attack.");
-        attackTimer =0;
+        PerformBasicAttack();
         }
     }
 }
