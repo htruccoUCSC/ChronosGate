@@ -5,7 +5,7 @@ public class UnitInstance : ScriptableObject
     // pointer to the base definition (shared data)
     public UnitDefinition BaseDef;
     public string Faction;
-
+    public float MaxHP;
     public float CurrentHP;
     public float CurrentMana;
 
@@ -14,6 +14,8 @@ public class UnitInstance : ScriptableObject
     public float DamageFlatMod = 0;
     public float SpeedFlatMod = 0;
     public float SpeedMultMod = 1.0f;
+    public float BaseAbilityPower = 0;
+
 
     // this is basically a constructor for creating runtime instances
     // needs to copy more data over and return modified values
@@ -23,8 +25,9 @@ public class UnitInstance : ScriptableObject
         instance.BaseDef = def;
         instance.CurrentMana = def.StartingMana;
         instance.Faction= def.Faction;
-        // I forgot health but we'll add it later, is important LOL
-        // instance.CurrentHP = def.BaseHealth; 
+        instance.BaseAbilityPower = def.AbilityPower;
+        instance.MaxHP = def.Health; 
+        instance.CurrentHP = instance.MaxHP; 
         return instance;
     }
 
