@@ -7,7 +7,6 @@ public class WizardUnit : BaseUnit
 {
     [SerializeField] private LayerMask m_TargetMask;
     [SerializeField] private Tilemap m_PreviewTilemap;
-    [SerializeField] private GameObject m_ProjectilePrefab;
     [SerializeField] private Sprite m_SheepSprite;
     [SerializeField] private float m_PolymorphDuration = 2f;
     [SerializeField] private float m_PolymorphSlowPercent = 0.5f;
@@ -39,13 +38,7 @@ public class WizardUnit : BaseUnit
 
     protected override void PerformBasicAttack()
     {
-        if (m_ProjectilePrefab == null)
-        {
-            Debug.LogError("Wizard projectile prefab is not assigned.");
-            return;
-        }
-
-        SpawnProjectile(m_ProjectilePrefab, myData.GetModifiedDamage(), true);
+        SpawnProjectile(LoadProjectilePrefab(), myData.GetModifiedDamage(), true);
     }
 
     
