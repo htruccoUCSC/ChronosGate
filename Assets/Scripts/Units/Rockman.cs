@@ -7,45 +7,26 @@ public class RockmanUnit : BaseUnit
 {
     [SerializeField] private LayerMask m_TargetMask;
     [SerializeField] private Tilemap m_PreviewTilemap;
-    [SerializeField] private GameObject m_ProjectilePrefab;
 
 
     protected override void CastAbility()
     {
         Debug.Log("Rock-man uses ability");
-        if (m_ProjectilePrefab == null)
-        {
-            Debug.LogError("Rockman projectile prefab is not assigned.");
-            return;
-        }
-
         SpawnRockmanAbilityProjectile(myData.GetModifiedDamage() * 2f);
     }
 
     protected override void PerformBasicAttack()
     {
-        if (m_ProjectilePrefab == null)
-        {
-            Debug.LogError("Rockman projectile prefab is not assigned.");
-            return;
-        }
-
-        SpawnProjectile(m_ProjectilePrefab, myData.GetModifiedDamage(), false);
+        SpawnProjectile(LoadProjectilePrefab(), myData.GetModifiedDamage(), false);
     }
 
     private void SpawnRockmanAbilityProjectile(float damage)
     {
-        if (currentTarget == null || m_ProjectilePrefab == null) return;
+        GameObject projectilePrefab = LoadProjectilePrefab();
+        if (currentTarget == null || projectilePrefab == null) return;
 
-        GameObject proj = Instantiate(m_ProjectilePrefab, transform.position, Quaternion.identity);
-
-        if (_projectileSprite != null)
-        {
-            var sr = proj.GetComponentInChildren<SpriteRenderer>();
-            var animator = proj.GetComponentInChildren<Animator>();
-            if (sr != null && animator == null) sr.sprite = _projectileSprite;
-            proj.transform.localScale = Vector3.Scale(transform.localScale, _projectileScale);
-        }
+        GameObject proj = InstantiateAndSetupProjectile(projectilePrefab);
+        if (proj == null) return;
 
         Projectile projScript = proj.GetComponentInChildren<Projectile>();
         if (projScript == null) return;

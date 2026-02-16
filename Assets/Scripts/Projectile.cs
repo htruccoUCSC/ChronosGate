@@ -31,6 +31,14 @@ public class Projectile : MonoBehaviour
     {
         _rb = GetComponent<Rigidbody2D>();
         _boomerangBehavior = GetComponent<BoomerangProjectileBehavior>();
+        
+        // Ensure Rigidbody2D is properly registered with physics engine
+        if (_rb != null)
+        {
+            // Reset physics state for newly instantiated projectile
+            _rb.linearVelocity = Vector2.zero;
+            _rb.angularVelocity = 0f;
+        }
     }
 
     public void Setup(float damage, Vector2 direction, float angleInDegrees, Vector3 originWorldPos, bool isAOE = false, BaseUnit sourceUnit = null)
