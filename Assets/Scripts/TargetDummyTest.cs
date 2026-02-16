@@ -1,4 +1,5 @@
 using UnityEngine;
+using System.Collections;
 
 public class TargetDummyTest : MonoBehaviour
 {
@@ -11,10 +12,21 @@ public class TargetDummyTest : MonoBehaviour
 
     private bool registered = false;
     private bool alreadyCountedAsEscape = false; // prevents double life loss
+    private int slowVersion = 0;
+    private int polymorphVersion = 0;
+    private float baseMoveSpeed;
+    private SpriteRenderer cachedRenderer;
+    private Sprite baseSprite;
 
     void Start()
     {
         currentHealth = maxHealth;
+        baseMoveSpeed = moveSpeed;
+        cachedRenderer = GetComponentInChildren<SpriteRenderer>();
+        if (cachedRenderer != null)
+        {
+            baseSprite = cachedRenderer.sprite;
+        }
 
         if (WaveManager.Instance != null)
         {
@@ -46,9 +58,67 @@ public class TargetDummyTest : MonoBehaviour
     public void TakeDamage(int damage)
     {
         currentHealth -= damage;
+        Debug.Log($"Target Dummy took {damage} damage, current health: {currentHealth}/{maxHealth}");
         if (currentHealth <= 0)
         {
             Destroy(gameObject);
+        }
+    }
+
+    public void ApplySlow(float slowPercent, float duration)
+    {
+        float clampedSlow = Mathf.Clamp(slowPercent, 0f, 0.95f);
+        float clampedDuration = Mathf.Max(0f, duration);
+        int version = ++slowVersion;
+
+        moveSpeed = baseMoveSpeed * (1f - clampedSlow);
+
+        if (clampedDuration <= 0f)
+        {
+            return;
+        }
+
+        StartCoroutine(RemoveSlowAfterDuration(version, clampedDuration));
+    }
+
+    private IEnumerator RemoveSlowAfterDuration(int version, float duration)
+    {
+        yield return new WaitForSeconds(duration);
+
+        if (version == slowVersion)
+        {
+            moveSpeed = baseMoveSpeed;
+        }
+    }
+
+    public void ApplyPolymorph(Sprite sheepSprite, float duration)
+    {
+        if (cachedRenderer == null || sheepSprite == null)
+        {
+            return;
+        }
+
+        int version = ++polymorphVersion;
+        cachedRenderer.sprite = sheepSprite;
+
+        StartCoroutine(RemovePolymorphAfterDuration(version, Mathf.Max(0f, duration)));
+    }
+
+    private IEnumerator RemovePolymorphAfterDuration(int version, float duration)
+    {
+        if (duration > 0f)
+        {
+            yield return new WaitForSeconds(duration);
+        }
+
+        if (version != polymorphVersion)
+        {
+            yield break;
+        }
+
+        if (cachedRenderer != null)
+        {
+            cachedRenderer.sprite = baseSprite;
         }
     }
 

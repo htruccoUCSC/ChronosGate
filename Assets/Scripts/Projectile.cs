@@ -15,6 +15,12 @@ public class Projectile : MonoBehaviour
     private Rigidbody2D _rb;
     private int _originRow;
     private bool _hasOriginRow;
+    private bool _ignoreRowCheck;
+    private bool _applySlowOnHit;
+    private float _slowPercent;
+    private float _slowDuration;
+    private bool _requireDesignatedTargetHit;
+    private Transform _designatedTarget;
 
     void Awake()
     {
@@ -25,6 +31,8 @@ public class Projectile : MonoBehaviour
     {
         _damage = damage;
         _isAoe = isAOE;
+        _requireDesignatedTargetHit = false;
+        _designatedTarget = null;
         CacheOriginRow(originWorldPos);
         Destroy(gameObject, lifetime);
 
@@ -61,13 +69,43 @@ public class Projectile : MonoBehaviour
         }
     }
 
+    public void SetIgnoreRowCheck(bool ignoreRowCheck)
+    {
+        _ignoreRowCheck = ignoreRowCheck;
+    }
+
+    public void SetDesignatedTarget(Transform target)
+    {
+        _designatedTarget = target;
+        _requireDesignatedTargetHit = target != null;
+    }
+
+    public void EnableOnHitSlow(float slowPercent, float duration)
+    {
+        _applySlowOnHit = true;
+        _slowPercent = Mathf.Clamp(slowPercent, 0f, 0.95f);
+        _slowDuration = Mathf.Max(0f, duration);
+    }
+
+    void Update()
+    {
+        if (_requireDesignatedTargetHit && _designatedTarget == null)
+        {
+            Destroy(gameObject);
+        }
+    }
+
     void OnTriggerEnter2D(Collider2D other)
     {
         // should only hit enemies in the same row pass through enemies in other lanes
         if (other.CompareTag("Enemy") && IsSameRow(other.transform))
         {
+            if (_requireDesignatedTargetHit && !IsDesignatedTargetCollider(other))
+            {
+                return;
+            }
             // Deal 5 damage every time we hit an enemy
-            TargetDummyTest enemy = other.GetComponent<TargetDummyTest>();
+            TargetDummyTest enemy = other.GetComponentInParent<TargetDummyTest>();
             if (_isAoe)
             {
                 // If it's an AOE projectile, we want to hit all enemies in a radius
@@ -76,10 +114,11 @@ public class Projectile : MonoBehaviour
                 {
                     if (hit.CompareTag("Enemy") && IsSameRow(hit.transform))
                     {
-                        TargetDummyTest aoeEnemy = hit.GetComponent<TargetDummyTest>();
+                        TargetDummyTest aoeEnemy = hit.GetComponentInParent<TargetDummyTest>();
                         if (aoeEnemy != null)
                         {
                             aoeEnemy.TakeDamage(Mathf.RoundToInt(_damage)); //use passed damage
+                            ApplySlowIfEnabled(aoeEnemy);
                         }
                     }
                 }
@@ -87,6 +126,7 @@ public class Projectile : MonoBehaviour
             if (!_isAoe && enemy != null)
             {
                 enemy.TakeDamage(Mathf.RoundToInt(_damage)); //use passed damage
+                ApplySlowIfEnabled(enemy);
             }
 
             Destroy(gameObject);
@@ -95,6 +135,8 @@ public class Projectile : MonoBehaviour
 
     private bool IsSameRow(Transform target)
     {
+        if (_ignoreRowCheck) return true;
+
         Tilemap tilemap = WaveManager.Instance != null ? WaveManager.Instance.tilemap : null;
         if (tilemap == null || !_hasOriginRow) return true;
 
@@ -113,5 +155,28 @@ public class Projectile : MonoBehaviour
 
         _originRow = tilemap.WorldToCell(originWorldPos).y;
         _hasOriginRow = true;
+    }
+
+    private void ApplySlowIfEnabled(TargetDummyTest enemy)
+    {
+        if (!_applySlowOnHit || enemy == null)
+        {
+            return;
+        }
+
+        enemy.ApplySlow(_slowPercent, _slowDuration);
+    }
+
+    private bool IsDesignatedTargetCollider(Collider2D other)
+    {
+        if (_designatedTarget == null || other == null)
+        {
+            return false;
+        }
+
+        Transform hitTransform = other.transform;
+        return hitTransform == _designatedTarget
+               || hitTransform.IsChildOf(_designatedTarget)
+               || _designatedTarget.IsChildOf(hitTransform);
     }
 }
