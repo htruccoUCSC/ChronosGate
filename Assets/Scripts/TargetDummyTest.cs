@@ -5,23 +5,22 @@ public class TargetDummyTest : MonoBehaviour
 {
     [Header("Movement")]
     public float moveSpeed = 1f; // how fast it moves left
+    private float m_SlowMultiplier = 1f;
+    private float m_SlowTimeRemaining;
 
     [Header("Health")]
-    public int maxHealth = 15;
+    public int maxHealth = 50;
     private int currentHealth;
 
     private bool registered = false;
     private bool alreadyCountedAsEscape = false; // prevents double life loss
-    private int slowVersion = 0;
     private int polymorphVersion = 0;
-    private float baseMoveSpeed;
     private SpriteRenderer cachedRenderer;
     private Sprite baseSprite;
 
     void Start()
     {
         currentHealth = maxHealth;
-        baseMoveSpeed = moveSpeed;
         cachedRenderer = GetComponentInChildren<SpriteRenderer>();
         if (cachedRenderer != null)
         {
@@ -41,7 +40,17 @@ public class TargetDummyTest : MonoBehaviour
 
     void Update()
     {
-        transform.position += Vector3.left * moveSpeed * Time.deltaTime;
+        transform.position += Vector3.left * moveSpeed * m_SlowMultiplier * Time.deltaTime;
+
+        if (m_SlowTimeRemaining > 0f)
+        {
+            m_SlowTimeRemaining -= Time.deltaTime;
+            if (m_SlowTimeRemaining <= 0f)
+            {
+                m_SlowTimeRemaining = 0f;
+                m_SlowMultiplier = 1f;
+            }
+        }
 
         // if crossed the left end of the map, lose a life once
         if (!alreadyCountedAsEscape && WaveManager.Instance != null)
@@ -67,28 +76,11 @@ public class TargetDummyTest : MonoBehaviour
 
     public void ApplySlow(float slowPercent, float duration)
     {
-        float clampedSlow = Mathf.Clamp(slowPercent, 0f, 0.95f);
-        float clampedDuration = Mathf.Max(0f, duration);
-        int version = ++slowVersion;
+        float clampedPercent = Mathf.Clamp(slowPercent, 0f, 0.95f);
+        float newMultiplier = 1f - clampedPercent;
 
-        moveSpeed = baseMoveSpeed * (1f - clampedSlow);
-
-        if (clampedDuration <= 0f)
-        {
-            return;
-        }
-
-        StartCoroutine(RemoveSlowAfterDuration(version, clampedDuration));
-    }
-
-    private IEnumerator RemoveSlowAfterDuration(int version, float duration)
-    {
-        yield return new WaitForSeconds(duration);
-
-        if (version == slowVersion)
-        {
-            moveSpeed = baseMoveSpeed;
-        }
+        m_SlowMultiplier = Mathf.Min(m_SlowMultiplier, newMultiplier);
+        m_SlowTimeRemaining = Mathf.Max(m_SlowTimeRemaining, Mathf.Max(0f, duration));
     }
 
     public void ApplyPolymorph(Sprite sheepSprite, float duration)

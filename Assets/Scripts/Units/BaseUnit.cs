@@ -5,7 +5,7 @@ public abstract class BaseUnit : MonoBehaviour
 {
     // our units unique data instance
     public UnitInstance myData;
-    protected float attackTimer;
+    public float attackTimer;
     protected Transform currentTarget;
      public List<Buff> roundBuffs = new List<Buff>();
     public List<Buff> activeBuffs = new List<Buff>();
@@ -20,11 +20,11 @@ public abstract class BaseUnit : MonoBehaviour
         myData = instance;
         attackTimer = 1f / myData.GetModifiedAttackSpeed();
 
-        // getting projectile sprite from prefab if applicable
-        Transform template = transform.Find("ProjectileSprite");
-        if (template != null)
+        // getting projectile sprite and scale from the Projectile child
+        Transform projectileChild = transform.Find("Projectile");
+        if (projectileChild != null)
         {
-            SpriteRenderer sr = template.GetComponent<SpriteRenderer>();
+            SpriteRenderer sr = projectileChild.GetComponent<SpriteRenderer>();
             if (sr != null)
             {
                 _projectileSprite = sr.sprite;
@@ -49,15 +49,14 @@ public abstract class BaseUnit : MonoBehaviour
             transform.localScale = Vector3.one * scaleFactor;
         }
 
-        // scales the projectile template to match the unit's size
-        // i'm not entirely happy with this implementation but it will do for now
-        Transform projTemplate = transform.Find("ProjectileSprite");
-        if (projTemplate != null)
+        // scales the projectile to match the unit's size
+        Transform projectileChild = transform.Find("Projectile");
+        if (projectileChild != null)
         {
-            SpriteRenderer projSR = projTemplate.GetComponent<SpriteRenderer>();
+            SpriteRenderer projSR = projectileChild.GetComponent<SpriteRenderer>();
             if (projSR != null)
             {
-                projTemplate.localScale = Vector3.one;
+                projectileChild.localScale = Vector3.one;
                 Vector3 projSize = projSR.bounds.size;
                 float projMax = Mathf.Max(projSize.x, projSize.y);
 
@@ -67,7 +66,7 @@ public abstract class BaseUnit : MonoBehaviour
                     float targetSize = 0.4f;
                     float projScale = targetSize / projMax;
 
-                    projTemplate.localScale = Vector3.one * projScale;
+                    projectileChild.localScale = Vector3.one * projScale;
 
                     // store for later use when spawning projectiles
                     _projectileScale = Vector3.one * projScale;
@@ -157,15 +156,24 @@ public abstract class BaseUnit : MonoBehaviour
 
     protected virtual GameObject LoadProjectilePrefab()
     {
-        return Resources.Load<GameObject>("Prefabs/BaseProjectile");
+        Transform projectileChild = transform.Find("Projectile");
+        if (projectileChild != null)
+        {
+            return projectileChild.gameObject;
+        }
+        
+        Debug.LogError($"{gameObject.name} does not have a 'Projectile' child object. Please add a Projectile prefab as a child in the prefab editor.");
+        return null;
     }
 
-    protected void SpawnProjectile(GameObject prefab, float damage, bool isAOE)
+    protected GameObject InstantiateAndSetupProjectile(GameObject prefab)
     {
-        if (currentTarget == null || prefab == null) return;
+        if (prefab == null) return null;
 
         GameObject proj = Instantiate(prefab, transform.position, Quaternion.identity);
+        proj.SetActive(true);
 
+        // Apply projectile sprite and scale
         if (_projectileSprite != null)
         {
             var sr = proj.GetComponentInChildren<SpriteRenderer>();
@@ -173,6 +181,16 @@ public abstract class BaseUnit : MonoBehaviour
             if (sr != null && animator == null) sr.sprite = _projectileSprite;
             proj.transform.localScale = Vector3.Scale(transform.localScale, _projectileScale);
         }
+
+        return proj;
+    }
+
+    protected void SpawnProjectile(GameObject prefab, float damage, bool isAOE)
+    {
+        if (currentTarget == null || prefab == null) return;
+
+        GameObject proj = InstantiateAndSetupProjectile(prefab);
+        if (proj == null) return;
 
         Projectile projScript = proj.GetComponentInChildren<Projectile>();
         if (projScript == null) return;
@@ -196,7 +214,7 @@ public abstract class BaseUnit : MonoBehaviour
             projScript.speed = finalSpeed;
         }
 
-        projScript.Setup(damage, direction, launchAngle, transform.position, isAOE);
+        projScript.Setup(damage, direction, launchAngle, transform.position, isAOE, this);
     }
 
     // spawns a generic projectile towards the current target
@@ -266,5 +284,21 @@ public abstract class BaseUnit : MonoBehaviour
 
         // Convert speed squared into launch speed magnitude.
         return Mathf.Sqrt(v2);
+    }
+
+    public void onHit()
+    {
+        for(int i = 0; i < roundBuffs.Count; i++){
+            roundBuffs[i].OnHit?.Invoke();
+        }
+    }
+    //TODO REMOVE THIS TO NEW FILE
+    public void LuckyShotPerformAutoAttack()
+    {
+        int randomChance = Random.Range(0, 2);
+        if(randomChance == 1){
+        Debug.Log("Lucky Shot Activated! Unit performs an immediate basic attack.");
+        PerformBasicAttack();
+        }
     }
 }

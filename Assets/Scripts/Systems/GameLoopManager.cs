@@ -13,6 +13,7 @@ public class GameLoopManager : MonoBehaviour
     [SerializeField] private AugmentSelectionUI augmentSelectionUI;
     [SerializeField] private ShopManager shopManager;
     [SerializeField] private WaveManager waveManager;
+     public AugmentManager augmentManager;
 
     [Header("Settings")]
     [SerializeField] private int wavesPerAugmentCycle = 3;
@@ -139,6 +140,7 @@ public class GameLoopManager : MonoBehaviour
         waitingForNextRound = false;
         
         Debug.Log("Next Round pressed. Starting combat phase...");
+        augmentManager.ApplyAllActiveAugments();
         StartCombatPhase();
     }
 
