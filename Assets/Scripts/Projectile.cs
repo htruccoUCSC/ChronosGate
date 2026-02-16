@@ -25,13 +25,15 @@ public class Projectile : MonoBehaviour
     private bool _applySlowOnHit;
     private float _slowPercent;
     private float _slowDuration;
-    BaseUnit unit;
+    private bool _requireDesignatedTargetHit;
+    private Transform _designatedTarget;
+    private BaseUnit _sourceUnit;
 
     void Awake()
     {
         _rb = GetComponent<Rigidbody2D>();
         _boomerangBehavior = GetComponent<BoomerangProjectileBehavior>();
-        
+
         // Ensure Rigidbody2D is properly registered with physics engine
         if (_rb != null)
         {
@@ -45,11 +47,14 @@ public class Projectile : MonoBehaviour
     {
         _damage = damage;
         _isAoe = isAOE;
-        unit = sourceUnit;
+        _sourceUnit = sourceUnit;
+        _requireDesignatedTargetHit = false;
+        _designatedTarget = null;
         CacheOriginRow(originWorldPos);
         _didApexRetarget = false;
         _previousVerticalSpeed = 0f;
         Destroy(gameObject, lifetime);
+
         // straight shot
         if (angleInDegrees <= 0)
         {
@@ -93,6 +98,17 @@ public class Projectile : MonoBehaviour
         _ignoreRowCheck = ignoreRowCheck;
     }
 
+    public void SetIgnoreRowCheck(bool ignoreRowCheck)
+    {
+        _ignoreRowCheck = ignoreRowCheck;
+    }
+
+    public void SetDesignatedTarget(Transform target)
+    {
+        _designatedTarget = target;
+        _requireDesignatedTargetHit = target != null;
+    }
+
     public void EnableOnHitSlow(float slowPercent, float duration)
     {
         _applySlowOnHit = true;
@@ -102,6 +118,12 @@ public class Projectile : MonoBehaviour
 
     void Update()
     {
+        if (_requireDesignatedTargetHit && _designatedTarget == null)
+        {
+            Destroy(gameObject);
+            return;
+        }
+
         if (!_retargetAtApex || _didApexRetarget || _rb == null) return;
         if (_rb.bodyType != RigidbodyType2D.Dynamic) return;
 
@@ -124,8 +146,13 @@ public class Projectile : MonoBehaviour
                 return;
             }
 
+            if (_requireDesignatedTargetHit && !IsDesignatedTargetCollider(other))
+            {
+                return;
+            }
+
             // Deal 5 damage every time we hit an enemy
-            TargetDummyTest enemy = other.GetComponent<TargetDummyTest>();
+            TargetDummyTest enemy = other.GetComponentInParent<TargetDummyTest>();
             if (_isAoe)
             {
                 // If it's an AOE projectile, we want to hit all enemies in a radius
@@ -134,7 +161,7 @@ public class Projectile : MonoBehaviour
                 {
                     if (hit.CompareTag("Enemy") && IsSameRow(hit.transform))
                     {
-                        TargetDummyTest aoeEnemy = hit.GetComponent<TargetDummyTest>();
+                        TargetDummyTest aoeEnemy = hit.GetComponentInParent<TargetDummyTest>();
                         if (aoeEnemy != null)
                         {
                             aoeEnemy.TakeDamage(Mathf.RoundToInt(_damage)); //use passed damage
@@ -148,7 +175,8 @@ public class Projectile : MonoBehaviour
                 enemy.TakeDamage(Mathf.RoundToInt(_damage)); //use passed damage
                 ApplySlowIfConfigured(enemy);
             }
-            unit?.onHit();
+
+            _sourceUnit?.onHit();
             Destroy(gameObject);
         }
     }
@@ -203,6 +231,7 @@ public class Projectile : MonoBehaviour
         foreach (Collider2D hit in hits)
         {
             if (hit == null || !hit.CompareTag("Enemy")) continue;
+            if (!_ignoreRowCheck && !IsSameRow(hit.transform)) continue;
 
             float sqrDistance = (hit.transform.position - transform.position).sqrMagnitude;
             if (sqrDistance < closestDistance)
@@ -228,5 +257,18 @@ public class Projectile : MonoBehaviour
     {
         if (!_applySlowOnHit || enemy == null) return;
         enemy.ApplySlow(_slowPercent, _slowDuration);
+    }
+
+    private bool IsDesignatedTargetCollider(Collider2D other)
+    {
+        if (_designatedTarget == null || other == null)
+        {
+            return false;
+        }
+
+        Transform hitTransform = other.transform;
+        return hitTransform == _designatedTarget
+               || hitTransform.IsChildOf(_designatedTarget)
+               || _designatedTarget.IsChildOf(hitTransform);
     }
 }

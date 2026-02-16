@@ -195,8 +195,9 @@ public abstract class BaseUnit : MonoBehaviour
         Projectile projScript = proj.GetComponentInChildren<Projectile>();
         if (projScript == null) return;
 
+        // Build a vector from shooter to target.
+        // X controls forward travel distance, Y captures lane height difference.
         Vector2 diff = currentTarget.position - transform.position;
-        float distance = diff.magnitude;
         Vector2 direction = diff.normalized;
         float launchAngle = myData.BaseDef.LaunchAngle;
 
@@ -207,7 +208,9 @@ public abstract class BaseUnit : MonoBehaviour
             float gravity = Physics2D.gravity.y * 3f;
             gravity = Mathf.Abs(gravity);
 
-            finalSpeed = CalculateBallisticSpeed(distance, launchAngle, gravity);
+            // Solve launch speed using both horizontal distance and vertical offset.
+            // This is what lets arc shots land correctly on enemies in different lanes.
+            finalSpeed = CalculateBallisticSpeed(diff, launchAngle, gravity);
             projScript.speed = finalSpeed;
         }
 
@@ -243,17 +246,44 @@ public abstract class BaseUnit : MonoBehaviour
     // solves standard projectile motion equation for Velocity
     protected float CalculateBallisticSpeed(float distance, float angleDeg, float gravity)
     {
-        // convert angle to radians
+        // Legacy overload kept for compatibility.
+        // Treats target as same height by using Y = 0.
+        return CalculateBallisticSpeed(new Vector2(distance, 0f), angleDeg, gravity);
+    }
+
+    protected float CalculateBallisticSpeed(Vector2 targetOffset, float angleDeg, float gravity)
+    {
+        // Decompose target offset into horizontal travel and vertical difference.
+        // Example: target one lane above means verticalOffset > 0.
+        float horizontalDistance = Mathf.Abs(targetOffset.x);
+        float verticalOffset = targetOffset.y;
+
+        if (horizontalDistance < 0.01f || gravity <= 0f)
+        {
+            return 10f;
+        }
+
         float angleRad = angleDeg * Mathf.Deg2Rad;
+        float cosAngle = Mathf.Cos(angleRad);
+        float tanAngle = Mathf.Tan(angleRad);
 
-        //v = Sqrt( (dist * g) / Sin(2 * theta) )
-        float bottom = Mathf.Sin(2 * angleRad);
+        // Rearranged projectile-motion equation for speed squared:
+        // v^2 = (g * x^2) / (2 * cos^2(theta) * (x * tan(theta) - y)).
+        // If denominator <= 0, this angle cannot reach that target point.
+        float denominator = 2f * cosAngle * cosAngle * ((horizontalDistance * tanAngle) - verticalOffset);
+        if (denominator <= 0.01f)
+        {
+            return 10f;
+        }
 
-        // safety guard to avoid divide by zero
-        if (Mathf.Abs(bottom) < 0.01f) return 10f;
+        float v2 = (gravity * horizontalDistance * horizontalDistance) / denominator;
+        if (v2 <= 0f)
+        {
+            return 10f;
+        }
 
-        float v2 = (distance * gravity) / bottom;
-        return Mathf.Sqrt(Mathf.Abs(v2));
+        // Convert speed squared into launch speed magnitude.
+        return Mathf.Sqrt(v2);
     }
 
     public void onHit()
