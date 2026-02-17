@@ -20,13 +20,5 @@ public class AugmentSetup : MonoBehaviour
         augmentManager.AddInactiveAugment(ApeTogetherStrongWrapper);
         augmentManager.AddInactiveAugment(ReserveADWrapper);
         augmentManager.AddInactiveAugment(ReserveASWrapper);
-
-
-        //ACTIVE FOR TESTING ONLY IF STARTED HERE, DELETE LATER
-        augmentManager.AddActiveAugment(testAugmentWrapper);
-        augmentManager.AddActiveAugment(ApeTogetherStrongWrapper);
-
-
-       
     }
 }

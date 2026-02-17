@@ -44,22 +44,8 @@ public class AugmentUITester : MonoBehaviour
     private void OnAugmentChosen(int augmentIndex)
     {
         Debug.Log($"[TEST] ✓ Player selected augment #{augmentIndex}");
-        
-        // Here you would normally apply the augment's effects
-        switch (augmentIndex)
-        {
-            case 0:
-                Debug.Log("[TEST] Applying 'Rapid Fire' augment");
-                break;
-            case 1:
-                Debug.Log("[TEST] Applying 'Extra Damage' augment");
-                break;
-            case 2:
-                Debug.Log("[TEST] Applying 'Slow Effect' augment");
-                break;
-        }
     }
-    
+
     private void OnDestroy()
     {
         // Unsubscribe from events
