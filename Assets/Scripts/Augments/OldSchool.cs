@@ -73,7 +73,7 @@ for (int x = 0; x <tileMapManager.Height; x++)
                     }
                 }
                // Debug.Log("OldSchool added" +buffAmount);
-                 buffs.AddRoundBuff(unit,0,0,0,0,buffAmount,null);
+                 buffs.AddRoundBuff(unit,0,0,0,0,buffAmount,0,null);
     
     }
     }

@@ -12,6 +12,7 @@ public class Buffs : MonoBehaviour
         float attackDamageFlat,
         float attackDamageMult,
         float abilityPowerFlat,
+        float abilityPowerMult,
         int duration,
         Action OnHit)
     {
@@ -24,7 +25,8 @@ public class Buffs : MonoBehaviour
             AbilityPowerFlat = abilityPowerFlat,
 
             duration = duration,
-            OnHit  = OnHit
+            OnHit  = OnHit,
+            AbilityPowerMult=abilityPowerMult,
         };
 
         math.AddAttackDamage(unit.myData, attackDamageFlat);
@@ -32,7 +34,7 @@ public class Buffs : MonoBehaviour
         math.AddAttackMult(unit.myData, attackDamageMult);
         math.AddSpeedMult(unit.myData, attackSpeedMult);
         math.AddAbilityPower(unit.myData, abilityPowerFlat);
-
+        math.AddAbilityPowerMult(unit.myData,abilityPowerMult);
         unit.AddTempBuff(buff);
     }
 
@@ -43,7 +45,7 @@ public class Buffs : MonoBehaviour
         float attackDamageFlat,
         float attackDamageMult,
         float abilityPowerFlat,
-
+        float abilityPowerMult,
         Action OnHit)
     {
         Buff buff = new Buff
@@ -55,7 +57,8 @@ public class Buffs : MonoBehaviour
             AbilityPowerFlat = abilityPowerFlat,
 
             duration = 0f,
-            OnHit = OnHit
+            OnHit = OnHit,
+            AbilityPowerMult=abilityPowerMult,
         };
 
         math.AddAttackDamage(unit.myData, attackDamageFlat);
@@ -63,7 +66,7 @@ public class Buffs : MonoBehaviour
         math.AddAttackMult(unit.myData, attackDamageMult);
         math.AddSpeedMult(unit.myData, attackSpeedMult);
         math.AddAbilityPower(unit.myData, abilityPowerFlat);
-
+        math.AddAbilityPowerMult(unit.myData,abilityPowerMult);
 
         unit.AddRoundBuff(buff);
     }
@@ -75,7 +78,7 @@ public class Buffs : MonoBehaviour
         math.SubAttackMult(unit.myData, buff.AttackDamageMult);
         math.SubSpeedMult(unit.myData, buff.AttackSpeedMult);
         math.SubAbilityPower(unit.myData, buff.AbilityPowerFlat);
-
+        math.AddAbilityPowerMult(unit.myData,buff.AbilityPowerMult);
 
         unit.RemoveTempBuff(buff);
     }
@@ -87,7 +90,7 @@ public class Buffs : MonoBehaviour
         math.SubAttackMult(unit.myData, buff.AttackDamageMult);
         math.SubSpeedMult(unit.myData, buff.AttackSpeedMult);
         math.SubAbilityPower(unit.myData, buff.AbilityPowerFlat);
-
+         math.AddAbilityPowerMult(unit.myData,buff.AbilityPowerMult);
 
         unit.RemoveRoundBuff(buff);
     }
