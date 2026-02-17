@@ -1,4 +1,5 @@
 using UnityEngine;
+using System.Collections;
 
 public class TargetDummyTest : MonoBehaviour
 {
@@ -13,10 +14,18 @@ public class TargetDummyTest : MonoBehaviour
 
     private bool registered = false;
     private bool alreadyCountedAsEscape = false; // prevents double life loss
+    private int polymorphVersion = 0;
+    private SpriteRenderer cachedRenderer;
+    private Sprite baseSprite;
 
     void Start()
     {
         currentHealth = maxHealth;
+        cachedRenderer = GetComponentInChildren<SpriteRenderer>();
+        if (cachedRenderer != null)
+        {
+            baseSprite = cachedRenderer.sprite;
+        }
 
         if (WaveManager.Instance != null)
         {
@@ -58,6 +67,7 @@ public class TargetDummyTest : MonoBehaviour
     public void TakeDamage(int damage)
     {
         currentHealth -= damage;
+        Debug.Log($"Target Dummy took {damage} damage, current health: {currentHealth}/{maxHealth}");
         if (currentHealth <= 0)
         {
             Destroy(gameObject);
@@ -70,7 +80,38 @@ public class TargetDummyTest : MonoBehaviour
         float newMultiplier = 1f - clampedPercent;
 
         m_SlowMultiplier = Mathf.Min(m_SlowMultiplier, newMultiplier);
-        m_SlowTimeRemaining = Mathf.Max(m_SlowTimeRemaining, duration);
+        m_SlowTimeRemaining = Mathf.Max(m_SlowTimeRemaining, Mathf.Max(0f, duration));
+    }
+
+    public void ApplyPolymorph(Sprite sheepSprite, float duration)
+    {
+        if (cachedRenderer == null || sheepSprite == null)
+        {
+            return;
+        }
+
+        int version = ++polymorphVersion;
+        cachedRenderer.sprite = sheepSprite;
+
+        StartCoroutine(RemovePolymorphAfterDuration(version, Mathf.Max(0f, duration)));
+    }
+
+    private IEnumerator RemovePolymorphAfterDuration(int version, float duration)
+    {
+        if (duration > 0f)
+        {
+            yield return new WaitForSeconds(duration);
+        }
+
+        if (version != polymorphVersion)
+        {
+            yield break;
+        }
+
+        if (cachedRenderer != null)
+        {
+            cachedRenderer.sprite = baseSprite;
+        }
     }
 
     private void OnDestroy()

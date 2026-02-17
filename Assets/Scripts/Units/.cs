@@ -14,14 +14,26 @@ public class RockmanUnit : BaseUnit
     protected override void CastAbility()
     {
         Debug.Log("Rock-man uses ability");
-        SpawnRockmanAbilityProjectile(myData.GetModifiedDamage() * 2f);
+        if (m_ProjectilePrefab == null)
+        {
+            Debug.LogError("Rockman projectile prefab is not assigned.");
+            return;
+        }
+
+        SpawnProjectile(m_ProjectilePrefab, myData.GetModifiedDamage() * 2f, true);
     }
 
     protected override void PerformBasicAttack()
     {
-        SpawnProjectile(LoadProjectilePrefab(), myData.GetModifiedDamage(), false);
+        if (m_ProjectilePrefab == null)
+        {
+            Debug.LogError("Rockman projectile prefab is not assigned.");
+            return;
+        }
+
+        SpawnProjectile(m_ProjectilePrefab, myData.GetModifiedDamage(), false);
     }
-    
+
     private void SpawnRockmanAbilityProjectile(float damage)
     {
         if (currentTarget == null || m_ProjectilePrefab == null) return;

@@ -5,7 +5,6 @@ using System.Collections.Generic;
 public class Boomerang : BaseUnit
 {
     [SerializeField] private LayerMask m_TargetMask;
-    [SerializeField] private GameObject m_ProjectilePrefab;
     [SerializeField] private float m_SpreadAngle = 12f;
     [SerializeField] private float m_MoveDelay = 0.5f;
 
@@ -16,23 +15,11 @@ public class Boomerang : BaseUnit
     protected override void CastAbility()
     {
         Debug.Log("Boomerang uses ability");
-        if (m_ProjectilePrefab == null)
-        {
-            Debug.LogError("Boomerang projectile prefab is not assigned.");
-            return;
-        }
-
         SpawnArcApexProjectile(myData.GetModifiedDamage() * 2f, true);
     }
 
     protected override void PerformBasicAttack()
     {
-        if (m_ProjectilePrefab == null)
-        {
-            Debug.LogError("Boomerang projectile prefab is not assigned.");
-            return;
-        }
-
         float damage = myData.GetModifiedDamage();
         SpawnSpreadAttack(damage);
 
@@ -95,17 +82,11 @@ public class Boomerang : BaseUnit
 
     private void SpawnArcApexProjectile(float damage, bool isAoe, float angleOffset = 0f)
     {
-        if (currentTarget == null || m_ProjectilePrefab == null) return;
+        GameObject projectilePrefab = LoadProjectilePrefab();
+        if (currentTarget == null || projectilePrefab == null) return;
 
-        GameObject proj = Instantiate(m_ProjectilePrefab, transform.position, Quaternion.identity);
-
-        if (_projectileSprite != null)
-        {
-            var sr = proj.GetComponentInChildren<SpriteRenderer>();
-            var animator = proj.GetComponentInChildren<Animator>();
-            if (sr != null && animator == null) sr.sprite = _projectileSprite;
-            proj.transform.localScale = Vector3.Scale(transform.localScale, _projectileScale);
-        }
+        GameObject proj = InstantiateAndSetupProjectile(projectilePrefab);
+        if (proj == null) return;
 
         Projectile projScript = proj.GetComponentInChildren<Projectile>();
         if (projScript == null) return;
