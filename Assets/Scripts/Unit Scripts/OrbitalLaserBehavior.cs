@@ -3,7 +3,7 @@ using UnityEngine;
 
 [RequireComponent(typeof(Projectile))]
 public class OrbitalLaserBehavior : MonoBehaviour
-{
+{  [SerializeField] private LayerMask m_TargetMask;
     private Projectile m_Projectile;
     
    private Transform m_target;
