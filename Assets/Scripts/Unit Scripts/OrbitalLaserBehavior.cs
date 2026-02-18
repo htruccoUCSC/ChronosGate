@@ -1,23 +1,20 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-[RequireComponent(typeof(Projectile))]
 public class OrbitalLaserBehavior : MonoBehaviour
-{  [SerializeField] private LayerMask m_TargetMask;
-    private Projectile m_Projectile;
+{
     
    private Transform m_target;
     private float m_lifeTime;
-
+    OrbitalLaser orbit;
     private float m_moveSpeed;
     private Vector3 m_position;
     private  float m_radius;
     private LayerMask m_targetMask;
 private float m_damage;
 
-    public void Initialize(Projectile projectile, Transform theTarget , float damage, float lifeTime,float moveSpeed,float radius, LayerMask mask)
+    public void Initialize( Transform theTarget , float damage, float lifeTime,float moveSpeed,float radius, LayerMask mask)
     {
-        m_Projectile = projectile;
         m_target=theTarget;
         m_lifeTime = lifeTime;
          m_damage=damage;
@@ -25,10 +22,14 @@ private float m_damage;
          m_position = m_target.transform.position;
          m_radius=radius;
          m_targetMask=mask;
+        GameObject laser= orbit.getOrbitalLaser();
     }
-
-    void Update()
+    void Start()
     {
+        
+    }
+    void Update()
+    { 
         if (m_target == null)
         {
             Debug.Log("Needs new target(will implement later)");
