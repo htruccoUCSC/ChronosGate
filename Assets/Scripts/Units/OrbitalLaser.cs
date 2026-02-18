@@ -9,7 +9,7 @@ public class OrbitalLaser : BaseUnit
     [SerializeField] private Tilemap m_PreviewTilemap;
     [SerializeField] private GameObject m_ProjectilePrefab;
     OrbitalLaserBehavior orbitalLaserBehavior;
-    private float m_AbilityProjectileScaleMultiplier = 5f;
+    //private float m_AbilityProjectileScaleMultiplier = 5f;
 
     protected override void CastAbility()
     {
