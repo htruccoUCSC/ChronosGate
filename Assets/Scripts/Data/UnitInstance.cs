@@ -15,7 +15,8 @@ public class UnitInstance : ScriptableObject
     public float SpeedFlatMod = 0;
     public float SpeedMultMod = 1.0f;
     public float BaseAbilityPower = 0;
-    public float AbilityPower = 0;
+    public float AbilityPowerFlatMod = 0;
+    public float AbilityPowerMult=1.0f;
 
 
     // this is basically a constructor for creating runtime instances
@@ -27,7 +28,7 @@ public class UnitInstance : ScriptableObject
         instance.CurrentMana = def.StartingMana;
         instance.Faction= def.Faction;
         instance.BaseAbilityPower = def.AbilityPower;
-        instance.AbilityPower = instance.BaseAbilityPower;
+        instance.AbilityPowerFlatMod = instance.BaseAbilityPower;
         instance.MaxHP = def.Health; 
         instance.CurrentHP = instance.MaxHP; 
         return instance;
@@ -36,4 +37,5 @@ public class UnitInstance : ScriptableObject
     // equations for modified stats, we will change these later
     public float GetModifiedDamage() => (BaseDef.AttackDamage + DamageFlatMod) * DamageMultMod;
     public float GetModifiedAttackSpeed() => (BaseDef.AttackSpeed + SpeedFlatMod) * SpeedMultMod;
+    public float GetModifiedAbilityPower() => (BaseDef.AbilityPower + AbilityPowerFlatMod) * AbilityPowerMult;
 }
