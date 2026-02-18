@@ -8,6 +8,9 @@ public class Projectile : MonoBehaviour
     public float speed = 10f;
     public float lifetime = 5f;
 
+    [Header("Collision")]
+    [SerializeField] private LayerMask enemyMask; // set to Enemies in inspector (or auto-filled in Awake)
+
     // we still keep _damage because your existing system calls Setup(damage, ...)
     // BUT for this assignment requirement we will force hits to deal 5 damage on enemies
     private float _damage;
@@ -30,6 +33,12 @@ public class Projectile : MonoBehaviour
     {
         _rb = GetComponent<Rigidbody2D>();
         _boomerangBehavior = GetComponent<BoomerangProjectileBehavior>();
+
+        // if not set in inspector, default it to the Enemies layer
+        if (enemyMask.value == 0)
+        {
+            enemyMask = LayerMask.GetMask("Enemies");
+        }
     }
 
     public void Setup(float damage, Vector2 direction, float angleInDegrees, Vector3 originWorldPos, bool isAOE = false)
@@ -107,41 +116,43 @@ public class Projectile : MonoBehaviour
 
     void OnTriggerEnter2D(Collider2D other)
     {
+        // Only hit objects on the enemy layer mask (no hardcoded enemy types)
+        if (((1 << other.gameObject.layer) & enemyMask.value) == 0) return;
+
         // should only hit enemies in the same row pass through enemies in other lanes
-        if (other.CompareTag("Enemy") && IsSameRow(other.transform))
+        BaseEnemy enemy = other.GetComponentInParent<BaseEnemy>();
+        if (enemy == null) return;
+
+        // IMPORTANT: do row check using the enemy root transform (not the collider child)
+        if (!IsSameRow(enemy.transform)) return;
+
+        if (_boomerangBehavior != null && _boomerangBehavior.HandleEnemyTrigger(other))
         {
-            if (_boomerangBehavior != null && _boomerangBehavior.HandleEnemyTrigger(other))
-            {
-                return;
-            }
-
-            // Deal 5 damage every time we hit an enemy
-            TargetDummyTest enemy = other.GetComponent<TargetDummyTest>();
-            if (_isAoe)
-            {
-                // If it's an AOE projectile, we want to hit all enemies in a radius
-                Collider2D[] hits = Physics2D.OverlapCircleAll(transform.position, 1f); // Adjust radius as needed 1f is just an example
-                foreach (Collider2D hit in hits)
-                {
-                    if (hit.CompareTag("Enemy") && IsSameRow(hit.transform))
-                    {
-                        TargetDummyTest aoeEnemy = hit.GetComponent<TargetDummyTest>();
-                        if (aoeEnemy != null)
-                        {
-                            aoeEnemy.TakeDamage(Mathf.RoundToInt(_damage)); //use passed damage
-                            ApplySlowIfConfigured(aoeEnemy);
-                        }
-                    }
-                }
-            }
-            if (!_isAoe && enemy != null)
-            {
-                enemy.TakeDamage(Mathf.RoundToInt(_damage)); //use passed damage
-                ApplySlowIfConfigured(enemy);
-            }
-
-            Destroy(gameObject);
+            return;
         }
+
+        if (_isAoe)
+        {
+            // If it's an AOE projectile, we want to hit all enemies in a radius
+            Collider2D[] hits = Physics2D.OverlapCircleAll(transform.position, 1f, enemyMask); // uses enemy layer mask
+            foreach (Collider2D hit in hits)
+            {
+                BaseEnemy aoeEnemy = hit.GetComponentInParent<BaseEnemy>();
+                if (aoeEnemy == null) continue;
+
+                if (!IsSameRow(aoeEnemy.transform)) continue;
+
+                aoeEnemy.TakeDamage(Mathf.RoundToInt(_damage)); //use passed damage
+                ApplySlowIfConfigured(aoeEnemy);
+            }
+        }
+        else
+        {
+            enemy.TakeDamage(Mathf.RoundToInt(_damage)); //use passed damage
+            ApplySlowIfConfigured(enemy);
+        }
+
+        Destroy(gameObject);
     }
 
     private bool IsSameRow(Transform target)
@@ -193,13 +204,19 @@ public class Projectile : MonoBehaviour
 
         foreach (Collider2D hit in hits)
         {
-            if (hit == null || !hit.CompareTag("Enemy")) continue;
+            if (hit == null) continue;
 
-            float sqrDistance = (hit.transform.position - transform.position).sqrMagnitude;
+            // only consider enemies by layer mask (not tag)
+            if (((1 << hit.gameObject.layer) & enemyMask.value) == 0) continue;
+
+            BaseEnemy enemy = hit.GetComponentInParent<BaseEnemy>();
+            if (enemy == null) continue;
+
+            float sqrDistance = (enemy.transform.position - transform.position).sqrMagnitude;
             if (sqrDistance < closestDistance)
             {
                 closestDistance = sqrDistance;
-                closestTarget = hit.transform;
+                closestTarget = enemy.transform;
             }
         }
 
@@ -215,7 +232,7 @@ public class Projectile : MonoBehaviour
         _retargetAtApex = false;
     }
 
-    private void ApplySlowIfConfigured(TargetDummyTest enemy)
+    private void ApplySlowIfConfigured(BaseEnemy enemy)
     {
         if (!_applySlowOnHit || enemy == null) return;
         enemy.ApplySlow(_slowPercent, _slowDuration);

@@ -24,7 +24,7 @@ public class WaveManager : MonoBehaviour
     [Header("Lives")]
     public int lives = 3; // you start with 3 lives
 
-    private readonly HashSet<TargetDummyTest> aliveEnemies = new HashSet<TargetDummyTest>(); // tracks living enemies
+    private readonly HashSet<BaseEnemy> aliveEnemies = new HashSet<BaseEnemy>(); // tracks living enemies
     private bool gameOver = false; // stops spawning when you hit 0 lives
     private bool waveActive = false;
     // bool that enables the old automatic wave behavior
@@ -49,7 +49,7 @@ public class WaveManager : MonoBehaviour
 
         // compute map end threshold once at start
         RecomputeMapEndX();
-        
+
         // If you want the old behavior (auto waves), set autoRunWaves to true
         if (autoRunWaves)
         {
@@ -125,7 +125,7 @@ public class WaveManager : MonoBehaviour
     public void StartNextWave()
     {
         if (gameOver || waveActive) return;
-        
+
         StartCoroutine(RunSingleWave());
     }
 
@@ -156,7 +156,7 @@ public class WaveManager : MonoBehaviour
         yield return new WaitUntil(() => aliveEnemies.Count == 0 || gameOver);
 
         Debug.Log($"--- WAVE {currentWave} CLEARED ---");
-        
+
         currentWave++;
         enemiesPerWave += enemiesAddedPerWave;
         waveActive = false;
@@ -168,6 +168,12 @@ public class WaveManager : MonoBehaviour
         if (enemyPrefab == null)
         {
             Debug.LogError("WaveManager: enemyPrefab not assigned.");
+            return;
+        }
+        
+        if (enemyPrefab.GetComponent<BaseEnemy>() == null)
+        {
+            Debug.LogError("WaveManager: enemyPrefab does not have a BaseEnemy component. Assign a real enemy prefab.");
             return;
         }
 
@@ -229,24 +235,24 @@ public class WaveManager : MonoBehaviour
         Instantiate(enemyPrefab, spawnWorld, Quaternion.identity);
     }
 
-    public void RegisterEnemy(TargetDummyTest enemy)
+    public void RegisterEnemy(BaseEnemy enemy)
     {
         aliveEnemies.Add(enemy); // called when an enemy spawns
     }
 
-    public void UnregisterEnemy(TargetDummyTest enemy)
+    public void UnregisterEnemy(BaseEnemy enemy)
     {
         aliveEnemies.Remove(enemy); // called when an enemy dies or gets destroyed
     }
 
-    public void EnemyReachedEnd(TargetDummyTest enemy)
+    public void EnemyReachedEnd(BaseEnemy enemy)
     {
         if (gameOver) return;
 
         lives -= 1;
         Debug.Log($"Enemy reached the end! Lives left: {lives}");
 
-        // destroy the enemy so it unregisters (OnDestroy in TargetDummy handles it)
+        // destroy the enemy so it unregisters (OnDestroy in BaseEnemy handles it)
         if (enemy != null)
             Destroy(enemy.gameObject);
 

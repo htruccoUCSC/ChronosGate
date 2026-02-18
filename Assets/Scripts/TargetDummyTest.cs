@@ -1,4 +1,3 @@
-// TargetDummyTest.cs
 using UnityEngine;
 
 public class TargetDummyTest : MonoBehaviour
@@ -19,22 +18,14 @@ public class TargetDummyTest : MonoBehaviour
     private bool isAttackingTroop;
     private float damageTickTimer;
 
-    private bool registered = false;
     private bool alreadyCountedAsEscape = false; // prevents double life loss
 
     void Start()
     {
         currentHealth = maxHealth;
 
-        if (WaveManager.Instance != null)
-        {
-            WaveManager.Instance.RegisterEnemy(this);
-            registered = true;
-        }
-        else
-        {
-            Debug.LogError("WaveManager.Instance is NULL (WaveManager not in scene).");
-        }
+        // TargetDummyTest is a debug enemy and should NOT register with WaveManager.
+        // It should not count toward wave completion and should not affect lives.
     }
 
     void Update()
@@ -72,14 +63,14 @@ public class TargetDummyTest : MonoBehaviour
             }
         }
 
-        // if crossed the left end of the map, lose a life once
+        // debug-only: if it crosses the left end of the map, just delete it (no lives lost)
         if (!alreadyCountedAsEscape && WaveManager.Instance != null)
         {
             float loseX = WaveManager.Instance.GetLoseLineX();
             if (transform.position.x <= loseX)
             {
                 alreadyCountedAsEscape = true;
-                WaveManager.Instance.EnemyReachedEnd(this);
+                Destroy(gameObject);
             }
         }
     }
@@ -117,7 +108,6 @@ public class TargetDummyTest : MonoBehaviour
         damageTickTimer = 0f;
     }
 
-
     private void OnTriggerExit2D(Collider2D other)
     {
         if (contactTroop == null) return;
@@ -127,17 +117,6 @@ public class TargetDummyTest : MonoBehaviour
         {
             contactTroop = null;
             isAttackingTroop = false;
-        }
-    }
-
-
-
-    private void OnDestroy()
-    {
-        if (registered && WaveManager.Instance != null)
-        {
-            WaveManager.Instance.UnregisterEnemy(this);
-            registered = false;
         }
     }
 }
