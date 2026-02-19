@@ -1,35 +1,25 @@
 using UnityEngine;
-using UnityEngine.Tilemaps;
 using System.Collections.Generic;
 using System.Collections;
 
 public class TrebuchetUnit : BaseUnit
 {
     [SerializeField] private LayerMask m_TargetMask;
-    [SerializeField] private Tilemap m_PreviewTilemap;
-    [SerializeField] private GameObject m_ProjectilePrefab;
     [SerializeField] private float m_AbilityBurstDelay = 0.2f;
 
 
     protected override void CastAbility()
     {
         Debug.Log("Trebuchet uses ability");
-        if (m_ProjectilePrefab == null)
-        {
-            Debug.LogError("Trebuchet projectile prefab is not assigned.");
-            return;
-        }
+
+        if (LoadProjectilePrefab() == null) return;
 
         StartCoroutine(FireAbilityBursts(myData.GetModifiedDamage(), 3, 2));
     }
 
     protected override void PerformBasicAttack()
     {
-        if (m_ProjectilePrefab == null)
-        {
-            Debug.LogError("Trebuchet projectile prefab is not assigned.");
-            return;
-        }
+        if (LoadProjectilePrefab() == null) return;
 
         float damage = myData.GetModifiedDamage();
         List<Transform> targets = GetNearestTargets(2);
@@ -42,7 +32,7 @@ public class TrebuchetUnit : BaseUnit
 
     private IEnumerator FireAbilityBursts(float damage, int burstCount, int targetsPerBurst)
     {
-        if (m_ProjectilePrefab == null) yield break;
+        if (LoadProjectilePrefab() == null) yield break;
 
         for (int burstIndex = 0; burstIndex < burstCount; burstIndex++)
         {
@@ -61,17 +51,13 @@ public class TrebuchetUnit : BaseUnit
 
     private void SpawnProjectileAtTarget(Transform target, float damage, bool isAoe)
     {
-        if (target == null || m_ProjectilePrefab == null) return;
+        if (target == null) return;
 
-        GameObject proj = Instantiate(m_ProjectilePrefab, transform.position, Quaternion.identity);
+        GameObject projectilePrefab = LoadProjectilePrefab();
+        if (projectilePrefab == null) return;
 
-        if (_projectileSprite != null)
-        {
-            var sr = proj.GetComponentInChildren<SpriteRenderer>();
-            var animator = proj.GetComponentInChildren<Animator>();
-            if (sr != null && animator == null) sr.sprite = _projectileSprite;
-            proj.transform.localScale = Vector3.Scale(transform.localScale, _projectileScale);
-        }
+        GameObject proj = InstantiateAndSetupProjectile(projectilePrefab);
+        if (proj == null) return;
 
         Projectile projScript = proj.GetComponentInChildren<Projectile>();
         if (projScript == null) return;
