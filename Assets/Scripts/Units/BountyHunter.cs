@@ -3,7 +3,7 @@ using UnityEngine.Tilemaps;
 using System.Collections.Generic;
 using System;
 
-public class SniperUnit : BaseUnit
+public class BountyHunter : BaseUnit
 {
     [SerializeField] private LayerMask m_TargetMask;
     [SerializeField] private Tilemap m_PreviewTilemap;

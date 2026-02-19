@@ -10,9 +10,9 @@ public Buffs buffs;
 public void OldSchoolCall()
 {
     BaseUnit toCheck;
-for (int x = 0; x <tileMapManager.Height; x++)
+for (int x = 0; x <tileMapManager.Width; x++)
 {
-    for (int y = 0; y <tileMapManager.Width; y++)
+    for (int y = 0; y <tileMapManager.Height; y++)
     {
         int buffAmount = 0;
         BaseUnit unit = board.unitGrid[x, y]; 
@@ -23,7 +23,7 @@ for (int x = 0; x <tileMapManager.Height; x++)
        
         
         string faction = unit.myData.Faction;
-        if (x>= 0)
+        if (x> 0)
                 {
                     toCheck = board.unitGrid[x-1, y];
                     if (toCheck != null )
@@ -35,7 +35,7 @@ for (int x = 0; x <tileMapManager.Height; x++)
 
                     }
                 }
-                if (y>= 0)
+                if (y> 0)
                 {
                     toCheck = board.unitGrid[x, y-1];
                    if (toCheck != null )
@@ -48,7 +48,7 @@ for (int x = 0; x <tileMapManager.Height; x++)
                     }
                 }
                 }
-                if (y< board.Height)
+                if (y< board.Height-1)
                 {
                     toCheck = board.unitGrid[x, y+1];
                    if (toCheck != null )
@@ -60,7 +60,7 @@ for (int x = 0; x <tileMapManager.Height; x++)
 
                     }
                 }
-                 if (x< board.Width)
+                 if (x< board.Width-1)
                 {
                     toCheck = board.unitGrid[x+1, y];
                    if (toCheck != null )

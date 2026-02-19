@@ -222,38 +222,33 @@ protected void SpawnSniperProjectile(GameObject prefab, float damage, bool isAOE
 {
     if (currentTarget == null || prefab == null) return;
 
-    GameObject proj = InstantiateAndSetupProjectile(prefab);
-    if (proj == null) return;
+    GameObject projRoot = InstantiateAndSetupProjectile(prefab);
+    if (projRoot == null) return;
 
-    Projectile projScript = proj.GetComponentInChildren<Projectile>();
-    if (projScript == null) return;
+    Projectile p = projRoot.GetComponentInChildren<Projectile>();
+    if (p == null) return;
 
-    Vector2 diff = currentTarget.position - transform.position;
+    Vector2 dir = (currentTarget.position - transform.position).normalized;
 
-    float x = Mathf.Abs(diff.x);
-    float y = diff.y;
+    // sniper tuning
+    p.speed = 25f;
 
-    float speed = projScript.speed;
-    float gravity = Mathf.Abs(Physics2D.gravity.y * 3f);
+    // IMPORTANT: make sure we flip trigger on the same collider that will collide
+    Collider2D col = p.GetComponent<Collider2D>();
+    if (col == null) col = p.GetComponentInChildren<Collider2D>();
+    if (col != null) col.isTrigger = true;
 
-    float speed2 = speed * speed;
+    // optionally ignore lane/row checks for sniper
+    p.SetIgnoreRowCheck(true);
 
-    float underRoot = speed2 * speed2 - gravity * (gravity * x * x + 2 * y * speed2);
+    // Require sniper projectile to only collide with its assigned target.
+    p.SetDesignatedTarget(currentTarget);
 
-    if (underRoot < 0f)
-        return; // unreachable target at this speed
-
-    float root = Mathf.Sqrt(underRoot);
-
-    // lower arc (faster shot)
-    float angleRad = Mathf.Atan((speed2 - root) / (gravity * x));
-    float angleDeg = angleRad * Mathf.Rad2Deg;
-
-    // horizontal direction only (sign matters)
-    Vector2 direction = new Vector2(Mathf.Sign(diff.x), 0f);
-
-    projScript.Setup(damage, direction, angleDeg, transform.position, isAOE, this);
+    // Let Projectile.Setup set RB type + velocity
+    p.Setup(damage, dir, 0f, transform.position, isAOE, this);
 }
+
+
 
     // spawns a generic projectile towards the current target
     private void SpawnGenericProjectile(float damage)
