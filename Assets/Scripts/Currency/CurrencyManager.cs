@@ -1,28 +1,60 @@
 using UnityEngine;
+using System;
 
 public class CurrencyManager : MonoBehaviour
 {
-public int currency =5 ;
+    public static CurrencyManager Instance { get; private set; }
 
-public int interestThreshold = 10;
-public void AddCurrency(int amount)
-{
-    currency += amount;
-}
-public void SubtractCurrency(int amount)
-{
-    currency -= amount;
-}
+    public int currency = 5;
+    public int interestThreshold = 10;
 
-public void SetCurrency(int newAmount)
-{
-    currency = newAmount;
+    // Event fired when currency changes - UI subscribes to this
+    public event Action<int> OnCurrencyChanged;
 
-}
-public void GetInterest()
+    private void Awake()
     {
-        int addAmount = currency;
-        AddCurrency(addAmount);
+        if (Instance != null && Instance != this)
+        {
+            Destroy(gameObject);
+            return;
+        }
+        Instance = this;
     }
 
+    public int GetCurrency() => currency;
+
+    public void AddCurrency(int amount)
+    {
+        currency += amount;
+        OnCurrencyChanged?.Invoke(currency);
+    }
+
+    public bool TrySpendCurrency(int amount)
+    {
+        if (currency >= amount)
+        {
+            currency -= amount;
+            OnCurrencyChanged?.Invoke(currency);
+            return true;
+        }
+        return false;
+    }
+
+    public void SubtractCurrency(int amount)
+    {
+        currency -= amount;
+        OnCurrencyChanged?.Invoke(currency);
+    }
+
+    public void SetCurrency(int newAmount)
+    {
+        currency = newAmount;
+        OnCurrencyChanged?.Invoke(currency);
+    }
+
+    public void GetInterest()
+    {
+        int addAmount = currency / interestThreshold;
+        AddCurrency(addAmount);
+    }
 }

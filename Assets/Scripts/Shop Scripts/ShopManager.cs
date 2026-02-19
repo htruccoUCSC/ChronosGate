@@ -249,4 +249,27 @@ public class ShopManager : MonoBehaviour
         UnityEditor.EditorUtility.SetDirty(this);
         #endif
     }
+
+    public void OnUnitPurchased(UnitDefinition unitDef)
+    {
+        CurrencyManager currencyManager = CurrencyManager.Instance;
+        
+        if (currencyManager == null)
+        {
+            Debug.LogError("CurrencyManager not found!");
+            return;
+        }
+        
+        // Check if player has enough currency
+        if (!currencyManager.TrySpendCurrency(unitDef.Cost))
+        {
+            Debug.Log($"Not enough currency! Need {unitDef.Cost}, have {currencyManager.GetCurrency()}");
+            // Show error message to player
+            return;
+        }
+        
+        // Unit purchased successfully
+        Debug.Log($"Purchased {unitDef.Name} for {unitDef.Cost} gold!");
+        // Proceed with adding unit to inventory
+    }
 }
