@@ -7,7 +7,6 @@ public class TowerSlot : MonoBehaviour
     [Header("UI Components")]
     [SerializeField] private TextMeshProUGUI eraText;
     [SerializeField] private TextMeshProUGUI towerNameText;
-    [SerializeField] private TextMeshProUGUI typeText;
     [SerializeField] private Image iconImage;
     [SerializeField] private TextMeshProUGUI costText;
     [SerializeField] private TextMeshProUGUI descriptionText;
@@ -35,10 +34,9 @@ public class TowerSlot : MonoBehaviour
         {
             eraText.text = data.Faction;
             towerNameText.text = data.Name;
-            typeText.text = data.AttackFunction.ToString();
             iconImage.sprite = data.Icon;
             iconImage.color = Color.white;
-            costText.text = $"Cost: {data.Cost}";
+            costText.text = $"{data.Cost}";
             descriptionText.text = data.Description;
             button.interactable = true;
             active = true;
@@ -57,7 +55,6 @@ public class TowerSlot : MonoBehaviour
     {
         eraText.text = "";
         towerNameText.text = "Empty";
-        typeText.text = "";
         iconImage.sprite = null;
         iconImage.color = new Color(1, 1, 1, 0);
         costText.text = "";
