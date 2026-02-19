@@ -53,12 +53,22 @@ public BoardManager board;
     }
           public void SubAbilityPower(UnitInstance u,float amount)
     {
-        u.AbilityPower-= amount;
+        u.AbilityPowerFlatMod-= amount;
 
     }
           public void AddAbilityPower(UnitInstance u,float amount)
     {
-        u.AbilityPower+= amount;
+        u.AbilityPowerFlatMod+= amount;
+
+    }
+             public void SubAbilityPowerMult(UnitInstance u,float amount)
+    {
+        u.AbilityPowerMult-= amount;
+
+    }
+          public void AddAbilityPowerMult(UnitInstance u,float amount)
+    {
+        u.AbilityPowerMult+= amount;
 
     }
 }

@@ -11,6 +11,7 @@ public class AugmentSetup : MonoBehaviour
     public AugmentManager augmentManager;
     public LuckyShot luckyShot;
     public Unique Unique;
+    public LongGame longGame;
 
     public OldSchool oldSchool;
 
@@ -26,15 +27,16 @@ public class AugmentSetup : MonoBehaviour
         Augment LuckyShotWrapper = new Augment(() => luckyShot.LuckyShotCall(),"Lucky Shot","At the start of each round, all units have a 10% chance to immediately perform a basic attack.");
         Augment UniqueWrapper = new Augment(() => Unique.UniqueCall(),"Unique","If a unit is surrounded by different eras gain 3x mult on attack speed and damage with 50 AP");
         Augment OldSchoolWrapper = new Augment(() => oldSchool.OldSchoolCall(),"OldSchool","All units gain 20% Attack Speed for the round.");
+        Augment LongGameWrapper = new Augment(() => longGame.LongGameCall(),"LongGame","All units gain 0.1x ability power for  round that have passed , Future Units gain a 50 AP");
 
-         augmentManager.AddInactiveAugment(ToTheMoonWrapper);
+        augmentManager.AddInactiveAugment(ToTheMoonWrapper);
         augmentManager.AddInactiveAugment(testAugmentWrapper);
         augmentManager.AddInactiveAugment(ApeTogetherStrongWrapper);
         augmentManager.AddInactiveAugment(ReserveADWrapper);
         augmentManager.AddInactiveAugment(ReserveASWrapper);
         augmentManager.AddInactiveAugment(UniqueWrapper);
-        augmentManager.AddInactiveAugment(OldSchoolWrapper);    
-
+        augmentManager.AddInactiveAugment(OldSchoolWrapper);      
+        augmentManager.AddInactiveAugment(LongGameWrapper);    
 
         //ACTIVE FOR TESTING ONLY IF STARTED HERE, DELETE LATER
         // augmentManager.AddActiveAugment(testAugmentWrapper);
@@ -43,6 +45,6 @@ public class AugmentSetup : MonoBehaviour
         // augmentManager.AddActiveAugment(LuckyShotWrapper);  
         //  augmentManager.AddActiveAugment(UniqueWrapper);
         // augmentManager.AddActiveAugment(OldSchoolWrapper);      
-       
+        augmentManager.AddActiveAugment(LongGameWrapper);
     }
 }

@@ -40,7 +40,7 @@
       "Description": "has no basic attack can slowly generate ability power passively, ability calls down lazer doing massive damage to all on one tile goes for strongest on board",
       "Cost": 100,
       "Health": 5,
-      "Range": 5,
+      "Range": 10,
       "AttackSpeed": 1,
       "AttackDamage": 10,
       "AbilityPower": 50,
