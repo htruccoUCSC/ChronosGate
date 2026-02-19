@@ -109,6 +109,41 @@ public class BoardManager : MonoBehaviour
         }
         unit.transform.SetParent(UnitsParent);
     }
+    // Helper function to find the cell position of a given unit
+    public bool TryGetUnitCell(GameObject unit, out Vector3Int cellPos)
+    {
+        foreach (var entry in occupiedTiles)
+        {
+            if (entry.Value == unit)
+            {
+                cellPos = entry.Key;
+                return true;
+            }
+        }
+
+        cellPos = default;
+        return false;
+    }
+
+    //Move unit from one tile to another, returns true if successful
+    public bool MoveUnit(GameObject unit, Vector3Int toCell)
+    {
+        if (unit == null) return false;
+        if (!TryGetUnitCell(unit, out Vector3Int fromCell)) return false;
+        if (!IsWalkable(toCell)) return false;
+
+        occupiedTiles.Remove(fromCell);
+        occupiedTiles[toCell] = unit;
+
+        if (unit.TryGetComponent(out BaseUnit baseUnit))
+        {
+            unitGrid[fromCell.x, fromCell.y] = null;
+            unitGrid[toCell.x, toCell.y] = baseUnit;
+        }
+
+        unit.transform.position = GameTilemap.GetCellCenterWorld(toCell);
+        return true;
+    }
 
     void CenterCamera()
     {
