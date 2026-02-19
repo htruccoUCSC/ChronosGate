@@ -45,6 +45,6 @@ public class AugmentSetup : MonoBehaviour
         // augmentManager.AddActiveAugment(LuckyShotWrapper);  
         //  augmentManager.AddActiveAugment(UniqueWrapper);
         // augmentManager.AddActiveAugment(OldSchoolWrapper);      
-        augmentManager.AddActiveAugment(LongGameWrapper);
+       // augmentManager.AddActiveAugment(LongGameWrapper);
     }
 }

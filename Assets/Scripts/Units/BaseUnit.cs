@@ -9,6 +9,7 @@ public abstract class BaseUnit : MonoBehaviour
     protected Transform currentTarget;
      public List<Buff> roundBuffs = new List<Buff>();
     public List<Buff> activeBuffs = new List<Buff>();
+    protected List<GameObject> spawnedProjectiles = new List<GameObject>();
     protected Sprite _projectileSprite;
     protected Vector3 _projectileScale = Vector3.one;
 
@@ -171,8 +172,9 @@ public abstract class BaseUnit : MonoBehaviour
         if (prefab == null) return null;
 
         GameObject proj = Instantiate(prefab, transform.position, Quaternion.identity);
-        proj.SetActive(true);
-
+        proj.SetActive(true);   
+        //List of spawnedProjectiles so can wipe for new Round
+         spawnedProjectiles.Add(proj);
         // Apply projectile sprite and scale
         if (_projectileSprite != null)
         {
@@ -216,6 +218,42 @@ public abstract class BaseUnit : MonoBehaviour
 
         projScript.Setup(damage, direction, launchAngle, transform.position, isAOE, this);
     }
+protected void SpawnSniperProjectile(GameObject prefab, float damage, bool isAOE)
+{
+    if (currentTarget == null || prefab == null) return;
+
+    GameObject proj = InstantiateAndSetupProjectile(prefab);
+    if (proj == null) return;
+
+    Projectile projScript = proj.GetComponentInChildren<Projectile>();
+    if (projScript == null) return;
+
+    Vector2 diff = currentTarget.position - transform.position;
+
+    float x = Mathf.Abs(diff.x);
+    float y = diff.y;
+
+    float speed = projScript.speed;
+    float gravity = Mathf.Abs(Physics2D.gravity.y * 3f);
+
+    float speed2 = speed * speed;
+
+    float underRoot = speed2 * speed2 - gravity * (gravity * x * x + 2 * y * speed2);
+
+    if (underRoot < 0f)
+        return; // unreachable target at this speed
+
+    float root = Mathf.Sqrt(underRoot);
+
+    // lower arc (faster shot)
+    float angleRad = Mathf.Atan((speed2 - root) / (gravity * x));
+    float angleDeg = angleRad * Mathf.Rad2Deg;
+
+    // horizontal direction only (sign matters)
+    Vector2 direction = new Vector2(Mathf.Sign(diff.x), 0f);
+
+    projScript.Setup(damage, direction, angleDeg, transform.position, isAOE, this);
+}
 
     // spawns a generic projectile towards the current target
     private void SpawnGenericProjectile(float damage)
@@ -291,6 +329,24 @@ public abstract class BaseUnit : MonoBehaviour
         for(int i = 0; i < roundBuffs.Count; i++){
             roundBuffs[i].OnHit?.Invoke();
         }
+    }
+    public void DestroyAllProjectiles()
+{
+    for (int i = 0; i < spawnedProjectiles.Count; i++)
+    {
+        if (spawnedProjectiles[i] != null)
+            Destroy(spawnedProjectiles[i]);
+    }
+
+    spawnedProjectiles.Clear();
+}
+    public void ResetMana()
+    {
+        myData.CurrentMana=myData.StartingMana;
+    }
+        public void ResetHealth()
+    {
+        myData.CurrentMana=myData.StartingMana;
     }
     //TODO REMOVE THIS TO NEW FILE
     public void LuckyShotPerformAutoAttack()
