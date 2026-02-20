@@ -8,7 +8,7 @@ public class UnitInstance : ScriptableObject
     public float MaxHP;
     public float CurrentHP;
     public float CurrentMana;
-
+    public float StartingMana;
     // modifiers from augments and shit
     public float DamageMultMod = 1.0f;
     public float DamageFlatMod = 0;
@@ -25,6 +25,7 @@ public class UnitInstance : ScriptableObject
     {
         UnitInstance instance = ScriptableObject.CreateInstance<UnitInstance>();
         instance.BaseDef = def;
+        instance.StartingMana = def.StartingMana;
         instance.CurrentMana = def.StartingMana;
         instance.Faction= def.Faction;
         instance.BaseAbilityPower = def.AbilityPower;

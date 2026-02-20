@@ -2,9 +2,10 @@ using UnityEngine;
 
 public class CurrencyManager : MonoBehaviour
 {
-    public int currency =5 ;
+    public int currency = 5;
     public int maxInterest = 10;
     public int interestThreshold = 10;
+    public int income = 8;
 
     private void OnEnable()
     {
@@ -40,6 +41,11 @@ public class CurrencyManager : MonoBehaviour
             addAmount = maxInterest;
         }
         AddCurrency(addAmount);
+    }
+public void newRound()
+    {
+        GetInterest();
+        AddCurrency(income);
     }
 
     private void HandleCurrencyCollected(int amount)
