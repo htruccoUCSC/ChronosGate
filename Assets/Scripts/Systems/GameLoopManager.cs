@@ -15,6 +15,8 @@ public class GameLoopManager : MonoBehaviour
     [SerializeField] private WaveManager waveManager;
      public AugmentManager augmentManager;
 
+    public NewRound newRound;
+
     [Header("Settings")]
     [SerializeField] private int wavesPerAugmentCycle = 3;
 
@@ -186,9 +188,11 @@ public class GameLoopManager : MonoBehaviour
         }
         else
         {
-            // Continue to next shop phase
+
+            // Continue to next shop phase. Wave done
             Debug.Log($"Moving to next shopping phase... (Next: Wave {currentWaveInCycle + 1}/{wavesPerAugmentCycle})");
             yield return new WaitForSeconds(1f); // Brief pause
+            newRound.startNewRound();
             StartShoppingPhase();
         }
     }

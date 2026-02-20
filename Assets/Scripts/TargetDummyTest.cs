@@ -17,6 +17,8 @@ public class TargetDummyTest : MonoBehaviour
     private int polymorphVersion = 0;
     private SpriteRenderer cachedRenderer;
     private Sprite baseSprite;
+    [Header("Debug")]
+    public bool showHitbox = true; // default off
 
     void Start()
     {
@@ -51,7 +53,6 @@ public class TargetDummyTest : MonoBehaviour
                 m_SlowMultiplier = 1f;
             }
         }
-
         // if crossed the left end of the map, lose a life once
         if (!alreadyCountedAsEscape && WaveManager.Instance != null)
         {
@@ -122,4 +123,20 @@ public class TargetDummyTest : MonoBehaviour
             registered = false;
         }
     }
+void OnDrawGizmos()
+{
+    if (!showHitbox) return;
+
+    // Look for collider on self or children
+    Collider2D col = GetComponent<Collider2D>();
+    if (col == null) col = GetComponentInChildren<Collider2D>();
+    if (col == null) return;
+
+    Bounds bounds = col.bounds;
+    Gizmos.color = Color.yellow;
+    Gizmos.DrawWireCube(bounds.center, bounds.size);
+}
+
+
+    
 }
