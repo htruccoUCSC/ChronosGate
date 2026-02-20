@@ -12,8 +12,8 @@ private List<Transform> nearest;
 
     protected override void CastAbility()
     {
-
-
+        //Cast shot with 30% damage increase on target buff
+          SpawnSniperProjectile(LoadProjectilePrefab(), myData.GetModifiedDamage(), false);
     }
 
     protected override void PerformBasicAttack()
