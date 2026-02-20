@@ -5,8 +5,9 @@ public class CurrencyManager : MonoBehaviour
 {
     public static CurrencyManager Instance { get; private set; }
 
-    public int currency = 5;
+    private int currency = 500;
     public int interestThreshold = 10;
+    public int maxInterest = 10;
 
     // Event fired when currency changes - UI subscribes to this
     public event Action<int> OnCurrencyChanged;
@@ -55,6 +56,10 @@ public class CurrencyManager : MonoBehaviour
     public void GetInterest()
     {
         int addAmount = currency / interestThreshold;
+        if (addAmount > maxInterest)
+        {
+            addAmount = maxInterest;
+        }
         AddCurrency(addAmount);
     }
 }

@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
+using System.Collections.Generic;
 
 public class TowerSlot : MonoBehaviour
 {
@@ -83,13 +84,32 @@ public class TowerSlot : MonoBehaviour
             return;
         }
 
+        // Check currency before purchase
+        CurrencyManager currencyManager = CurrencyManager.Instance;
+        if (currencyManager == null)
+        {
+            Debug.LogError("CurrencyManager not found!");
+            return;
+        }
+
+        // Try to spend currency
+        if (!currencyManager.TrySpendCurrency(unitDefinition.Cost))
+        {
+            Debug.Log($"Cannot afford unit! Need {unitDefinition.Cost}, have {currencyManager.GetCurrency()}");
+            return;
+        }
+
+        // Add unit to inventory
         if (inventoryUI.AddUnit(unitDefinition))
         {
+            Debug.Log($"Purchased {unitDefinition.Name} for {unitDefinition.Cost} gold!");
             ClearSlot();
         }
         else
         {
             Debug.Log("Inventory is full.");
+            // Refund currency if inventory is full
+            currencyManager.AddCurrency(unitDefinition.Cost);
         }
     }
 }

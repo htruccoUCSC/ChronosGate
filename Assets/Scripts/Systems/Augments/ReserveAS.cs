@@ -8,7 +8,7 @@ public CurrencyManager currency;
 public Buffs buffs;
 public void ReserveASCall()
 {
-        int buffAmount =currency.currency/5;
+        int buffAmount = currency.GetCurrency() / 5;
 for (int x = 0; x < board.unitGrid.GetLength(0); x++)
 {
 

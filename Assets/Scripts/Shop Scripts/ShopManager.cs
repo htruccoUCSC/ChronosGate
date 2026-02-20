@@ -10,6 +10,7 @@ public class ShopManager : MonoBehaviour
     [SerializeField] private Button toggleButton;
     [SerializeField] private Button rerollButton;
     [SerializeField] private Button nextRoundButton;
+    [SerializeField] private TextMeshProUGUI rerollCostText;
     
     [Header("Shop Slots")]
     [SerializeField] private ConsumableSlot[] consumableSlots = new ConsumableSlot[2];
@@ -27,12 +28,24 @@ public class ShopManager : MonoBehaviour
     [SerializeField] private ConsumableData[] testConsumableData;
     
     private bool isShopOpen = false;
+    private int rerollCost = 1;
+    private CurrencyManager currencyManager;
     
     private void Start()
     {
+        currencyManager = CurrencyManager.Instance;
+        if (currencyManager == null)
+        {
+            Debug.LogError("CurrencyManager not found!");
+        }
+        else
+        {
+            currencyManager.OnCurrencyChanged += UpdateRerollButtonState;
+        }
+        
         toggleButton.onClick.AddListener(ToggleShop);
         nextRoundButton.onClick.AddListener(OnNextRoundButtonClicked);
-        rerollButton.onClick.AddListener(RerollShop);
+        rerollButton.onClick.AddListener(OnRerollButtonClicked);
         
         shopPanel.SetActive(false);
         consumableTooltip.SetActive(false);
@@ -85,6 +98,7 @@ public class ShopManager : MonoBehaviour
             databaseLoader = FindFirstObjectByType<DatabaseLoader>();
         }
 
+        UpdateRerollCostDisplay();
         PopulateTowerSlots();
     }
     
@@ -122,6 +136,48 @@ public class ShopManager : MonoBehaviour
         {
             GameLoopManager.Instance.OnNextRoundPressed();
         }
+    }
+    
+    private void OnRerollButtonClicked()
+    {
+        if (currencyManager == null)
+        {
+            Debug.LogError("[ShopManager] CurrencyManager not found!");
+            return;
+        }
+
+        if (!currencyManager.TrySpendCurrency(rerollCost))
+        {
+            Debug.Log($"[ShopManager] Cannot afford reroll! Need {rerollCost}, have {currencyManager.GetCurrency()}");
+            return;
+        }
+
+        Debug.Log($"[ShopManager] Rerolled shop for {rerollCost} gold!");
+        rerollCost += 2; // Increase cost by 2 for next reroll
+        UpdateRerollCostDisplay();
+        PopulateTowerSlots();
+    }
+    
+    private void UpdateRerollCostDisplay()
+    {
+        if (rerollCostText != null)
+        {
+            rerollCostText.text = $"Reroll: {rerollCost}";
+        }
+    }
+    
+    private void UpdateRerollButtonState(int currentCurrency)
+    {
+        if (rerollButton != null)
+        {
+            rerollButton.interactable = currentCurrency >= rerollCost;
+        }
+    }
+    
+    public void ResetRerollCost()
+    {
+        rerollCost = 1;
+        UpdateRerollCostDisplay();
     }
     
     private void RerollShop()
