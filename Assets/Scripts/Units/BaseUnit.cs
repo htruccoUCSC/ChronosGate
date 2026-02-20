@@ -9,9 +9,6 @@ public abstract class BaseUnit : MonoBehaviour
     protected Transform currentTarget;
      public List<Buff> roundBuffs = new List<Buff>();
     public List<Buff> activeBuffs = new List<Buff>();
-    protected List<GameObject> spawnedProjectiles = new List<GameObject>();
-    protected Sprite _abilitySprite;
-protected Vector3 _abilityScale = Vector3.one;
     protected Sprite _projectileSprite;
     protected Vector3 _projectileScale = Vector3.one;
     private MeleeAttackBehavior m_MeleeAttackBehavior;
@@ -34,15 +31,6 @@ protected Vector3 _abilityScale = Vector3.one;
                 _projectileSprite = sr.sprite;
             }
         }
-         Transform abilityChild = transform.Find("Ability");
-    if (abilityChild != null)
-    {
-        SpriteRenderer sr = abilityChild.GetComponent<SpriteRenderer>();
-        if (sr != null)
-            _abilitySprite = sr.sprite;
-
-        _abilityScale = abilityChild.localScale;
-    }
 
         NormalizeSpriteSize();
     }
@@ -226,9 +214,8 @@ protected Vector3 _abilityScale = Vector3.one;
         if (prefab == null) return null;
 
         GameObject proj = Instantiate(prefab, transform.position, Quaternion.identity);
-        proj.SetActive(true);   
-        //List of spawnedProjectiles so can wipe for new Round
-         spawnedProjectiles.Add(proj);
+        proj.SetActive(true);
+
         // Apply projectile sprite and scale
         if (_projectileSprite != null)
         {
@@ -272,37 +259,6 @@ protected Vector3 _abilityScale = Vector3.one;
 
         projScript.Setup(damage, direction, launchAngle, transform.position, isAOE, this);
     }
-protected void SpawnSniperProjectile(GameObject prefab, float damage, bool isAOE)
-{
-    if (currentTarget == null || prefab == null) return;
-
-    GameObject projRoot = InstantiateAndSetupProjectile(prefab);
-    if (projRoot == null) return;
-
-    Projectile p = projRoot.GetComponentInChildren<Projectile>();
-    if (p == null) return;
-
-    Vector2 dir = (currentTarget.position - transform.position).normalized;
-
-    // sniper tuning
-    p.speed = 25f;
-
-    // IMPORTANT: make sure we flip trigger on the same collider that will collide
-    Collider2D col = p.GetComponent<Collider2D>();
-    if (col == null) col = p.GetComponentInChildren<Collider2D>();
-    if (col != null) col.isTrigger = true;
-
-    // optionally ignore lane/row checks for sniper
-    p.SetIgnoreRowCheck(true);
-
-    // Require sniper projectile to only collide with its assigned target.
-    p.SetDesignatedTarget(currentTarget);
-
-    // Let Projectile.Setup set RB type + velocity
-    p.Setup(damage, dir, 0f, transform.position, isAOE, this);
-}
-
-
 
     // spawns a generic projectile towards the current target
     private void SpawnGenericProjectile(float damage)
@@ -378,24 +334,6 @@ protected void SpawnSniperProjectile(GameObject prefab, float damage, bool isAOE
         for(int i = 0; i < roundBuffs.Count; i++){
             roundBuffs[i].OnHit?.Invoke();
         }
-    }
-    public void DestroyAllProjectiles()
-{
-    for (int i = 0; i < spawnedProjectiles.Count; i++)
-    {
-        if (spawnedProjectiles[i] != null)
-            Destroy(spawnedProjectiles[i]);
-    }
-
-    spawnedProjectiles.Clear();
-}
-    public void ResetMana()
-    {
-        myData.CurrentMana=myData.StartingMana;
-    }
-        public void ResetHealth()
-    {
-        myData.CurrentMana=myData.StartingMana;
     }
     //TODO REMOVE THIS TO NEW FILE
     public void LuckyShotPerformAutoAttack()
