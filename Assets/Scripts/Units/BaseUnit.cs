@@ -7,7 +7,7 @@ public abstract class BaseUnit : MonoBehaviour
     public UnitInstance myData;
     public float attackTimer;
     protected Transform currentTarget;
-     public List<Buff> roundBuffs = new List<Buff>();
+    public List<Buff> roundBuffs = new List<Buff>();
     public List<Buff> activeBuffs = new List<Buff>();
     protected Sprite _projectileSprite;
     protected Vector3 _projectileScale = Vector3.one;
@@ -79,6 +79,12 @@ public abstract class BaseUnit : MonoBehaviour
     // example update loop which will probably be entirely scrapped later
     protected virtual void Update()
     {
+        // dont run any logic if the round isn't active
+        if (GameLoopManager.Instance != null && GameLoopManager.Instance.CurrentState != GameLoopManager.GameState.Combat)
+        {
+            return;
+        }
+
         if (myData == null) return;
 
         ScanTargeting();
