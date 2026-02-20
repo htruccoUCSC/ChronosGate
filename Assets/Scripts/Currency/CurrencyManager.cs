@@ -2,25 +2,38 @@ using UnityEngine;
 
 public class CurrencyManager : MonoBehaviour
 {
-public int currency =5 ;
-public int maxInterest = 10;
-public int interestThreshold = 10;
-public int income=8;
-public void AddCurrency(int amount)
-{
-    currency += amount;
-}
-public void SubtractCurrency(int amount)
-{
-    currency -= amount;
-}
+    public int currency = 5;
+    public int maxInterest = 10;
+    public int interestThreshold = 10;
+    public int income = 8;
 
-public void SetCurrency(int newAmount)
-{
-    currency = newAmount;
+    private void OnEnable()
+    {
+        CurrencyPickup.Collected += HandleCurrencyCollected;
+    }
 
-}
-public void GetInterest()
+    private void OnDisable()
+    {
+        CurrencyPickup.Collected -= HandleCurrencyCollected;
+    }
+
+    public void AddCurrency(int amount)
+    {
+        currency += amount;
+    }
+
+    public void SubtractCurrency(int amount)
+    {
+        currency -= amount;
+    }
+
+    public void SetCurrency(int newAmount)
+    {
+        currency = newAmount;
+
+    }
+
+    public void GetInterest()
     {
         int addAmount = currency;
         if (addAmount > maxInterest)
@@ -35,4 +48,8 @@ public void newRound()
         AddCurrency(income);
     }
 
+    private void HandleCurrencyCollected(int amount)
+    {
+        AddCurrency(amount);
+    }
 }
