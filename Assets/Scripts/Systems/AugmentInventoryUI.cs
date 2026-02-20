@@ -26,7 +26,7 @@ public class AugmentInventoryUI : MonoBehaviour
         
         if (augmentManager == null)
         {
-            Debug.LogError("AugmentManager not found!");
+            Debug.LogError("[AugmentInventoryUI] AugmentManager not found in scene!");
             return;
         }
 
@@ -37,7 +37,7 @@ public class AugmentInventoryUI : MonoBehaviour
         }
         else
         {
-            Debug.LogWarning("[AugmentInventoryUI] augmentInfoPanel not assigned in inspector!");
+            Debug.LogError("[AugmentInventoryUI] augmentInfoPanel NOT assigned in inspector!");
         }
 
         // Hook up view all augments button
@@ -47,7 +47,7 @@ public class AugmentInventoryUI : MonoBehaviour
         }
         else
         {
-            Debug.LogWarning("[AugmentInventoryUI] viewAllAugmentsButton not assigned in inspector!");
+            Debug.LogError("[AugmentInventoryUI] viewAllAugmentsButton NOT assigned in inspector!");
         }
 
         // Hook up close info panel button
@@ -57,7 +57,23 @@ public class AugmentInventoryUI : MonoBehaviour
         }
         else
         {
-            Debug.LogWarning("[AugmentInventoryUI] closeInfoPanelButton not assigned in inspector!");
+            Debug.LogError("[AugmentInventoryUI] closeInfoPanelButton NOT assigned in inspector!");
+        }
+
+        // Check critical references
+        if (augmentInventoryContainer == null)
+        {
+            Debug.LogError("[AugmentInventoryUI] CRITICAL: augmentInventoryContainer NOT assigned in inspector!");
+        }
+
+        if (augmentSlotPrefab == null)
+        {
+            Debug.LogError("[AugmentInventoryUI] CRITICAL: augmentSlotPrefab NOT assigned in inspector!");
+        }
+
+        if (augmentCountText == null)
+        {
+            Debug.LogError("[AugmentInventoryUI] augmentCountText NOT assigned in inspector!");
         }
         
         RefreshAugmentDisplay();
@@ -65,7 +81,23 @@ public class AugmentInventoryUI : MonoBehaviour
     
     public void RefreshAugmentDisplay()
     {
-        if (augmentManager == null) return;
+        if (augmentManager == null)
+        {
+            Debug.LogError("[AugmentInventoryUI] AugmentManager not found!");
+            return;
+        }
+
+        if (augmentInventoryContainer == null)
+        {
+            Debug.LogError("[AugmentInventoryUI] augmentInventoryContainer NOT assigned in inspector! Cannot display augments.");
+            return;
+        }
+
+        if (augmentSlotPrefab == null)
+        {
+            Debug.LogError("[AugmentInventoryUI] augmentSlotPrefab NOT assigned in inspector! Cannot create augment buttons.");
+            return;
+        }
 
         // Clear existing buttons
         foreach (Transform child in augmentInventoryContainer)
@@ -77,9 +109,15 @@ public class AugmentInventoryUI : MonoBehaviour
         // Get owned augments from manager
         List<Augment> ownedAugments = augmentManager.GetAugmentInventory();
         
-        // Create button for each owned augment (show name only)
-        foreach (Augment augment in ownedAugments)
+        if (ownedAugments.Count == 0)
         {
+            return;
+        }
+        
+        // Create button for each owned augment (show name only)
+        for (int i = 0; i < ownedAugments.Count; i++)
+        {
+            Augment augment = ownedAugments[i];
             Button augmentButton = Instantiate(augmentSlotPrefab, augmentInventoryContainer);
             
             // Set button text to augment name only
@@ -88,7 +126,12 @@ public class AugmentInventoryUI : MonoBehaviour
             {
                 buttonText.text = augment.Name;
             }
+            else
+            {
+                Debug.LogWarning($"[AugmentInventoryUI] augmentSlotPrefab has no TextMeshProUGUI child component!");
+            }
             
+            augmentButton.gameObject.SetActive(true);
             augmentSlots.Add(augmentButton);
         }
         
@@ -96,6 +139,10 @@ public class AugmentInventoryUI : MonoBehaviour
         if (augmentCountText != null)
         {
             augmentCountText.text = $"Owned Augments: {ownedAugments.Count}";
+        }
+        else
+        {
+            Debug.LogWarning("[AugmentInventoryUI] augmentCountText NOT assigned in inspector!");
         }
     }
     
@@ -145,18 +192,16 @@ public class AugmentInventoryUI : MonoBehaviour
 
             // Layout setup for better readability
             RectTransform infoRT = infoDisplay.GetComponent<RectTransform>();
-            infoRT.sizeDelta = new Vector2(300, 200);
+            infoRT.sizeDelta = new Vector2(300, 280);
 
             RectTransform nameRT = nameObject.GetComponent<RectTransform>();
             nameRT.anchoredPosition = Vector2.zero;
             nameRT.sizeDelta = new Vector2(300, 60);
 
             RectTransform descRT = descObject.GetComponent<RectTransform>();
-            descRT.anchoredPosition = new Vector2(0, -80);
-            descRT.sizeDelta = new Vector2(300, 120);
+            descRT.anchoredPosition = new Vector2(0, -75);
+            descRT.sizeDelta = new Vector2(300, 140);
         }
-
-        Debug.Log($"[AugmentInventoryUI] Displaying info for {ownedAugments.Count} augments");
     }
 
     /// <summary>
