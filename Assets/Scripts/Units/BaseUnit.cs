@@ -10,6 +10,8 @@ public abstract class BaseUnit : MonoBehaviour
      public List<Buff> roundBuffs = new List<Buff>();
     public List<Buff> activeBuffs = new List<Buff>();
     protected List<GameObject> spawnedProjectiles = new List<GameObject>();
+    protected Sprite _abilitySprite;
+protected Vector3 _abilityScale = Vector3.one;
     protected Sprite _projectileSprite;
     protected Vector3 _projectileScale = Vector3.one;
 
@@ -31,6 +33,15 @@ public abstract class BaseUnit : MonoBehaviour
                 _projectileSprite = sr.sprite;
             }
         }
+         Transform abilityChild = transform.Find("Ability");
+    if (abilityChild != null)
+    {
+        SpriteRenderer sr = abilityChild.GetComponent<SpriteRenderer>();
+        if (sr != null)
+            _abilitySprite = sr.sprite;
+
+        _abilityScale = abilityChild.localScale;
+    }
 
         NormalizeSpriteSize();
     }

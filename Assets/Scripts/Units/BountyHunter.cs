@@ -7,23 +7,23 @@ public class BountyHunter : BaseUnit
 {
     [SerializeField] private LayerMask m_TargetMask;
     [SerializeField] private Tilemap m_PreviewTilemap;
-
+    [SerializeField] private GameObject m_ProjectilePrefab;
+    
+    [SerializeField] private GameObject m_AbilityPrefab;
+    private float m_AbilityProjectileScaleMultiplier = 5f;
 private List<Transform> nearest;
 
     protected override void CastAbility()
     {
-
+    SpawnBountyHunterAbilityProjectile(myData.GetModifiedAbilityPower());
 
     }
 
     protected override void PerformBasicAttack()
     {
 
-        SpawnSniperProjectile(LoadProjectilePrefab(), myData.GetModifiedDamage(), false);
-        //if (nearest[0]!=null){
-         //TargetDummyTest enemy = nearest[0].GetComponentInParent<TargetDummyTest>();
-         //enemy.TakeDamage(Mathf.RoundToInt( myData.GetModifiedDamage()));
-        //}
+       SpawnSniperProjectile(LoadProjectilePrefab(), myData.GetModifiedDamage(), false);
+
     }
 
        public List<Transform> GetHighestHealthTarget(int maxTargets)
@@ -81,6 +81,59 @@ protected override void ScanTargeting()
         currentTarget = nearest[0];
     else
         currentTarget = null;
+}
+private void SpawnBountyHunterAbilityProjectile(float damage)
+{
+    if (currentTarget == null) return;
+
+    GameObject prefab = LoadProjectilePrefab();
+    if (prefab == null)
+    {
+        Debug.LogError("LoadProjectilePrefab() null");
+        return;
+    }
+
+    GameObject proj = InstantiateAndSetupProjectile(prefab);
+    if (proj == null) return;
+
+    Projectile p = proj.GetComponentInChildren<Projectile>();
+    if (p == null)
+    {
+        Debug.LogError("No Projectile component on spawned proj");
+        return;
+    }
+
+    // Make it target anything
+    p.SetIgnoreRowCheck(true);
+    p.SetDesignatedTarget(currentTarget);
+
+    Collider2D col = p.GetComponent<Collider2D>();
+    if (col == null) col = p.GetComponentInChildren<Collider2D>();
+    if (col != null) col.isTrigger = true;
+
+    // Ability visuals
+    var sr = proj.GetComponentInChildren<SpriteRenderer>();
+    var animator = proj.GetComponentInChildren<Animator>();
+    if (sr != null && animator == null)
+        sr.sprite = _abilitySprite != null ? _abilitySprite : _projectileSprite;
+
+    Vector3 scaleToUse = (_abilitySprite != null) ? _abilityScale : _projectileScale;
+    proj.transform.localScale =
+        Vector3.Scale(transform.localScale, scaleToUse) * m_AbilityProjectileScaleMultiplier;
+
+    // Throw arc
+    Vector2 diff = currentTarget.position - transform.position;
+    Vector2 direction = diff.normalized;
+
+    float launchAngle = 60f; // steeper arc for catapult
+    float gravity = Mathf.Abs(Physics2D.gravity.y * 3f);
+
+    p.speed = CalculateBallisticSpeed(diff, launchAngle, gravity);
+
+    // IMPORTANT: pass this
+    p.Setup(damage, direction, launchAngle, transform.position, true, this);
+
+    p.EnableOnHitSlow(1f, 3f);
 }
 }
 
