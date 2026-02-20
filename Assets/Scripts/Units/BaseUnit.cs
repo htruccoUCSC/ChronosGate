@@ -11,6 +11,7 @@ public abstract class BaseUnit : MonoBehaviour
     public List<Buff> activeBuffs = new List<Buff>();
     protected Sprite _projectileSprite;
     protected Vector3 _projectileScale = Vector3.one;
+    private MeleeAttackBehavior m_MeleeAttackBehavior;
 
     // how much of the tile we want the unit to fill
     private const float TILE_FILL_RATIO = 1.0f;
@@ -135,10 +136,14 @@ public abstract class BaseUnit : MonoBehaviour
         switch (myData.BaseDef.AttackFunction)
         {
             case BasicAttackType.Melee:
-                // example melee attack logic doesn't do anything rn
-                if (Vector2.Distance(transform.position, currentTarget.position) <= myData.BaseDef.Range + 0.5f)
+                if (m_MeleeAttackBehavior == null)
                 {
-                    // ApplyDamage(currentTarget, damage);
+                    m_MeleeAttackBehavior = GetComponent<MeleeAttackBehavior>();
+                }
+
+                if (m_MeleeAttackBehavior != null)
+                {
+                    TryPerformMeleeAttack(damage);
                 }
                 break;
 
@@ -152,6 +157,44 @@ public abstract class BaseUnit : MonoBehaviour
             case BasicAttackType.None:
                 break;
         }
+    }
+
+    protected bool TryPerformMeleeAttack(float damage)
+    {
+        if (myData == null || myData.BaseDef == null)
+        {
+            return false;
+        }
+
+        return TryPerformMeleeAttack(damage, myData.BaseDef.Range);
+    }
+
+    protected bool TryPerformMeleeAttack(float damage,float meleerange)
+    {
+        if (currentTarget == null || myData == null || myData.BaseDef == null)
+        {
+            return false;
+        }
+
+        if (m_MeleeAttackBehavior == null)
+        {
+            m_MeleeAttackBehavior = GetComponent<MeleeAttackBehavior>();
+        }
+
+        if (m_MeleeAttackBehavior == null)
+        {
+            return false;
+        }
+
+        float range = myData.BaseDef.Range;
+        bool didHit = m_MeleeAttackBehavior.TryPerformAttack(transform, currentTarget, meleerange, damage);
+
+        if (didHit)
+        {
+            onHit();
+        }
+
+        return didHit;
     }
 
     protected virtual GameObject LoadProjectilePrefab()
