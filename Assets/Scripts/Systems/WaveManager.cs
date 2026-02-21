@@ -24,9 +24,13 @@ public class WaveManager : MonoBehaviour
     [Header("Lives")]
     public int lives = 3; // you start with 3 lives
 
-    private readonly HashSet<TargetDummyTest> aliveEnemies = new HashSet<TargetDummyTest>(); // tracks living enemies
+    // keep BOTH systems alive for now so we don't break older units/scripts
+    private readonly HashSet<BaseEnemy> aliveBaseEnemies = new HashSet<BaseEnemy>();              // "real" enemies
+    private readonly HashSet<TargetDummyTest> aliveTestEnemies = new HashSet<TargetDummyTest>(); // older test enemies
+
     private bool gameOver = false; // stops spawning when you hit 0 lives
     private bool waveActive = false;
+
     // bool that enables the old automatic wave behavior
     private bool autoRunWaves = false;
 
@@ -49,7 +53,7 @@ public class WaveManager : MonoBehaviour
 
         // compute map end threshold once at start
         RecomputeMapEndX();
-        
+
         // If you want the old behavior (auto waves), set autoRunWaves to true
         if (autoRunWaves)
         {
@@ -94,6 +98,11 @@ public class WaveManager : MonoBehaviour
         return leftLoseX; // enemies use this to know when they reached the end
     }
 
+    private int AliveEnemyCount()
+    {
+        return aliveBaseEnemies.Count + aliveTestEnemies.Count;
+    }
+
     private IEnumerator RunWaves()
     {
         while (!gameOver)
@@ -109,7 +118,7 @@ public class WaveManager : MonoBehaviour
             }
 
             // wait until all enemies are dead or escaped
-            yield return new WaitUntil(() => aliveEnemies.Count == 0 || gameOver);
+            yield return new WaitUntil(() => AliveEnemyCount() == 0 || gameOver);
 
             if (gameOver) yield break;
 
@@ -125,14 +134,13 @@ public class WaveManager : MonoBehaviour
     public void StartNextWave()
     {
         if (gameOver || waveActive) return;
-        
         StartCoroutine(RunSingleWave());
     }
 
     // returns true if the current wave is fully cleared
     public bool IsWaveComplete()
     {
-        return !waveActive && aliveEnemies.Count == 0;
+        return !waveActive && AliveEnemyCount() == 0;
     }
 
     // run wave helper function that only runs one wave and then stops
@@ -149,14 +157,15 @@ public class WaveManager : MonoBehaviour
                 waveActive = false;
                 yield break;
             }
+
             TrySpawnEnemyOnTile();
             yield return new WaitForSeconds(spawnDelay);
         }
 
-        yield return new WaitUntil(() => aliveEnemies.Count == 0 || gameOver);
+        yield return new WaitUntil(() => AliveEnemyCount() == 0 || gameOver);
 
         Debug.Log($"--- WAVE {currentWave} CLEARED ---");
-        
+
         currentWave++;
         enemiesPerWave += enemiesAddedPerWave;
         waveActive = false;
@@ -226,17 +235,63 @@ public class WaveManager : MonoBehaviour
         Vector3Int spawnCell = new Vector3Int(spawnX, chosenY, 0);
         Vector3 spawnWorld = tilemap.GetCellCenterWorld(spawnCell);
 
-        Instantiate(enemyPrefab, spawnWorld, Quaternion.identity);
+        GameObject go = Instantiate(enemyPrefab, spawnWorld, Quaternion.identity);
+
+        // try BaseEnemy first (new system), otherwise fall back to TargetDummyTest (older system)
+        BaseEnemy baseEnemy = go.GetComponentInParent<BaseEnemy>();
+        if (baseEnemy != null)
+        {
+            RegisterEnemy(baseEnemy);
+            return;
+        }
+
+        TargetDummyTest testEnemy = go.GetComponentInParent<TargetDummyTest>();
+        if (testEnemy != null)
+        {
+            RegisterEnemy(testEnemy);
+            return;
+        }
+
+        Debug.LogWarning("WaveManager: spawned enemyPrefab but it has no BaseEnemy or TargetDummyTest component");
     }
 
+    // --- registration for BaseEnemy (new) ---
+    public void RegisterEnemy(BaseEnemy enemy)
+    {
+        aliveBaseEnemies.Add(enemy); // called when an enemy spawns
+    }
+
+    public void UnregisterEnemy(BaseEnemy enemy)
+    {
+        aliveBaseEnemies.Remove(enemy); // called when an enemy dies or gets destroyed
+    }
+
+    public void EnemyReachedEnd(BaseEnemy enemy)
+    {
+        if (gameOver) return;
+
+        lives -= 1;
+        Debug.Log($"Enemy reached the end! Lives left: {lives}");
+
+        if (enemy != null)
+            Destroy(enemy.gameObject);
+
+        if (lives <= 0)
+        {
+            gameOver = true;
+            Debug.Log("GAME OVER (0 lives).");
+        }
+    }
+
+    // --- registration for TargetDummyTest (old) ---
     public void RegisterEnemy(TargetDummyTest enemy)
     {
-        aliveEnemies.Add(enemy); // called when an enemy spawns
+        aliveTestEnemies.Add(enemy); // called when an enemy spawns
     }
 
     public void UnregisterEnemy(TargetDummyTest enemy)
     {
-        aliveEnemies.Remove(enemy); // called when an enemy dies or gets destroyed
+        aliveTestEnemies.Remove(enemy); // called when an enemy dies or gets destroyed
     }
 
     public void EnemyReachedEnd(TargetDummyTest enemy)
@@ -246,7 +301,6 @@ public class WaveManager : MonoBehaviour
         lives -= 1;
         Debug.Log($"Enemy reached the end! Lives left: {lives}");
 
-        // destroy the enemy so it unregisters (OnDestroy in TargetDummy handles it)
         if (enemy != null)
             Destroy(enemy.gameObject);
 

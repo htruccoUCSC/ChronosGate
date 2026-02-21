@@ -363,4 +363,27 @@ protected void SpawnSniperProjectile(GameObject prefab, float damage, bool isAOE
         PerformBasicAttack();
         }
     }
+    // added this so that baseEnemy works
+
+    public bool IsDead
+    {
+        get
+        {
+            if (myData == null) return false;
+            return myData.CurrentHP <= 0;
+        }
+    }
+
+    public void TakeDamage(int damage)
+    {
+        if (myData == null) return;
+        if (damage <= 0) return;
+
+        myData.CurrentHP -= damage;
+
+        if (myData.CurrentHP <= 0)
+        {
+            Destroy(gameObject);
+        }
+    }
 }
