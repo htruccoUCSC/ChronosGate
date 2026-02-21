@@ -17,8 +17,12 @@ public class AugmentInventoryUI : MonoBehaviour
     [SerializeField] private Button closeInfoPanelButton;
     [SerializeField] private Transform augmentInfoContainer;
     
+    [Header("Augment Tooltip")]
+    [SerializeField] private Transform augmentTooltipContainer;
+    
     private AugmentManager augmentManager;
     private List<Button> augmentSlots = new List<Button>();
+    private Augment currentSelectedAugment; // Track which augment is currently displayed
     
     private void Start()
     {
@@ -74,6 +78,11 @@ public class AugmentInventoryUI : MonoBehaviour
         if (augmentCountText == null)
         {
             Debug.LogError("[AugmentInventoryUI] augmentCountText NOT assigned in inspector!");
+        }
+
+        if (augmentTooltipContainer == null)
+        {
+            Debug.LogError("[AugmentInventoryUI] augmentTooltipContainer NOT assigned in inspector!");
         }
         
         RefreshAugmentDisplay();
@@ -131,6 +140,9 @@ public class AugmentInventoryUI : MonoBehaviour
                 Debug.LogWarning($"[AugmentInventoryUI] augmentSlotPrefab has no TextMeshProUGUI child component!");
             }
             
+            // Add click listener to display tooltip for this augment
+            augmentButton.onClick.AddListener(() => ShowAugmentTooltip(augment));
+            
             augmentButton.gameObject.SetActive(true);
             augmentSlots.Add(augmentButton);
         }
@@ -147,7 +159,7 @@ public class AugmentInventoryUI : MonoBehaviour
     }
     
     /// <summary>
-    /// Show detailed information for all owned augments
+    /// Show detailed information for all owned augments with vertical columns of name and description
     /// </summary>
     private void ShowAllAugmentInfo()
     {
@@ -158,7 +170,7 @@ public class AugmentInventoryUI : MonoBehaviour
             augmentInfoPanel.SetActive(true);
         }
 
-        // Clear existing info displays
+        // Clear existing displays
         if (augmentInfoContainer != null)
         {
             foreach (Transform child in augmentInfoContainer)
@@ -168,39 +180,79 @@ public class AugmentInventoryUI : MonoBehaviour
         }
 
         List<Augment> ownedAugments = augmentManager.GetAugmentInventory();
+        if (ownedAugments.Count == 0) return;
 
-        // Display each augment's full details
+        // Create main horizontal container for all augment columns
+        GameObject mainContainer = new GameObject("MainContainer", typeof(RectTransform), typeof(HorizontalLayoutGroup));
+        mainContainer.transform.SetParent(augmentInfoContainer, false);
+        RectTransform mainRT = mainContainer.GetComponent<RectTransform>();
+        mainRT.anchorMin = Vector2.zero;
+        mainRT.anchorMax = Vector2.one;
+        mainRT.offsetMin = Vector2.zero;
+        mainRT.offsetMax = Vector2.zero;
+
+        HorizontalLayoutGroup mainHLG = mainContainer.GetComponent<HorizontalLayoutGroup>();
+        mainHLG.spacing = 10;
+        mainHLG.childForceExpandWidth = true;
+        mainHLG.childForceExpandHeight = true;
+        mainHLG.padding = new RectOffset(10, 10, 10, 10);
+
+        // Create a column for each augment (vertical stack of name button + description)
         foreach (Augment augment in ownedAugments)
         {
-            // Create a container for this augment's info
-            GameObject infoDisplay = new GameObject($"AugmentInfo_{augment.Name}", typeof(RectTransform), typeof(LayoutElement));
-            infoDisplay.transform.SetParent(augmentInfoContainer, false);
+            // Create vertical column container
+            GameObject columnContainer = new GameObject($"Column_{augment.Name}", typeof(RectTransform), typeof(VerticalLayoutGroup));
+            columnContainer.transform.SetParent(mainContainer.transform, false);
 
-            // Add text components for name and description
-            GameObject nameObject = new GameObject("Name", typeof(RectTransform), typeof(TextMeshProUGUI));
-            nameObject.transform.SetParent(infoDisplay.transform, false);
-            TextMeshProUGUI nameText = nameObject.GetComponent<TextMeshProUGUI>();
-            nameText.text = $"<b>{augment.Name}</b>";
-            nameText.fontSize = 48;
+            VerticalLayoutGroup vlg = columnContainer.GetComponent<VerticalLayoutGroup>();
+            vlg.spacing = 5;
+            vlg.childForceExpandWidth = true;
+            vlg.childForceExpandHeight = true;
 
-            GameObject descObject = new GameObject("Description", typeof(RectTransform), typeof(TextMeshProUGUI));
-            descObject.transform.SetParent(infoDisplay.transform, false);
-            TextMeshProUGUI descText = descObject.GetComponent<TextMeshProUGUI>();
-            descText.text = augment.Description;
-            descText.fontSize = 32;
-            descText.wordWrappingRatios = 0.4f;
+            // Create name button
+            GameObject nameButton = new GameObject($"NameButton_{augment.Name}", typeof(RectTransform), typeof(Button), typeof(Image), typeof(LayoutElement));
+            nameButton.transform.SetParent(columnContainer.transform, false);
 
-            // Layout setup for better readability
-            RectTransform infoRT = infoDisplay.GetComponent<RectTransform>();
-            infoRT.sizeDelta = new Vector2(300, 280);
+            Image btnImage = nameButton.GetComponent<Image>();
+            btnImage.color = new Color(0.3f, 0.3f, 0.3f, 1f);
 
-            RectTransform nameRT = nameObject.GetComponent<RectTransform>();
-            nameRT.anchoredPosition = Vector2.zero;
-            nameRT.sizeDelta = new Vector2(300, 60);
+            LayoutElement nameBtnLayout = nameButton.GetComponent<LayoutElement>();
+            nameBtnLayout.preferredHeight = 60;
 
-            RectTransform descRT = descObject.GetComponent<RectTransform>();
-            descRT.anchoredPosition = new Vector2(0, -75);
-            descRT.sizeDelta = new Vector2(300, 140);
+            // Add text to button
+            GameObject nameText = new GameObject("Text", typeof(RectTransform), typeof(TextMeshProUGUI));
+            nameText.transform.SetParent(nameButton.transform, false);
+            TextMeshProUGUI nameTextComp = nameText.GetComponent<TextMeshProUGUI>();
+            nameTextComp.text = augment.Name;
+            nameTextComp.fontSize = 24;
+            nameTextComp.alignment = TextAlignmentOptions.Center;
+
+            RectTransform nameTextRT = nameText.GetComponent<RectTransform>();
+            nameTextRT.anchorMin = Vector2.zero;
+            nameTextRT.anchorMax = Vector2.one;
+            nameTextRT.offsetMin = Vector2.zero;
+            nameTextRT.offsetMax = Vector2.zero;
+
+            // Create description area
+            GameObject descContainer = new GameObject($"Description_{augment.Name}", typeof(RectTransform), typeof(Image));
+            descContainer.transform.SetParent(columnContainer.transform, false);
+
+            Image descImage = descContainer.GetComponent<Image>();
+            descImage.color = new Color(0.2f, 0.2f, 0.2f, 1f);
+
+            // Add description text
+            GameObject descText = new GameObject("DescriptionText", typeof(RectTransform), typeof(TextMeshProUGUI));
+            descText.transform.SetParent(descContainer.transform, false);
+            TextMeshProUGUI descTextComp = descText.GetComponent<TextMeshProUGUI>();
+            descTextComp.text = augment.Description;
+            descTextComp.fontSize = 16;
+            descTextComp.wordWrappingRatios = 0.3f;
+
+            RectTransform descTextRT = descText.GetComponent<RectTransform>();
+            descTextRT.anchorMin = Vector2.zero;
+            descTextRT.anchorMax = Vector2.one;
+            descTextRT.offsetMin = new Vector2(5, 5);
+            descTextRT.offsetMax = new Vector2(-5, -5);
         }
     }
 
@@ -213,5 +265,64 @@ public class AugmentInventoryUI : MonoBehaviour
         {
             augmentInfoPanel.SetActive(false);
         }
+    }
+
+    /// <summary>
+    /// Display tooltip for the selected augment. Replaces previous tooltip content.
+    /// The tooltip persists on screen until another augment is selected.
+    /// </summary>
+    private void ShowAugmentTooltip(Augment augment)
+    {
+        if (augmentTooltipContainer == null)
+        {
+            Debug.LogError("[AugmentInventoryUI] augmentTooltipContainer NOT assigned in inspector!");
+            return;
+        }
+
+        currentSelectedAugment = augment;
+
+        // Clear existing tooltip content
+        foreach (Transform child in augmentTooltipContainer)
+        {
+            Destroy(child.gameObject);
+        }
+
+        // Create name text
+        GameObject nameObject = new GameObject("Name", typeof(RectTransform), typeof(TextMeshProUGUI));
+        nameObject.transform.SetParent(augmentTooltipContainer, false);
+        TextMeshProUGUI nameText = nameObject.GetComponent<TextMeshProUGUI>();
+        nameText.text = $"<b>{augment.Name}</b>";
+        nameText.fontSize = 36;
+
+        // Create description text
+        GameObject descObject = new GameObject("Description", typeof(RectTransform), typeof(TextMeshProUGUI));
+        descObject.transform.SetParent(augmentTooltipContainer, false);
+        TextMeshProUGUI descText = descObject.GetComponent<TextMeshProUGUI>();
+        descText.text = augment.Description;
+        descText.fontSize = 24;
+        descText.wordWrappingRatios = 0.4f;
+
+        // Layout setup - match container dimensions (467.88 x 231.6)
+        RectTransform tooltipRT = augmentTooltipContainer.GetComponent<RectTransform>();
+        if (tooltipRT != null)
+        {
+            tooltipRT.sizeDelta = new Vector2(467.88f, 231.6f);
+        }
+
+        // Position name at the top
+        RectTransform nameRT = nameObject.GetComponent<RectTransform>();
+        nameRT.anchorMin = new Vector2(0.5f, 1f);
+        nameRT.anchorMax = new Vector2(0.5f, 1f);
+        nameRT.pivot = new Vector2(0.5f, 1f);
+        nameRT.anchoredPosition = new Vector2(0, 0);
+        nameRT.sizeDelta = new Vector2(467.88f, 60);
+
+        // Position description below name with adequate spacing
+        RectTransform descRT = descObject.GetComponent<RectTransform>();
+        descRT.anchorMin = new Vector2(0.5f, 1f);
+        descRT.anchorMax = new Vector2(0.5f, 1f);
+        descRT.pivot = new Vector2(0.5f, 1f);
+        descRT.anchoredPosition = new Vector2(0, -70);
+        descRT.sizeDelta = new Vector2(467.88f, 160);
     }
 }
