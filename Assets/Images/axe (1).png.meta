@@ -1,10 +1,19 @@
 fileFormatVersion: 2
-guid: f9f171b95e66f414fbceb3a8565660b5
+guid: 9ba97dc8fec49d943aa232b81ff9a2a9
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: 8083504613746027167
-    second: minotaur_0
+      213: -4641032462138811697
+    second: axe (1)_0
+  - first:
+      213: -2541254284873417307
+    second: axe (1)_1
+  - first:
+      213: 4429587792905021926
+    second: axe (1)_2
+  - first:
+      213: 1086586446674327839
+    second: axe (1)_3
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -100,13 +109,13 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: minotaur_0
+      name: axe (1)_0
       rect:
         serializedVersion: 2
-        x: 0
-        y: 0
-        width: 173
-        height: 291
+        x: 17
+        y: 560
+        width: 465
+        height: 467
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -115,8 +124,74 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: f9a20923e906e2070800000000000000
-      internalID: 8083504613746027167
+      spriteID: fcad82f909db79fb0800000000000000
+      internalID: -4641032462138811697
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: axe (1)_1
+      rect:
+        serializedVersion: 2
+        x: 509
+        y: 555
+        width: 467
+        height: 465
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 5ad3e2a21b6abbcd0800000000000000
+      internalID: -2541254284873417307
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: axe (1)_2
+      rect:
+        serializedVersion: 2
+        x: 17
+        y: 23
+        width: 465
+        height: 467
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 6e9a281f0ae097d30800000000000000
+      internalID: 4429587792905021926
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: axe (1)_3
+      rect:
+        serializedVersion: 2
+        x: 521
+        y: 30
+        width: 467
+        height: 465
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f19f6c3cd94541f00800000000000000
+      internalID: 1086586446674327839
       vertices: []
       indices: 
       edges: []
@@ -135,7 +210,10 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      minotaur_0: 8083504613746027167
+      axe (1)_0: -4641032462138811697
+      axe (1)_1: -2541254284873417307
+      axe (1)_2: 4429587792905021926
+      axe (1)_3: 1086586446674327839
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 
