@@ -151,7 +151,7 @@ public class InventoryUI : MonoBehaviour
 }
 
 // Drag and Drop behavior for inventory slots
-public class InventorySlotDrag : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHandler, IDropHandler
+public class InventorySlotDrag : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHandler, IDropHandler, IPointerEnterHandler, IPointerExitHandler
 {
     private InventoryUI m_InventoryUI;
     private int m_Index;
@@ -162,6 +162,20 @@ public class InventorySlotDrag : MonoBehaviour, IBeginDragHandler, IDragHandler,
     {
         m_InventoryUI = inventoryUI;
         m_Index = index;
+    }
+
+    public void OnPointerEnter(PointerEventData eventData)
+    {
+        var unit = m_InventoryUI.GetUnit(m_Index);
+        if (unit != null && TowerTooltipUI.Instance != null)
+        {
+            TowerTooltipUI.Instance.ShowTooltip(unit);
+        }
+    }
+
+    public void OnPointerExit(PointerEventData eventData)
+    {
+        // Tooltip persists - do NOT hide it
     }
 
     public void OnBeginDrag(PointerEventData eventData)
