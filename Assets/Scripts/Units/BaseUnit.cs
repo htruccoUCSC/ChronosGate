@@ -1,5 +1,4 @@
 using UnityEngine;
-
 using System.Collections.Generic;
 public abstract class BaseUnit : MonoBehaviour
 {
@@ -7,13 +6,14 @@ public abstract class BaseUnit : MonoBehaviour
     public UnitInstance myData;
     public float attackTimer;
     protected Transform currentTarget;
-     public List<Buff> roundBuffs = new List<Buff>();
+    public List<Buff> roundBuffs = new List<Buff>();
     public List<Buff> activeBuffs = new List<Buff>();
     protected List<GameObject> spawnedProjectiles = new List<GameObject>();
     protected Sprite _abilitySprite;
-protected Vector3 _abilityScale = Vector3.one;
+    protected Vector3 _abilityScale = Vector3.one;
     protected Sprite _projectileSprite;
     protected Vector3 _projectileScale = Vector3.one;
+    private MeleeAttackBehavior m_MeleeAttackBehavior;
 
     // how much of the tile we want the unit to fill
     private const float TILE_FILL_RATIO = 1.0f;
@@ -90,6 +90,12 @@ protected Vector3 _abilityScale = Vector3.one;
     // example update loop which will probably be entirely scrapped later
     protected virtual void Update()
     {
+        // dont run any logic if the round isn't active
+        if (GameLoopManager.Instance != null && GameLoopManager.Instance.CurrentState != GameLoopManager.GameState.Combat)
+        {
+            return;
+        }
+
         if (myData == null) return;
 
         ScanTargeting();
@@ -147,10 +153,14 @@ protected Vector3 _abilityScale = Vector3.one;
         switch (myData.BaseDef.AttackFunction)
         {
             case BasicAttackType.Melee:
-                // example melee attack logic doesn't do anything rn
-                if (Vector2.Distance(transform.position, currentTarget.position) <= myData.BaseDef.Range + 0.5f)
+                if (m_MeleeAttackBehavior == null)
                 {
-                    // ApplyDamage(currentTarget, damage);
+                    m_MeleeAttackBehavior = GetComponent<MeleeAttackBehavior>();
+                }
+
+                if (m_MeleeAttackBehavior != null)
+                {
+                    TryPerformMeleeAttack(damage);
                 }
                 break;
 
@@ -164,6 +174,44 @@ protected Vector3 _abilityScale = Vector3.one;
             case BasicAttackType.None:
                 break;
         }
+    }
+
+    protected bool TryPerformMeleeAttack(float damage)
+    {
+        if (myData == null || myData.BaseDef == null)
+        {
+            return false;
+        }
+
+        return TryPerformMeleeAttack(damage, myData.BaseDef.Range);
+    }
+
+    protected bool TryPerformMeleeAttack(float damage,float meleerange)
+    {
+        if (currentTarget == null || myData == null || myData.BaseDef == null)
+        {
+            return false;
+        }
+
+        if (m_MeleeAttackBehavior == null)
+        {
+            m_MeleeAttackBehavior = GetComponent<MeleeAttackBehavior>();
+        }
+
+        if (m_MeleeAttackBehavior == null)
+        {
+            return false;
+        }
+
+        float range = myData.BaseDef.Range;
+        bool didHit = m_MeleeAttackBehavior.TryPerformAttack(transform, currentTarget, meleerange, damage);
+
+        if (didHit)
+        {
+            onHit();
+        }
+
+        return didHit;
     }
 
     protected virtual GameObject LoadProjectilePrefab()
