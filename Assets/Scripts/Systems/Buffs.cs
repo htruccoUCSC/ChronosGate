@@ -36,6 +36,7 @@ public class Buffs : MonoBehaviour
         math.AddAbilityPower(unit.myData, abilityPowerFlat);
         math.AddAbilityPowerMult(unit.myData,abilityPowerMult);
         unit.AddTempBuff(buff);
+        Debug.Log($"[Buffs.AddTempBuff] {unit.name} SpeedFlatMod: {unit.myData.SpeedFlatMod}, SpeedMultMod: {unit.myData.SpeedMultMod}");
     }
 
     public void AddRoundBuff(
@@ -78,9 +79,10 @@ public class Buffs : MonoBehaviour
         math.SubAttackMult(unit.myData, buff.AttackDamageMult);
         math.SubSpeedMult(unit.myData, buff.AttackSpeedMult);
         math.SubAbilityPower(unit.myData, buff.AbilityPowerFlat);
-        math.AddAbilityPowerMult(unit.myData,buff.AbilityPowerMult);
+        math.SubAbilityPowerMult(unit.myData,buff.AbilityPowerMult);
 
         unit.RemoveTempBuff(buff);
+        Debug.Log($"[Buffs.RemoveTempBuff] {unit.name} SpeedFlatMod: {unit.myData.SpeedFlatMod}, SpeedMultMod: {unit.myData.SpeedMultMod}");
     }
 
     public void RemoveRoundBuff(BaseUnit unit, Buff buff)
@@ -90,7 +92,7 @@ public class Buffs : MonoBehaviour
         math.SubAttackMult(unit.myData, buff.AttackDamageMult);
         math.SubSpeedMult(unit.myData, buff.AttackSpeedMult);
         math.SubAbilityPower(unit.myData, buff.AbilityPowerFlat);
-         math.AddAbilityPowerMult(unit.myData,buff.AbilityPowerMult);
+         math.SubAbilityPowerMult(unit.myData,buff.AbilityPowerMult);
 
         unit.RemoveRoundBuff(buff);
     }
