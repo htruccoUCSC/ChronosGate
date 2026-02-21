@@ -77,6 +77,7 @@ public class UnitDefinition : ScriptableObject
     public float AbilityPower;
     public float AbilityManaCost;
     public float StartingMana;
+    public float ManaPerShot;
 }
 
 [Serializable]
@@ -108,6 +109,7 @@ public class UnitRawData
     public float AbilityManaCost;
 
     public float StartingMana;
+    public float ManaPerShot;
     // this is an exception to the naming convention since it's an enum in UnitDefinition
     public string AttackType;
     public float LaunchAngle;

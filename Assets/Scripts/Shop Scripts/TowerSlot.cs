@@ -16,10 +16,26 @@ public class TowerSlot : MonoBehaviour
 
     private UnitDefinition unitDefinition;
     private InventoryUI inventoryUI;
+    private TowerTooltipTrigger tooltipTrigger;
 
     private void Awake()
     {
+        // Only proceed if this is actually a TowerSlot with required components
+        if (button == null || eraText == null)
+        {
+            Debug.LogWarning($"[TowerSlot] {gameObject.name} is missing required components. Skipping tooltip setup.");
+            return;
+        }
+        
         button.onClick.AddListener(OnSlotClicked);
+        
+        // Ensure TowerTooltipTrigger exists on this slot
+        tooltipTrigger = GetComponent<TowerTooltipTrigger>();
+        if (tooltipTrigger == null)
+        {
+            tooltipTrigger = gameObject.AddComponent<TowerTooltipTrigger>();
+            Debug.Log($"Added TowerTooltipTrigger to {gameObject.name}");
+        }
     }
 
     public void Initialize(InventoryUI inventory)
@@ -41,6 +57,12 @@ public class TowerSlot : MonoBehaviour
             descriptionText.text = data.Description;
             button.interactable = true;
             active = true;
+
+            // Set the unit definition on the tooltip trigger
+            if (tooltipTrigger != null)
+            {
+                tooltipTrigger.SetUnitDefinition(data);
+            }
 
             Debug.Log($"Tower slot setup complete for: {data.Name}");
         }
