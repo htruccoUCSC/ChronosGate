@@ -1,5 +1,4 @@
 using UnityEngine;
-
 using System.Collections.Generic;
 public abstract class BaseUnit : MonoBehaviour
 {
@@ -11,7 +10,7 @@ public abstract class BaseUnit : MonoBehaviour
     public List<Buff> activeBuffs = new List<Buff>();
     protected List<GameObject> spawnedProjectiles = new List<GameObject>();
     protected Sprite _abilitySprite;
-protected Vector3 _abilityScale = Vector3.one;
+    protected Vector3 _abilityScale = Vector3.one;
     protected Sprite _projectileSprite;
     protected Vector3 _projectileScale = Vector3.one;
     private MeleeAttackBehavior m_MeleeAttackBehavior;
@@ -422,6 +421,29 @@ protected void SpawnSniperProjectile(GameObject prefab, float damage, bool isAOE
         if(randomChance == 1){
         Debug.Log("Lucky Shot Activated! Unit performs an immediate basic attack.");
         PerformBasicAttack();
+        }
+    }
+    // added this so that baseEnemy works
+
+    public bool IsDead
+    {
+        get
+        {
+            if (myData == null) return false;
+            return myData.CurrentHP <= 0;
+        }
+    }
+
+    public void TakeDamage(int damage)
+    {
+        if (myData == null) return;
+        if (damage <= 0) return;
+
+        myData.CurrentHP -= damage;
+
+        if (myData.CurrentHP <= 0)
+        {
+            Destroy(gameObject);
         }
     }
 }

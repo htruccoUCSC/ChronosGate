@@ -1,12 +1,12 @@
 using UnityEngine;
 using System.Collections.Generic;
 using System.Collections;
+using System;
 
 public class TrebuchetUnit : BaseUnit
 {
     [SerializeField] private LayerMask m_TargetMask;
     [SerializeField] private float m_AbilityBurstDelay = 0.2f;
-
 
     protected override void CastAbility()
     {
@@ -75,14 +75,15 @@ public class TrebuchetUnit : BaseUnit
             float gravity = Mathf.Abs(Physics2D.gravity.y * 3f);
             projScript.speed = CalculateBallisticSpeed(diff, launchAngle, gravity);
         }
-        //offset angle modifier
-        float angleOffset = Random.Range(-5f, 5f);
+
+        float angleOffset = UnityEngine.Random.Range(-5f, 5f);
         launchAngle += angleOffset;
+
         projScript.Setup(damage, direction, launchAngle, transform.position, isAoe);
         projScript.SetIgnoreRowCheck(true);
         projScript.SetDesignatedTarget(target);
     }
-    
+
     private List<Transform> GetNearestTargets(int maxTargets)
     {
         List<(Transform target, float score)> candidates = new List<(Transform target, float score)>();
@@ -94,9 +95,10 @@ public class TrebuchetUnit : BaseUnit
 
         foreach (Collider2D hit in hits)
         {
-            if (hit == null || !hit.CompareTag("Enemy")) continue;
+            if (hit == null) continue;
 
-            TargetDummyTest enemy = hit.GetComponentInParent<TargetDummyTest>();
+            // changed: BaseEnemy instead of TargetDummyTest
+            BaseEnemy enemy = hit.GetComponentInParent<BaseEnemy>();
             if (enemy == null) continue;
 
             int enemyId = enemy.GetInstanceID();
@@ -122,7 +124,7 @@ public class TrebuchetUnit : BaseUnit
         return result;
     }
 
-   protected override void ScanTargeting()
+    protected override void ScanTargeting()
     {
         if (myData == null)
         {
@@ -133,8 +135,4 @@ public class TrebuchetUnit : BaseUnit
         List<Transform> nearest = GetNearestTargets(1);
         currentTarget = nearest.Count > 0 ? nearest[0] : null;
     }
-
-
-
 }
-

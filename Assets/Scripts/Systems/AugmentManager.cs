@@ -1,10 +1,30 @@
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Diagnostics.Contracts;
+//using System.Reflection.Metadata.Ecma335;
+using System.Security.Cryptography.X509Certificates;
 using UnityEngine;
 
 public class AugmentManager : MonoBehaviour
 {
     public AugmentList augmentList = new AugmentList();
+    private List<Augment> augmentInventory = new List<Augment>(); // NEW
 
+    private float timer = 0f;
+    private float interval = 1f;
 
+    // NEW: Acquire an augment and add to inventory
+    public void AcquireAugment(Augment newAugment)
+    {
+        augmentInventory.Add(newAugment);
+        FindFirstObjectByType<AugmentInventoryUI>()?.RefreshAugmentDisplay();
+    }
+
+    // NEW: Get inventory for UI display
+    public List<Augment> GetAugmentInventory()
+    {
+        return augmentInventory;
+    }
 
     public void ApplyAllActiveAugments()
     {
@@ -35,18 +55,17 @@ public class AugmentManager : MonoBehaviour
             augmentList.inactiveAugments.RemoveAt(index);
         }
     }
-    //   void Update()
-    // {
+      void Update()
+    {
 
-    //     timer += Time.deltaTime;
+        timer += Time.deltaTime;
 
-    //     if (timer >= interval)
-    //     {
+        if (timer >= interval)
+        {
 
-    //         timer = 0f;
-    //         ApplyAllActiveAugments();
-    //     }
-    // }
-
+            timer = 0f;
+            ApplyAllActiveAugments();
+        }
+    }
 }
 

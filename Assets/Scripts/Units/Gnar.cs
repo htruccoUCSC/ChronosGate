@@ -11,7 +11,6 @@ public class Boomerang : BaseUnit
     private BoardManager m_Board;
     private bool m_MoveScheduled;
 
-
     protected override void CastAbility()
     {
         Debug.Log("Boomerang uses ability");
@@ -27,7 +26,6 @@ public class Boomerang : BaseUnit
         {
             StartCoroutine(MoveToAdjacentTileAfterDelay(m_MoveDelay));
         }
-
     }
 
     protected override void ScanTargeting()
@@ -48,9 +46,13 @@ public class Boomerang : BaseUnit
 
         foreach (Collider2D hit in hits)
         {
-            if (hit == null || !hit.CompareTag("Enemy")) continue;
+            if (hit == null) continue;
 
-            Vector2 toEnemy = hit.transform.position - transform.position;
+            // changed: dont rely on tag, just make sure its actually an enemy
+            BaseEnemy enemy = hit.GetComponentInParent<BaseEnemy>();
+            if (enemy == null) continue;
+
+            Vector2 toEnemy = enemy.transform.position - transform.position;
 
             // Prefer enemies in front of the unit, but still allow cross-lane targeting.
             bool isBehind = toEnemy.x < -0.05f;
@@ -59,7 +61,7 @@ public class Boomerang : BaseUnit
             if (score < bestScore)
             {
                 bestScore = score;
-                bestTarget = hit.transform;
+                bestTarget = enemy.transform;
             }
         }
 
@@ -159,6 +161,4 @@ public class Boomerang : BaseUnit
 
         m_MoveScheduled = false;
     }
-
 }
-
