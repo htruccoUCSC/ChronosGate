@@ -9,11 +9,13 @@ public class SquireUnit : BaseUnit
     [SerializeField] private GameObject m_ProjectilePrefab;
     [SerializeField] private float m_BasicAttackBuffAmount = 10f;
     [SerializeField] private float m_BasicAttackBuffDuration = 3f;
+    private Buffs m_BuffSystem;
     private BoardManager m_BoardManager;
 
     private void Awake()
     {
         m_BoardManager = FindFirstObjectByType<BoardManager>();
+        m_BuffSystem = FindFirstObjectByType<Buffs>();
     }
 
     protected override void CastAbility()
@@ -27,7 +29,7 @@ public class SquireUnit : BaseUnit
         //apply buff to all adjacent towers
         foreach (BaseUnit tower in adjacentTowers)
         {
-            StartCoroutine(ApplyTemporaryAttackBuff(tower, m_BasicAttackBuffAmount, m_BasicAttackBuffDuration));
+            m_BuffSystem.AddTempBuff(tower, 0f, m_BasicAttackBuffAmount, 0f, 0f, 0f, 0f, Mathf.CeilToInt(m_BasicAttackBuffDuration), null);
         }
     }
 
@@ -41,7 +43,7 @@ public class SquireUnit : BaseUnit
         }
         //apply buff to one random adjacent tower
         BaseUnit buffTarget = adjacentTowers[UnityEngine.Random.Range(0, adjacentTowers.Count)];
-        StartCoroutine(ApplyTemporaryAttackBuff(buffTarget, m_BasicAttackBuffAmount, m_BasicAttackBuffDuration));
+        m_BuffSystem.AddTempBuff(buffTarget, 0f, m_BasicAttackBuffAmount, 0f, 0f, 0f, 0f, Mathf.CeilToInt(m_BasicAttackBuffDuration), null);
     }
 
     private List<BaseUnit> GetAdjacentTowers()
@@ -95,20 +97,6 @@ public class SquireUnit : BaseUnit
         return result;
     }
 
-    private IEnumerator ApplyTemporaryAttackBuff(BaseUnit targetUnit, float attackAmount, float durationSeconds)
-    {
-        if (targetUnit == null || targetUnit.myData == null)
-        {
-            yield break;
-        }
-
-        targetUnit.myData.DamageFlatMod += attackAmount;
-
-        yield return new WaitForSeconds(durationSeconds);
-
-        if (targetUnit != null && targetUnit.myData != null)
-        {
-            targetUnit.myData.DamageFlatMod -= attackAmount;
-        }
-    }
+ 
+    
 }

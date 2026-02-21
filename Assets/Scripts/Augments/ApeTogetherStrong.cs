@@ -9,32 +9,28 @@ public TileMapManager tileMapManager;
 public Buffs buffs;
 public void ApeTogetherStrongCall()
 {
-for (int x = 0; x <tileMapManager.Height; x++)
-{
-    int buffAmount = 0;
-    for (int y = 0; y <tileMapManager.Width; y++)
+    for (int x = 0; x < tileMapManager.Width; x++)
     {
-
-        BaseUnit unit = board.unitGrid[x, y]; 
-
-        if (unit == null) continue;
-
-        if (unit.myData.Faction == "Prehistoric")
+        int buffAmount = 0;
+        for (int y = 0; y < tileMapManager.Height; y++)
         {
-            buffAmount += 20;
+            BaseUnit unit = board.unitGrid[x, y];
+            if (unit == null) continue;
+            if (unit.myData.Faction == "Prehistoric")
+            {
+                buffAmount += 20;
+            }
+        }
+        for (int y = 0; y < tileMapManager.Height; y++)
+        {
+            BaseUnit unit = board.unitGrid[x, y];
+            if (unit == null) continue;
+            if (unit.myData.Faction == "Prehistoric")
+            {
+                buffs.AddRoundBuff(unit, attackSpeedMult: 0f, attackSpeedFlat: 0f, attackDamageFlat: buffAmount, attackDamageMult: 0f, abilityPowerFlat: 0f, abilityPowerMult: 0f, OnHit: null);
+            }
         }
     }
-       for (int y = 0; y < tileMapManager.Width; y++)
-    {
-        BaseUnit unit = board.unitGrid[x, y];
-        if (unit == null) continue;
-         if (unit.myData.Faction == "Prehistoric")
-        {
-            buffs.AddRoundBuff(unit,0,0,buffAmount,0,0,0,null);
-            // Debug.Log(buffAmount);
-        }
-    }
-}
 }
 
 }

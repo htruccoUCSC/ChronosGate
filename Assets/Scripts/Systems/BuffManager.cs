@@ -12,9 +12,8 @@ public class BuffManager : MonoBehaviour
         oneSecondTimer += Time.deltaTime;
 
         if (oneSecondTimer >= 1f)
-        {
+        {   
             oneSecondTimer -= 1f;
-
             UpdateAllTempUnitBuffs();
         }
     }
@@ -24,15 +23,14 @@ public class BuffManager : MonoBehaviour
         // Iterate through all units and update their temp buffs
         foreach (BaseUnit unit in board.unitList)
         {
-            foreach (Buff buff in unit.activeBuffs)
+           foreach (Buff buff in unit.activeBuffs.ToArray())
             {
-               buff.duration -= 1f; // Decrease duration by 1 second
-
+                buff.duration -= 1f;
                 if (buff.duration <= 0f)
                 {
-                    buffs.RemoveTempBuff(unit, buff); // Remove buff from unit
+                    Debug.Log($"Removing expired buff from {unit.name}");
+                    buffs.RemoveTempBuff(unit, buff);
                 }
-
             }
         }
     }
@@ -41,7 +39,7 @@ public class BuffManager : MonoBehaviour
         // Iterate through all units and update their round buffs
         foreach (BaseUnit unit in board.unitList)
         {
-            foreach (Buff buff in unit.roundBuffs)
+            foreach (Buff buff in unit.roundBuffs.ToArray())
             {
                 buffs.RemoveRoundBuff(unit, buff); // Remove buff from unit
             }

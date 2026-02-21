@@ -45,7 +45,6 @@ public abstract class BaseUnit : MonoBehaviour
 
         NormalizeSpriteSize();
     }
-
     // scales the unit to fit nicely in a tile based on its sprite size
     private void NormalizeSpriteSize()
     {
@@ -213,6 +212,19 @@ public abstract class BaseUnit : MonoBehaviour
 
         return didHit;
     }
+
+    //TakeDamage function to be called by enemy
+    protected virtual void TakeDamage(int amount, Transform attacker = null)
+    {
+        myData.CurrentHP -= amount;
+        if (myData.CurrentHP <= 0)
+        {
+            Debug.Log($"{gameObject.name} has been defeated!");
+            Destroy(gameObject);
+        }
+    }
+
+    
 
     protected virtual GameObject LoadProjectilePrefab()
     {

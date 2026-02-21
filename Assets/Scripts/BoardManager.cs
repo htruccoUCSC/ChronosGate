@@ -29,10 +29,11 @@ public class BoardManager : MonoBehaviour
     private void Awake()
     {
         GameTilemap = GetComponentInChildren<Tilemap>();
-        Width = TileMapManager.Width;
-        Height = TileMapManager.Height;
+                Width = TileMapManager.Width;
+                Height = TileMapManager.Height;
 
-          unitGrid = new BaseUnit[Height, Width];
+                // unitGrid first index is X (width), second is Y (height)
+                unitGrid = new BaseUnit[Width, Height];
         // Auto-create buckets if you forgot to make them in Editor
         if (UnitsParent == null)
         {

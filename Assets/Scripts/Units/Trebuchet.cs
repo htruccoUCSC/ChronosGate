@@ -15,10 +15,13 @@ public class TrebuchetUnit : BaseUnit
         if (LoadProjectilePrefab() == null) return;
 
         StartCoroutine(FireAbilityBursts(myData.GetModifiedDamage(), 3, 2));
+        myData.CurrentMana = 0f;
     }
 
     protected override void PerformBasicAttack()
     {
+        Debug.Log("myData.getModifiedAttackSpeed(): " + myData.GetModifiedAttackSpeed());
+            Debug.Log($"[Trebuchet] Before attack: getModifiedAttackSpeed()={myData.GetModifiedAttackSpeed()}, SpeedFlatMod={myData.SpeedFlatMod}, SpeedMultMod={myData.SpeedMultMod}");
         if (LoadProjectilePrefab() == null) return;
 
         float damage = myData.GetModifiedDamage();
@@ -28,6 +31,7 @@ public class TrebuchetUnit : BaseUnit
         {
             SpawnProjectileAtTarget(target, damage, false);
         }
+            Debug.Log($"[Trebuchet] After attack: getModifiedAttackSpeed()={myData.GetModifiedAttackSpeed()}, SpeedFlatMod={myData.SpeedFlatMod}, SpeedMultMod={myData.SpeedMultMod}");
     }
 
     private IEnumerator FireAbilityBursts(float damage, int burstCount, int targetsPerBurst)
@@ -89,18 +93,24 @@ public class TrebuchetUnit : BaseUnit
         float range = myData.BaseDef.Range;
         Collider2D[] hits = Physics2D.OverlapCircleAll(transform.position, range, mask);
 
+
         foreach (Collider2D hit in hits)
         {
             if (hit == null) continue;
 
-            // changed: BaseEnemy instead of TargetDummyTest
+            // Try BaseEnemy first, fall back to TargetDummyTest for legacy/enemy prefabs
             BaseEnemy enemy = hit.GetComponentInParent<BaseEnemy>();
-            if (enemy == null) continue;
+            TargetDummyTest dummy = null;
+            if (enemy == null)
+            {
+                dummy = hit.GetComponentInParent<TargetDummyTest>();
+                if (dummy == null) continue;
+            }
 
-            int enemyId = enemy.GetInstanceID();
+            int enemyId = (enemy != null) ? enemy.GetInstanceID() : dummy.GetInstanceID();
             if (!seenEnemyIds.Add(enemyId)) continue;
 
-            Transform enemyTransform = enemy.transform;
+            Transform enemyTransform = (enemy != null) ? enemy.transform : dummy.transform;
             Vector2 delta = enemyTransform.position - transform.position;
             bool isBehind = delta.x < -0.05f;
             float score = delta.sqrMagnitude + (isBehind ? 1000f : 0f);
@@ -130,5 +140,6 @@ public class TrebuchetUnit : BaseUnit
 
         List<Transform> nearest = GetNearestTargets(1);
         currentTarget = nearest.Count > 0 ? nearest[0] : null;
+        Debug.Log($"[Trebuchet.ScanTargeting] nearest={nearest.Count}, currentTarget={(currentTarget!=null?currentTarget.name:"null")}");
     }
 }
