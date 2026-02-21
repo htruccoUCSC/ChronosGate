@@ -32,7 +32,7 @@ public class SquireUnit : BaseUnit
     }
 
     protected override void PerformBasicAttack()
-    {   
+    {
         Debug.Log("Squire performs basic attack");
         List<BaseUnit> adjacentTowers = GetAdjacentTowers();
         if (adjacentTowers.Count == 0)
