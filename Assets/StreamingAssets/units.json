@@ -347,7 +347,7 @@
       "Cost": 100,
       "Health": 5,
       "Range": 5,
-      "AttackSpeed": 0.5,
+      "AttackSpeed": 0.75,
       "AttackDamage": 10,
       "AbilityPower": 50,
       "AbilityManaCost": 30,
