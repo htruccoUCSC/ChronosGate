@@ -8,8 +8,7 @@ public class StimUnit : BaseUnit
 {
     [SerializeField] private GameObject m_ProjectilePrefab;
     [SerializeField] private float m_BasicAttackBuffAmount = 10f;
-    [SerializeField] private float m_BasicAttackBuffDuration = 3f;
-    private float m_buffDuration = 1f;
+    private float m_buffDuration = 2f;
     private BoardManager m_BoardManager;
     private Buffs m_BuffSystem;
 
@@ -41,7 +40,7 @@ public class StimUnit : BaseUnit
                 Buff attackSpeedBuff = new Buff { AttackSpeedMult = mult, duration = m_buffDuration };
                 tower.AddTempBuff(attackSpeedBuff);
             }
-            Debug.Log($"{tower.name} receives Stim's attack buff for {m_BasicAttackBuffDuration} seconds");
+            Debug.Log($"{tower.name} receives Stim's attack buff for {m_buffDuration} seconds");
         }
     }
 
@@ -60,7 +59,7 @@ public class StimUnit : BaseUnit
         if (m_BuffSystem != null)
         {
             m_BuffSystem.AddTempBuff(buffTarget, basicMult, 0f, 0f, 0f, 0f, 0f, basicDur, null);
-             Debug.Log($"{buffTarget.name} receives Stim's attack buff for {m_BasicAttackBuffDuration} seconds");
+             Debug.Log($"{buffTarget.name} receives Stim's attack buff for {m_buffDuration} seconds");
         }
         else
         {
