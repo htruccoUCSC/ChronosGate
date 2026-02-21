@@ -330,20 +330,23 @@ protected void SpawnSniperProjectile(GameObject prefab, float damage, bool isAOE
 
     // ability needs to be implemented by each unit type
     protected abstract void CastAbility();
+
+    //DO NOT USE THESE USE THE BUFF LIBRARY
     public void AddTempBuff(Buff buff)
     {
         activeBuffs.Add(buff);
     }
-
+//DO NOT USE THESE USE THE BUFF LIBRARY
     public void RemoveTempBuff(Buff buff)
     {
         activeBuffs.Remove(buff);
     }
+    //DO NOT USE THESE USE THE BUFF LIBRARY
         public void AddRoundBuff(Buff buff)
     {
         roundBuffs.Add(buff);
     }
-
+//DO NOT USE THESE USE THE BUFF LIBRARY
     public void RemoveRoundBuff(Buff buff)
     {
         roundBuffs.Remove(buff);

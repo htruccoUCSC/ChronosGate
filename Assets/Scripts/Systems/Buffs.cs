@@ -78,8 +78,8 @@ public class Buffs : MonoBehaviour
         math.SubAttackMult(unit.myData, buff.AttackDamageMult);
         math.SubSpeedMult(unit.myData, buff.AttackSpeedMult);
         math.SubAbilityPower(unit.myData, buff.AbilityPowerFlat);
-        math.AddAbilityPowerMult(unit.myData,buff.AbilityPowerMult);
-
+        math.SubAbilityPowerMult(unit.myData,buff.AbilityPowerMult);
+    
         unit.RemoveTempBuff(buff);
     }
 
@@ -90,7 +90,7 @@ public class Buffs : MonoBehaviour
         math.SubAttackMult(unit.myData, buff.AttackDamageMult);
         math.SubSpeedMult(unit.myData, buff.AttackSpeedMult);
         math.SubAbilityPower(unit.myData, buff.AbilityPowerFlat);
-         math.AddAbilityPowerMult(unit.myData,buff.AbilityPowerMult);
+        math.SubAbilityPowerMult(unit.myData,buff.AbilityPowerMult);
 
         unit.RemoveRoundBuff(buff);
     }

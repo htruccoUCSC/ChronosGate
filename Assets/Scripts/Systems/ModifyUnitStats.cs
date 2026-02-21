@@ -26,8 +26,9 @@ public BoardManager board;
 
       public void SubAttackSpeed(UnitInstance u,float amount)
     {
+      // Debug.Log("remove" + amount +" "+ u.SpeedFlatMod);
         u.SpeedFlatMod-= amount;
-
+ 
     }
   public void AddAttackMult(UnitInstance u,float amount)
     {
@@ -37,7 +38,11 @@ public BoardManager board;
 
       public void AddSpeedMult(UnitInstance u,float amount)
     {
+        if(amount>0){
+        Debug.Log("add" + amount +" from "+ u.SpeedFlatMod);
         u.SpeedMultMod+= amount;
+        Debug.Log("after add" + u.SpeedFlatMod);
+        }
 
     }
       public void SubAttackMult(UnitInstance u,float amount)
@@ -48,7 +53,11 @@ public BoardManager board;
 
       public void SubSpeedMult(UnitInstance u,float amount)
     {
+        if (amount >0){
+        Debug.Log("remove" + amount +" from "+ u.SpeedFlatMod);
         u.SpeedMultMod-= amount;
+        Debug.Log("after remove" + u.SpeedFlatMod);
+        }
 
     }
           public void SubAbilityPower(UnitInstance u,float amount)
