@@ -4,11 +4,10 @@ public class ReserveAD : MonoBehaviour
 {
 public BoardManager board;
 public ModifyUnitStats math;
-public CurrencyManager currency;
 public Buffs buffs;
 public void ReserveADCall()
 {
-        int buffAmount =currency.currency/5;
+        int buffAmount = CurrencyManager.Instance.GetCurrency() / 5;
 for (int x = 0; x < board.unitGrid.GetLength(0); x++)
 {
 
