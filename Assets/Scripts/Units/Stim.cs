@@ -11,10 +11,12 @@ public class StimUnit : BaseUnit
     [SerializeField] private float m_BasicAttackBuffDuration = 3f;
     private float m_buffDuration = 1f;
     private BoardManager m_BoardManager;
+    private Buffs m_BuffSystem;
 
     private void Awake()
     {
         m_BoardManager = FindFirstObjectByType<BoardManager>();
+        m_BuffSystem = FindFirstObjectByType<Buffs>();
     }
 
     protected override void CastAbility()
@@ -27,11 +29,18 @@ public class StimUnit : BaseUnit
         //apply buff to Up and Down Adjacent towers
         foreach (BaseUnit tower in adjacentTowers)
         {
-            Buff attackSpeedBuff = new Buff {
-                AttackSpeedMult = 1.5f, // +50% attack speed
-                duration = m_buffDuration
-            };
-            tower.AddTempBuff(attackSpeedBuff);
+            float mult = 0.25f; // +25% attack speed (additive)
+            int dur = Mathf.CeilToInt(m_buffDuration);
+            if (m_BuffSystem != null)
+            {
+                m_BuffSystem.AddTempBuff(tower, mult, 0f, 0f, 0f, 0f, 0f, dur, null);
+            }
+            else
+            {
+                // fallback: add Raw Buff object to unit so it will still be removed later
+                Buff attackSpeedBuff = new Buff { AttackSpeedMult = mult, duration = m_buffDuration };
+                tower.AddTempBuff(attackSpeedBuff);
+            }
             Debug.Log($"{tower.name} receives Stim's attack buff for {m_BasicAttackBuffDuration} seconds");
         }
     }
@@ -40,12 +49,23 @@ public class StimUnit : BaseUnit
     {   
         Debug.Log("Stim performs basic attack");
         List<BaseUnit> adjacentTowers = GetRightAdjacentTowers();
+        if(adjacentTowers.Count == 0)
+        {
+            Debug.Log("No right adjacent towers to buff");
+            return;
+        }
         BaseUnit buffTarget = adjacentTowers[0];
-        Buff attackSpeedBuff = new Buff {
-            AttackSpeedMult = 1.15f, // +15% attack speed
-            duration = m_buffDuration
-        };
-        buffTarget.AddTempBuff(attackSpeedBuff);
+        float basicMult = 0.25f; // +25% attack speed (additive)
+        int basicDur = Mathf.CeilToInt(m_buffDuration);
+        if (m_BuffSystem != null)
+        {
+            m_BuffSystem.AddTempBuff(buffTarget, basicMult, 0f, 0f, 0f, 0f, 0f, basicDur, null);
+        }
+        else
+        {
+            Buff attackSpeedBuff = new Buff { AttackSpeedMult = basicMult, duration = m_buffDuration };
+            buffTarget.AddTempBuff(attackSpeedBuff);
+        }
         Debug.Log($"{buffTarget.name} receives Stim's attack buff for {m_BasicAttackBuffDuration} seconds");
        
     }

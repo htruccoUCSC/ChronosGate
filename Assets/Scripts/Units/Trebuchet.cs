@@ -21,6 +21,7 @@ public class TrebuchetUnit : BaseUnit
     protected override void PerformBasicAttack()
     {
         Debug.Log("myData.getModifiedAttackSpeed(): " + myData.GetModifiedAttackSpeed());
+            Debug.Log($"[Trebuchet] Before attack: getModifiedAttackSpeed()={myData.GetModifiedAttackSpeed()}, SpeedFlatMod={myData.SpeedFlatMod}, SpeedMultMod={myData.SpeedMultMod}");
         if (LoadProjectilePrefab() == null) return;
 
         float damage = myData.GetModifiedDamage();
@@ -30,6 +31,7 @@ public class TrebuchetUnit : BaseUnit
         {
             SpawnProjectileAtTarget(target, damage, false);
         }
+            Debug.Log($"[Trebuchet] After attack: getModifiedAttackSpeed()={myData.GetModifiedAttackSpeed()}, SpeedFlatMod={myData.SpeedFlatMod}, SpeedMultMod={myData.SpeedMultMod}");
     }
 
     private IEnumerator FireAbilityBursts(float damage, int burstCount, int targetsPerBurst)

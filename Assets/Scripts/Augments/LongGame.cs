@@ -13,27 +13,21 @@ public void LongGameCall()
 {
 startingAmount++;
    float buffAmount = startingAmount*0.1f;
-for (int x = 0; x <tileMapManager.Height; x++)
+for (int x = 0; x < tileMapManager.Width; x++)
 {
-
-    for (int y = 0; y <tileMapManager.Width; y++)
-    {
-
-        BaseUnit unit = board.unitGrid[x, y]; 
-
-        if (unit == null) continue;
+   for (int y = 0; y < tileMapManager.Height; y++)
+   {
+      BaseUnit unit = board.unitGrid[x, y];
+      if (unit == null) continue;
       if (unit.myData.Faction == "Future")
-        {
-           buffs.AddRoundBuff(unit,0,0,0,0,50,buffAmount,null);
-        }
-                else
-                {
-                     buffs.AddRoundBuff(unit,0,0,0,0,0,buffAmount,null);
-                }
-
-
-    }
-      
+      {
+         buffs.AddRoundBuff(unit, attackSpeedMult: 0f, attackSpeedFlat: 0f, attackDamageFlat: 0f, attackDamageMult: 0f, abilityPowerFlat: 50f, abilityPowerMult: buffAmount, OnHit: null);
+      }
+      else
+      {
+         buffs.AddRoundBuff(unit, attackSpeedMult: 0f, attackSpeedFlat: 0f, attackDamageFlat: 0f, attackDamageMult: 0f, abilityPowerFlat: 0f, abilityPowerMult: buffAmount, OnHit: null);
+      }
+   }
 }
 }
 
