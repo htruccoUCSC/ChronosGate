@@ -22,14 +22,14 @@ public class NewRound : MonoBehaviour
         BaseUnit unit = board.unitGrid[x, y]; 
          if (unit == null) continue;
 
-         foreach (Buff buff in unit.activeBuffs)
-                {
-                    buffs.RemoveTempBuff(unit,buff);
-                }
-        foreach (Buff buff in unit.roundBuffs)
-                {
-                    buffs.RemoveRoundBuff(unit,buff);
-                }
+         foreach (Buff buff in unit.activeBuffs.ToArray())
+         {
+             buffs.RemoveTempBuff(unit, buff);
+         }
+         foreach (Buff buff in unit.roundBuffs.ToArray())
+         {
+             buffs.RemoveRoundBuff(unit, buff);
+         }
     }
 }
     }
