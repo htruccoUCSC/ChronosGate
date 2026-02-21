@@ -60,13 +60,14 @@ public class StimUnit : BaseUnit
         if (m_BuffSystem != null)
         {
             m_BuffSystem.AddTempBuff(buffTarget, basicMult, 0f, 0f, 0f, 0f, 0f, basicDur, null);
+             Debug.Log($"{buffTarget.name} receives Stim's attack buff for {m_BasicAttackBuffDuration} seconds");
         }
         else
         {
             Buff attackSpeedBuff = new Buff { AttackSpeedMult = basicMult, duration = m_buffDuration };
             buffTarget.AddTempBuff(attackSpeedBuff);
         }
-        Debug.Log($"{buffTarget.name} receives Stim's attack buff for {m_BasicAttackBuffDuration} seconds");
+       
        
     }
 
