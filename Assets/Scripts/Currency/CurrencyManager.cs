@@ -23,6 +23,11 @@ public class CurrencyManager : MonoBehaviour
         Instance = this;
     }
 
+    private void OnEnable()
+    {
+        CurrencyPickup.Collected += HandleCurrencyCollected;
+    }
+
     public int GetCurrency() => currency;
 
     public void AddCurrency(int amount)
@@ -63,7 +68,7 @@ public class CurrencyManager : MonoBehaviour
         }
         AddCurrency(addAmount);
     }
-public void newRound()
+    public void newRound()
     {
         GetInterest();
         AddCurrency(income);
