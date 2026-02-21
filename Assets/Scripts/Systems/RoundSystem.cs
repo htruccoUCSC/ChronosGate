@@ -1,4 +1,5 @@
 using UnityEngine;
+using System;
 
 public class RoundSystem : MonoBehaviour
 {
@@ -19,6 +20,12 @@ public class RoundSystem : MonoBehaviour
     public int CurrentRound => m_CurrentRound;
     public GamePhase Phase { get; private set; } = GamePhase.Combat;
 
+    /// <summary>
+    /// Event fired when the round number changes
+    /// Allows UI systems to update the round display
+    /// </summary>
+    public event Action<int> OnRoundChanged;
+
     public void TestAdvanceRound()
     {
         ClearEnemies();
@@ -33,6 +40,9 @@ public class RoundSystem : MonoBehaviour
     private void AdvanceRound()
     {
         m_CurrentRound++;
+        
+        // Fire the OnRoundChanged event so UI systems can update
+        OnRoundChanged?.Invoke(m_CurrentRound);
 
         if (m_AugmentEveryNRounds > 0 && m_CurrentRound % m_AugmentEveryNRounds == 0)
         {
