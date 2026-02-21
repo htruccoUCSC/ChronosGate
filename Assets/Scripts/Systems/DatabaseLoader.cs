@@ -15,7 +15,7 @@ public class DatabaseLoader : MonoBehaviour
     {
         LoadData();
     }
-
+    [ContextMenu("Reload Database")]
     public void LoadData()
     {
         string filePath = Path.Combine(Application.streamingAssetsPath, fileName);
@@ -63,6 +63,7 @@ public class DatabaseLoader : MonoBehaviour
                 UnitLookup.Add(unitDef.UnitID, unitDef);
             }
 
+            Debug.Log($"[DatabaseLoader] Loaded {UnitLookup.Count} units from {fileName}");
 
         }
         else

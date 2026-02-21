@@ -111,4 +111,5 @@ public class UnitRawData
     // this is an exception to the naming convention since it's an enum in UnitDefinition
     public string AttackType;
     public float LaunchAngle;
+    public float ManaPerShot;
 }
