@@ -22,6 +22,7 @@ public class Orc : BaseUnit
         };
         AddTempBuff(attackSpeedBuff);
         Debug.Log("Orc uses ability and gains attack speed buff");
+        myData.CurrentMana = 0f;
     }
 
     protected override void PerformBasicAttack()
