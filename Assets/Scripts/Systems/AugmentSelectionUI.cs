@@ -40,7 +40,7 @@ public class AugmentSelectionUI : MonoBehaviour
     private void Start()
     {
         // Get reference to AugmentManager
-        augmentManager = FindObjectOfType<AugmentManager>();
+        augmentManager = FindFirstObjectByType<AugmentManager>();
         if (augmentManager == null)
         {
             Debug.LogError("AugmentManager not found in scene!");

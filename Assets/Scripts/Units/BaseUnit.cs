@@ -5,12 +5,16 @@ public abstract class BaseUnit : MonoBehaviour
 {
     // our units unique data instance
     public UnitInstance myData;
-    protected float attackTimer;
+    public float attackTimer;
     protected Transform currentTarget;
-     public List<Buff> roundBuffs = new List<Buff>();
+    public List<Buff> roundBuffs = new List<Buff>();
     public List<Buff> activeBuffs = new List<Buff>();
+    protected List<GameObject> spawnedProjectiles = new List<GameObject>();
+    protected Sprite _abilitySprite;
+protected Vector3 _abilityScale = Vector3.one;
     protected Sprite _projectileSprite;
     protected Vector3 _projectileScale = Vector3.one;
+    private MeleeAttackBehavior m_MeleeAttackBehavior;
 
     // how much of the tile we want the unit to fill
     private const float TILE_FILL_RATIO = 1.0f;
@@ -20,16 +24,25 @@ public abstract class BaseUnit : MonoBehaviour
         myData = instance;
         attackTimer = 1f / myData.GetModifiedAttackSpeed();
 
-        // getting projectile sprite from prefab if applicable
-        Transform template = transform.Find("ProjectileSprite");
-        if (template != null)
+        // getting projectile sprite and scale from the Projectile child
+        Transform projectileChild = transform.Find("Projectile");
+        if (projectileChild != null)
         {
-            SpriteRenderer sr = template.GetComponent<SpriteRenderer>();
+            SpriteRenderer sr = projectileChild.GetComponent<SpriteRenderer>();
             if (sr != null)
             {
                 _projectileSprite = sr.sprite;
             }
         }
+         Transform abilityChild = transform.Find("Ability");
+    if (abilityChild != null)
+    {
+        SpriteRenderer sr = abilityChild.GetComponent<SpriteRenderer>();
+        if (sr != null)
+            _abilitySprite = sr.sprite;
+
+        _abilityScale = abilityChild.localScale;
+    }
 
         NormalizeSpriteSize();
     }
@@ -49,15 +62,14 @@ public abstract class BaseUnit : MonoBehaviour
             transform.localScale = Vector3.one * scaleFactor;
         }
 
-        // scales the projectile template to match the unit's size
-        // i'm not entirely happy with this implementation but it will do for now
-        Transform projTemplate = transform.Find("ProjectileSprite");
-        if (projTemplate != null)
+        // scales the projectile to match the unit's size
+        Transform projectileChild = transform.Find("Projectile");
+        if (projectileChild != null)
         {
-            SpriteRenderer projSR = projTemplate.GetComponent<SpriteRenderer>();
+            SpriteRenderer projSR = projectileChild.GetComponent<SpriteRenderer>();
             if (projSR != null)
             {
-                projTemplate.localScale = Vector3.one;
+                projectileChild.localScale = Vector3.one;
                 Vector3 projSize = projSR.bounds.size;
                 float projMax = Mathf.Max(projSize.x, projSize.y);
 
@@ -67,7 +79,7 @@ public abstract class BaseUnit : MonoBehaviour
                     float targetSize = 0.4f;
                     float projScale = targetSize / projMax;
 
-                    projTemplate.localScale = Vector3.one * projScale;
+                    projectileChild.localScale = Vector3.one * projScale;
 
                     // store for later use when spawning projectiles
                     _projectileScale = Vector3.one * projScale;
@@ -79,6 +91,12 @@ public abstract class BaseUnit : MonoBehaviour
     // example update loop which will probably be entirely scrapped later
     protected virtual void Update()
     {
+        // dont run any logic if the round isn't active
+        if (GameLoopManager.Instance != null && GameLoopManager.Instance.CurrentState != GameLoopManager.GameState.Combat)
+        {
+            return;
+        }
+
         if (myData == null) return;
 
         ScanTargeting();
@@ -136,10 +154,14 @@ public abstract class BaseUnit : MonoBehaviour
         switch (myData.BaseDef.AttackFunction)
         {
             case BasicAttackType.Melee:
-                // example melee attack logic doesn't do anything rn
-                if (Vector2.Distance(transform.position, currentTarget.position) <= myData.BaseDef.Range + 0.5f)
+                if (m_MeleeAttackBehavior == null)
                 {
-                    // ApplyDamage(currentTarget, damage);
+                    m_MeleeAttackBehavior = GetComponent<MeleeAttackBehavior>();
+                }
+
+                if (m_MeleeAttackBehavior != null)
+                {
+                    TryPerformMeleeAttack(damage);
                 }
                 break;
 
@@ -155,17 +177,65 @@ public abstract class BaseUnit : MonoBehaviour
         }
     }
 
-    protected virtual GameObject LoadProjectilePrefab()
+    protected bool TryPerformMeleeAttack(float damage)
     {
-        return Resources.Load<GameObject>("Prefabs/BaseProjectile");
+        if (myData == null || myData.BaseDef == null)
+        {
+            return false;
+        }
+
+        return TryPerformMeleeAttack(damage, myData.BaseDef.Range);
     }
 
-    protected void SpawnProjectile(GameObject prefab, float damage, bool isAOE)
+    protected bool TryPerformMeleeAttack(float damage,float meleerange)
     {
-        if (currentTarget == null || prefab == null) return;
+        if (currentTarget == null || myData == null || myData.BaseDef == null)
+        {
+            return false;
+        }
+
+        if (m_MeleeAttackBehavior == null)
+        {
+            m_MeleeAttackBehavior = GetComponent<MeleeAttackBehavior>();
+        }
+
+        if (m_MeleeAttackBehavior == null)
+        {
+            return false;
+        }
+
+        float range = myData.BaseDef.Range;
+        bool didHit = m_MeleeAttackBehavior.TryPerformAttack(transform, currentTarget, meleerange, damage);
+
+        if (didHit)
+        {
+            onHit();
+        }
+
+        return didHit;
+    }
+
+    protected virtual GameObject LoadProjectilePrefab()
+    {
+        Transform projectileChild = transform.Find("Projectile");
+        if (projectileChild != null)
+        {
+            return projectileChild.gameObject;
+        }
+        
+        Debug.LogError($"{gameObject.name} does not have a 'Projectile' child object. Please add a Projectile prefab as a child in the prefab editor.");
+        return null;
+    }
+
+    protected GameObject InstantiateAndSetupProjectile(GameObject prefab)
+    {
+        if (prefab == null) return null;
 
         GameObject proj = Instantiate(prefab, transform.position, Quaternion.identity);
-
+        proj.SetActive(true);   
+        //List of spawnedProjectiles so can wipe for new Round
+         spawnedProjectiles.Add(proj);
+        // Apply projectile sprite and scale
         if (_projectileSprite != null)
         {
             var sr = proj.GetComponentInChildren<SpriteRenderer>();
@@ -174,11 +244,22 @@ public abstract class BaseUnit : MonoBehaviour
             proj.transform.localScale = Vector3.Scale(transform.localScale, _projectileScale);
         }
 
+        return proj;
+    }
+
+    protected void SpawnProjectile(GameObject prefab, float damage, bool isAOE)
+    {
+        if (currentTarget == null || prefab == null) return;
+
+        GameObject proj = InstantiateAndSetupProjectile(prefab);
+        if (proj == null) return;
+
         Projectile projScript = proj.GetComponentInChildren<Projectile>();
         if (projScript == null) return;
 
+        // Build a vector from shooter to target.
+        // X controls forward travel distance, Y captures lane height difference.
         Vector2 diff = currentTarget.position - transform.position;
-        float distance = diff.magnitude;
         Vector2 direction = diff.normalized;
         float launchAngle = myData.BaseDef.LaunchAngle;
 
@@ -189,12 +270,45 @@ public abstract class BaseUnit : MonoBehaviour
             float gravity = Physics2D.gravity.y * 3f;
             gravity = Mathf.Abs(gravity);
 
-            finalSpeed = CalculateBallisticSpeed(distance, launchAngle, gravity);
+            // Solve launch speed using both horizontal distance and vertical offset.
+            // This is what lets arc shots land correctly on enemies in different lanes.
+            finalSpeed = CalculateBallisticSpeed(diff, launchAngle, gravity);
             projScript.speed = finalSpeed;
         }
 
-        projScript.Setup(damage, direction, launchAngle, transform.position, isAOE);
+        projScript.Setup(damage, direction, launchAngle, transform.position, isAOE, this);
     }
+protected void SpawnSniperProjectile(GameObject prefab, float damage, bool isAOE)
+{
+    if (currentTarget == null || prefab == null) return;
+
+    GameObject projRoot = InstantiateAndSetupProjectile(prefab);
+    if (projRoot == null) return;
+
+    Projectile p = projRoot.GetComponentInChildren<Projectile>();
+    if (p == null) return;
+
+    Vector2 dir = (currentTarget.position - transform.position).normalized;
+
+    // sniper tuning
+    p.speed = 25f;
+
+    // IMPORTANT: make sure we flip trigger on the same collider that will collide
+    Collider2D col = p.GetComponent<Collider2D>();
+    if (col == null) col = p.GetComponentInChildren<Collider2D>();
+    if (col != null) col.isTrigger = true;
+
+    // optionally ignore lane/row checks for sniper
+    p.SetIgnoreRowCheck(true);
+
+    // Require sniper projectile to only collide with its assigned target.
+    p.SetDesignatedTarget(currentTarget);
+
+    // Let Projectile.Setup set RB type + velocity
+    p.Setup(damage, dir, 0f, transform.position, isAOE, this);
+}
+
+
 
     // spawns a generic projectile towards the current target
     private void SpawnGenericProjectile(float damage)
@@ -225,16 +339,77 @@ public abstract class BaseUnit : MonoBehaviour
     // solves standard projectile motion equation for Velocity
     protected float CalculateBallisticSpeed(float distance, float angleDeg, float gravity)
     {
-        // convert angle to radians
+        // Legacy overload kept for compatibility.
+        // Treats target as same height by using Y = 0.
+        return CalculateBallisticSpeed(new Vector2(distance, 0f), angleDeg, gravity);
+    }
+
+    protected float CalculateBallisticSpeed(Vector2 targetOffset, float angleDeg, float gravity)
+    {
+        // Decompose target offset into horizontal travel and vertical difference.
+        // Example: target one lane above means verticalOffset > 0.
+        float horizontalDistance = Mathf.Abs(targetOffset.x);
+        float verticalOffset = targetOffset.y;
+
+        if (horizontalDistance < 0.01f || gravity <= 0f)
+        {
+            return 10f;
+        }
+
         float angleRad = angleDeg * Mathf.Deg2Rad;
+        float cosAngle = Mathf.Cos(angleRad);
+        float tanAngle = Mathf.Tan(angleRad);
 
-        //v = Sqrt( (dist * g) / Sin(2 * theta) )
-        float bottom = Mathf.Sin(2 * angleRad);
+        // Rearranged projectile-motion equation for speed squared:
+        // v^2 = (g * x^2) / (2 * cos^2(theta) * (x * tan(theta) - y)).
+        // If denominator <= 0, this angle cannot reach that target point.
+        float denominator = 2f * cosAngle * cosAngle * ((horizontalDistance * tanAngle) - verticalOffset);
+        if (denominator <= 0.01f)
+        {
+            return 10f;
+        }
 
-        // safety guard to avoid divide by zero
-        if (Mathf.Abs(bottom) < 0.01f) return 10f;
+        float v2 = (gravity * horizontalDistance * horizontalDistance) / denominator;
+        if (v2 <= 0f)
+        {
+            return 10f;
+        }
 
-        float v2 = (distance * gravity) / bottom;
-        return Mathf.Sqrt(Mathf.Abs(v2));
+        // Convert speed squared into launch speed magnitude.
+        return Mathf.Sqrt(v2);
+    }
+
+    public void onHit()
+    {
+        for(int i = 0; i < roundBuffs.Count; i++){
+            roundBuffs[i].OnHit?.Invoke();
+        }
+    }
+    public void DestroyAllProjectiles()
+{
+    for (int i = 0; i < spawnedProjectiles.Count; i++)
+    {
+        if (spawnedProjectiles[i] != null)
+            Destroy(spawnedProjectiles[i]);
+    }
+
+    spawnedProjectiles.Clear();
+}
+    public void ResetMana()
+    {
+        myData.CurrentMana=myData.StartingMana;
+    }
+        public void ResetHealth()
+    {
+        myData.CurrentMana=myData.StartingMana;
+    }
+    //TODO REMOVE THIS TO NEW FILE
+    public void LuckyShotPerformAutoAttack()
+    {
+        int randomChance = Random.Range(0, 2);
+        if(randomChance == 1){
+        Debug.Log("Lucky Shot Activated! Unit performs an immediate basic attack.");
+        PerformBasicAttack();
+        }
     }
 }

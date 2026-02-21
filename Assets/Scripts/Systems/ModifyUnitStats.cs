@@ -17,6 +17,7 @@ public BoardManager board;
         u.SpeedFlatMod+= amount;
 
     }
+
       public void SubAttackDamage(UnitInstance u,float amount)
     {
         u.DamageFlatMod-= amount;
@@ -48,6 +49,26 @@ public BoardManager board;
       public void SubSpeedMult(UnitInstance u,float amount)
     {
         u.SpeedMultMod-= amount;
+
+    }
+          public void SubAbilityPower(UnitInstance u,float amount)
+    {
+        u.AbilityPowerFlatMod-= amount;
+
+    }
+          public void AddAbilityPower(UnitInstance u,float amount)
+    {
+        u.AbilityPowerFlatMod+= amount;
+
+    }
+             public void SubAbilityPowerMult(UnitInstance u,float amount)
+    {
+        u.AbilityPowerMult-= amount;
+
+    }
+          public void AddAbilityPowerMult(UnitInstance u,float amount)
+    {
+        u.AbilityPowerMult+= amount;
 
     }
 }

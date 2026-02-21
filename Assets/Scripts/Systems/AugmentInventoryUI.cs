@@ -22,7 +22,7 @@ public class AugmentInventoryUI : MonoBehaviour
     
     private void Start()
     {
-        augmentManager = FindObjectOfType<AugmentManager>();
+        augmentManager = FindFirstObjectByType<AugmentManager>();
         
         if (augmentManager == null)
         {

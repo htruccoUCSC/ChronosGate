@@ -22,7 +22,7 @@ public class InventoryUI : MonoBehaviour
     [Header("Starter Settings")]
     public DatabaseLoader database;
     public string starterUnitID = "archer_01";
-    public string starterUnitID2 = "rock_01";
+    public string starterUnitID2 = "boomer_01";
 
     private void Start()
     {

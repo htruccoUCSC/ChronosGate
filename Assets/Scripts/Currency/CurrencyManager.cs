@@ -8,6 +8,7 @@ public class CurrencyManager : MonoBehaviour
     private int currency = 500;
     public int interestThreshold = 10;
     public int maxInterest = 10;
+    public int income = 8;
 
     // Event fired when currency changes - UI subscribes to this
     public event Action<int> OnCurrencyChanged;
@@ -61,5 +62,15 @@ public class CurrencyManager : MonoBehaviour
             addAmount = maxInterest;
         }
         AddCurrency(addAmount);
+    }
+public void newRound()
+    {
+        GetInterest();
+        AddCurrency(income);
+    }
+
+    private void HandleCurrencyCollected(int amount)
+    {
+        AddCurrency(amount);
     }
 }

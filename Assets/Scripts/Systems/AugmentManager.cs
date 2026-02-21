@@ -17,7 +17,7 @@ public class AugmentManager : MonoBehaviour
     public void AcquireAugment(Augment newAugment)
     {
         augmentInventory.Add(newAugment);
-        FindObjectOfType<AugmentInventoryUI>()?.RefreshAugmentDisplay();
+        FindFirstObjectByType<AugmentInventoryUI>()?.RefreshAugmentDisplay();
     }
 
     // NEW: Get inventory for UI display
