@@ -28,6 +28,11 @@ public class CurrencyManager : MonoBehaviour
         CurrencyPickup.Collected += HandleCurrencyCollected;
     }
 
+    private void OnDisable()
+    {
+        CurrencyPickup.Collected -= HandleCurrencyCollected;
+    }
+
     public int GetCurrency() => currency;
 
     public void AddCurrency(int amount)

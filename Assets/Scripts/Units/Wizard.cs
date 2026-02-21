@@ -15,16 +15,11 @@ public class WizardUnit : BaseUnit
     {
         Debug.Log("Wizard uses ability");
 
-        if (currentTarget == null)
-        {
-            return;
-        }
+        if (currentTarget == null) return;
 
+        // ability still only works on the old dummy unless we add polymorph support to BaseEnemy
         TargetDummyTest targetDummy = currentTarget.GetComponentInParent<TargetDummyTest>();
-        if (targetDummy == null)
-        {
-            return;
-        }
+        if (targetDummy == null) return;
 
         if (m_SheepSprite == null)
         {
@@ -40,7 +35,4 @@ public class WizardUnit : BaseUnit
     {
         SpawnProjectile(LoadProjectilePrefab(), myData.GetModifiedDamage(), true);
     }
-
-    
 }
-
