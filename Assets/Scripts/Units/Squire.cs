@@ -3,6 +3,7 @@ using UnityEngine.Tilemaps;
 using System.Collections.Generic;
 using System;
 using System.Collections;
+using UnityEngine;
 
 public class SquireUnit : BaseUnit
 {
@@ -57,8 +58,16 @@ public class SquireUnit : BaseUnit
                 return result;
             }
         }
+
+        if (m_BoardManager.unitGrid == null)
+            return result;
+
+        int gridW = m_BoardManager.unitGrid.GetLength(0);
+        int gridH = m_BoardManager.unitGrid.GetLength(1);
+
         //get our cell position
         Vector3Int myCell = m_BoardManager.GameTilemap.WorldToCell(transform.position);
+
         //4 adjacent tiles (up, down, left, right)
         Vector2Int[] offsets =
         {
@@ -67,22 +76,19 @@ public class SquireUnit : BaseUnit
             new Vector2Int(0, 1),
             new Vector2Int(0, -1)
         };
-        //for each adjacent tile, check if there's a tower unit and if so add it to the result list
+
         foreach (Vector2Int offset in offsets)
         {
             int checkX = myCell.x + offset.x;
             int checkY = myCell.y + offset.y;
 
-            if (checkX < 0 || checkX >= m_BoardManager.Width || checkY < 0 || checkY >= m_BoardManager.Height)
-            {
+            // use the ACTUAL array size (prevents IndexOutOfRange)
+            if (checkX < 0 || checkX >= gridW || checkY < 0 || checkY >= gridH)
                 continue;
-            }
 
             BaseUnit unit = m_BoardManager.unitGrid[checkX, checkY];
             if (unit == null || unit == this || unit.myData == null)
-            {
                 continue;
-            }
 
             result.Add(unit);
         }

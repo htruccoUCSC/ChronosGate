@@ -2,6 +2,7 @@ using UnityEngine;
 using UnityEngine.Tilemaps;
 using System.Collections.Generic;
 using System;
+using System.Collections;
 
 public class OrbitalLaser : BaseUnit
 {
@@ -55,10 +56,8 @@ public class OrbitalLaser : BaseUnit
             : m_TargetMask;
 
         Camera cam = Camera.main;
-
         Vector2 bottomLeft = cam.ViewportToWorldPoint(new Vector2(0, 0));
         Vector2 topRight = cam.ViewportToWorldPoint(new Vector2(1, 1));
-
         Vector2 center = (bottomLeft + topRight) / 2f;
         Vector2 size = topRight - bottomLeft;
 
@@ -66,17 +65,19 @@ public class OrbitalLaser : BaseUnit
 
         foreach (Collider2D hit in hits)
         {
-            if (hit == null) continue;
+            if (hit == null || !hit.CompareTag("Enemy"))
+                continue;
 
-            // changed: BaseEnemy instead of TargetDummyTest
+            // CHANGED: TargetDummyTest -> BaseEnemy
             BaseEnemy enemy = hit.GetComponentInParent<BaseEnemy>();
-            if (enemy == null) continue;
+            if (enemy == null)
+                continue;
 
             int enemyId = enemy.GetInstanceID();
-            if (!seenEnemyIds.Add(enemyId)) continue;
+            if (!seenEnemyIds.Add(enemyId))
+                continue;
 
             Transform enemyTransform = enemy.transform;
-
             Vector2 delta = enemyTransform.position - transform.position;
             float score = delta.sqrMagnitude;
 
