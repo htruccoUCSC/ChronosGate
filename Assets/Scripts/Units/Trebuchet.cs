@@ -15,10 +15,12 @@ public class TrebuchetUnit : BaseUnit
         if (LoadProjectilePrefab() == null) return;
 
         StartCoroutine(FireAbilityBursts(myData.GetModifiedDamage(), 3, 2));
+        myData.CurrentMana = 0f;
     }
 
     protected override void PerformBasicAttack()
     {
+        Debug.Log("myData.getModifiedAttackSpeed(): " + myData.GetModifiedAttackSpeed());
         if (LoadProjectilePrefab() == null) return;
 
         float damage = myData.GetModifiedDamage();

@@ -35,8 +35,9 @@ public class UnitInstance : ScriptableObject
         return instance;
     }
 
-    // equations for modified stats, we will change these later
-    public float GetModifiedDamage() => (BaseDef.AttackDamage + DamageFlatMod) * DamageMultMod;
-    public float GetModifiedAttackSpeed() => (BaseDef.AttackSpeed + SpeedFlatMod) * SpeedMultMod;
-    public float GetModifiedAbilityPower() => (BaseDef.AbilityPower + AbilityPowerFlatMod) * AbilityPowerMult;
+    // equations for modified stats with buffs
+    //Clamp to prervent negative or zero values where it would break things
+    public float GetModifiedAttackSpeed() => Mathf.Max(0.1f, (BaseDef.AttackSpeed + SpeedFlatMod) * SpeedMultMod);
+    public float GetModifiedDamage() => Mathf.Max(1f, (BaseDef.AttackDamage + DamageFlatMod) * DamageMultMod);
+    public float GetModifiedAbilityPower() => Mathf.Max(0f, (BaseDef.AbilityPower + AbilityPowerFlatMod) * AbilityPowerMult);
 }
