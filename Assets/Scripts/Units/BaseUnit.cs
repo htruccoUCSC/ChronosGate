@@ -6,6 +6,7 @@ public abstract class BaseUnit : MonoBehaviour
     public UnitInstance myData;
     public float attackTimer;
     protected Transform currentTarget;
+    private float manaPerShot = 10f;
     public List<Buff> roundBuffs = new List<Buff>();
     public List<Buff> activeBuffs = new List<Buff>();
     protected List<GameObject> spawnedProjectiles = new List<GameObject>();
@@ -114,7 +115,7 @@ public abstract class BaseUnit : MonoBehaviour
                 else
                 {
                     PerformBasicAttack();
-                    myData.CurrentMana += 10;
+                    myData.CurrentMana += manaPerShot;
                 }
                 attackTimer = 1f / myData.GetModifiedAttackSpeed();
             }
