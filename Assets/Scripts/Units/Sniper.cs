@@ -16,7 +16,7 @@ public class SniperUnit : BaseUnit
     }
 
     protected override void PerformBasicAttack()
-    {
+    {   
         SpawnSniperProjectile(LoadProjectilePrefab(), myData.GetModifiedDamage(), false);
     }
 
@@ -78,5 +78,35 @@ public class SniperUnit : BaseUnit
             currentTarget = nearest[0];
         else
             currentTarget = null;
+    }
+    protected void SpawnSniperAbilityProjectile(GameObject prefab, float damage, bool isAOE)
+{
+    if (currentTarget == null || prefab == null) return;
+
+    GameObject projRoot = InstantiateAndSetupProjectile(prefab);
+    if (projRoot == null) return;
+
+    Projectile p = projRoot.GetComponentInChildren<Projectile>();
+    if (p == null) return;
+
+    Vector2 dir = (currentTarget.position - transform.position).normalized;
+
+    // sniper tuning
+    p.speed = 25f;
+
+    // IMPORTANT: make sure we flip trigger on the same collider that will collide
+    Collider2D col = p.GetComponent<Collider2D>();
+    if (col == null) col = p.GetComponentInChildren<Collider2D>();
+    if (col != null) col.isTrigger = true;
+
+    // optionally ignore lane/row checks for sniper
+    p.SetIgnoreRowCheck(true);
+
+    // Require sniper projectile to only collide with its assigned target.
+    p.SetDesignatedTarget(currentTarget);
+
+    // Let Projectile.Setup set RB type + velocity
+    p.Setup(damage, dir, 0f, transform.position, isAOE, this);
+    p.EnableOnHitAmp(0.30f);
     }
 }

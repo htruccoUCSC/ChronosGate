@@ -10,9 +10,6 @@ public class AugmentManager : MonoBehaviour
     public AugmentList augmentList = new AugmentList();
     private List<Augment> augmentInventory = new List<Augment>(); // NEW
 
-    private float timer = 0f;
-    private float interval = 1f;
-
     // NEW: Acquire an augment and add to inventory
     public void AcquireAugment(Augment newAugment)
     {
@@ -53,18 +50,6 @@ public class AugmentManager : MonoBehaviour
         if (index >= 0 && index < augmentList.activeAugments.Count)
         {
             augmentList.inactiveAugments.RemoveAt(index);
-        }
-    }
-      void Update()
-    {
-
-        timer += Time.deltaTime;
-
-        if (timer >= interval)
-        {
-
-            timer = 0f;
-            ApplyAllActiveAugments();
         }
     }
 }

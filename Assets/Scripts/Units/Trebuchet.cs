@@ -79,7 +79,7 @@ public class TrebuchetUnit : BaseUnit
         float angleOffset = UnityEngine.Random.Range(-5f, 5f);
         launchAngle += angleOffset;
 
-        projScript.Setup(damage, direction, launchAngle, transform.position, isAoe);
+        projScript.Setup(damage, direction, launchAngle, transform.position, isAoe, this);
         projScript.SetIgnoreRowCheck(true);
         projScript.SetDesignatedTarget(target);
     }

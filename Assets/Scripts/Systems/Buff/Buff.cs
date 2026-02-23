@@ -1,5 +1,6 @@
 using System;
 using UnityEngine;
+
 [System.Serializable]
 public class Buff
 {
@@ -8,12 +9,14 @@ public class Buff
     public float AttackSpeedMult;
     public float AttackDamageMult;
     public float AbilityPowerMult;
-     public float AbilityPowerFlat;
+    public float AbilityPowerFlat;
     public float duration;
-    public Action OnHit;
+    public float OnhitModifier;
+
+    public Action<float> OnHit;
 
     public Buff() { }
-    // IK ITS UNORGANIZED BUT I ODNT WANT TO REFACTOR!!!! YOU CANT MAKE ME
+
     public Buff(
         float AttackSpeedFlat,
         float AttackDamageFlat,
@@ -21,8 +24,9 @@ public class Buff
         float AttackDamageMult,
         float AbilityPowerFlat,
         float duration,
-        Action OnHit ,
-        float AbilityPowerMult = 0)
+        Action<float> OnHit = null,
+        float AbilityPowerMult = 0,
+        float OnhitModifier = 0f)
     {
         this.AttackSpeedFlat = AttackSpeedFlat;
         this.AttackDamageFlat = AttackDamageFlat;
@@ -32,5 +36,6 @@ public class Buff
         this.AbilityPowerMult = AbilityPowerMult;
         this.duration = duration;
         this.OnHit = OnHit;
+        this.OnhitModifier = OnhitModifier;
     }
 }
