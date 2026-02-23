@@ -26,8 +26,11 @@ public class Projectile : MonoBehaviour
     private float _previousVerticalSpeed;
     private BoomerangProjectileBehavior _boomerangBehavior;
     private bool _applySlowOnHit;
+    private bool _ampOnHitBool;
+    private float _ampOnHitAmount;
     private float _slowPercent;
     private float _slowDuration;
+    private BaseUnit _owner;
 
     // this is mainly for stuff like trebuchet/wizard where we already picked a target
     private Transform _designatedTarget;
@@ -44,10 +47,11 @@ public class Projectile : MonoBehaviour
         }
     }
 
-    public void Setup(float damage, Vector2 direction, float angleInDegrees, Vector3 originWorldPos, bool isAOE = false)
+    public void Setup(float damage, Vector2 direction, float angleInDegrees, Vector3 originWorldPos, bool isAOE = false, BaseUnit owner = null)
     {
         _damage = damage;
         _isAoe = isAOE;
+        _owner = owner;
         CacheOriginRow(originWorldPos);
         _didApexRetarget = false;
         _previousVerticalSpeed = 0f;
@@ -89,10 +93,10 @@ public class Projectile : MonoBehaviour
     }
 
     // older code in Units was calling Setup with 6 args, so we keep that alive too
-    public void Setup(float damage, Vector2 direction, float angleInDegrees, Vector3 originWorldPos, bool isAOE, bool ignoreRowCheck)
+    public void Setup(float damage, Vector2 direction, float angleInDegrees, Vector3 originWorldPos, bool isAOE, bool ignoreRowCheck, BaseUnit owner = null)
     {
         _ignoreRowCheck = ignoreRowCheck;
-        Setup(damage, direction, angleInDegrees, originWorldPos, isAOE);
+        Setup(damage, direction, angleInDegrees, originWorldPos, isAOE, owner);
     }
 
     public void EnableApexRetarget(LayerMask targetMask, float retargetRadius = 20f, bool ignoreRowCheck = true)
@@ -109,7 +113,12 @@ public class Projectile : MonoBehaviour
         _slowPercent = Mathf.Clamp(slowPercent, 0f, 0.95f);
         _slowDuration = Mathf.Max(0f, duration);
     }
+  public void EnableOnHitAmp(float ampPercent)
+    {
+        _ampOnHitBool = true;
+        _ampOnHitAmount=ampPercent;
 
+    }
     // some unit scripts expect these exact method names
     public void SetIgnoreRowCheck(bool ignore)
     {
@@ -142,6 +151,7 @@ public class Projectile : MonoBehaviour
 
         // try BaseEnemy first (new), otherwise TargetDummyTest (older)
         BaseEnemy enemy = other.GetComponentInParent<BaseEnemy>();
+        _owner.RecentlyHit(enemy);
         TargetDummyTest testEnemy = null;
 
         if (enemy == null)
@@ -168,11 +178,11 @@ public class Projectile : MonoBehaviour
                 if (hit == null) continue;
 
                 BaseEnemy aoeEnemy = hit.GetComponentInParent<BaseEnemy>();
-                TargetDummyTest aoeTestEnemy = null;
+                BaseEnemy aoeTestEnemy = null;
 
                 if (aoeEnemy == null)
                 {
-                    aoeTestEnemy = hit.GetComponentInParent<TargetDummyTest>();
+                    aoeTestEnemy = hit.GetComponentInParent<BaseEnemy>();
                     if (aoeTestEnemy == null) continue;
                 }
 
@@ -182,13 +192,26 @@ public class Projectile : MonoBehaviour
                 int dealt = Mathf.RoundToInt(_damage);
 
                 if (aoeEnemy != null)
+                {   
+                    _owner.OnHit();
+                  
+                    int damage = Mathf.RoundToInt(dealt*aoeEnemy.DamageAmp);
+                    aoeEnemy.TakeDamage(damage);
+                    if (_ampOnHitBool)
                 {
-                    aoeEnemy.TakeDamage(dealt);
+                    ApplyAmpIfConfigured(enemy);
+                }
                     ApplySlowIfConfigured(aoeEnemy);
                 }
                 else
                 {
-                    aoeTestEnemy.TakeDamage(dealt);
+                     _owner.OnHit();
+                      int damage = Mathf.RoundToInt(dealt*aoeEnemy.DamageAmp);
+                    aoeTestEnemy.TakeDamage(damage);
+                    if (_ampOnHitBool)
+                {
+                    ApplyAmpIfConfigured(enemy);
+                }
                     ApplySlowIfConfigured(aoeTestEnemy);
                 }
             }
@@ -199,12 +222,25 @@ public class Projectile : MonoBehaviour
 
             if (enemy != null)
             {
-                enemy.TakeDamage(dealt);
+                _owner.OnHit();
+                 int damage = Mathf.RoundToInt(dealt*enemy.DamageAmp);
+                   Debug.Log(dealt+"x Amp "+enemy.DamageAmp+" = "+damage);
+                enemy.TakeDamage(damage);
+                if (_ampOnHitBool)
+                {
+                    ApplyAmpIfConfigured(enemy);
+                }
                 ApplySlowIfConfigured(enemy);
             }
             else
             {
+                _owner.OnHit();
+                
                 testEnemy.TakeDamage(dealt);
+                if (_ampOnHitBool)
+                {
+                    ApplyAmpIfConfigured(enemy);
+                }
                 ApplySlowIfConfigured(testEnemy);
             }
         }
@@ -293,6 +329,7 @@ public class Projectile : MonoBehaviour
     }
 
     public float Damage => _damage;
+    public BaseUnit Owner => _owner;
 
     public Rigidbody2D Body => _rb;
 
@@ -305,6 +342,17 @@ public class Projectile : MonoBehaviour
     {
         if (!_applySlowOnHit || enemy == null) return;
         enemy.ApplySlow(_slowPercent, _slowDuration);
+    }
+
+      private void ApplyAmpIfConfigured(BaseEnemy enemy)
+    {
+        if (!_applySlowOnHit || enemy == null) return;
+         enemy.ApplyDebuff(
+        BaseEnemy.DebuffType.DamageAmp,
+       _ampOnHitAmount,
+        DebuffDuration.AmpDuration,
+        enemy.ApplyAmp
+    );
     }
 
     private void ApplySlowIfConfigured(TargetDummyTest enemy)

@@ -1,5 +1,6 @@
 using UnityEngine;
-
+using System;
+using System.Collections.Generic;
 [RequireComponent(typeof(Rigidbody2D))]
 public class BaseEnemy : MonoBehaviour
 {
@@ -33,7 +34,18 @@ public class BaseEnemy : MonoBehaviour
     protected bool alreadyCountedAsEscape = false; // prevents double life loss
 
     protected Rigidbody2D rb;
-
+    public enum DebuffType
+{
+    Poison,
+    Slow,
+    Burn,
+    Stun,
+    DamageAmp
+}
+    public Dictionary<DebuffType, Debuff> Debuffs = new Dictionary<DebuffType, Debuff>();
+    public float DamageAmp=1;
+private float debuffTickTimer = 0f;
+private const float DEBUFF_TICK_RATE = 1f;
     // damage accumulator so float DPS works with int HP
     private float damageCarry = 0f;
 
@@ -70,6 +82,14 @@ public class BaseEnemy : MonoBehaviour
 
     protected virtual void Update()
     {
+
+    debuffTickTimer += Time.deltaTime;
+    if (debuffTickTimer >= DEBUFF_TICK_RATE)
+    {
+        DamageAmp=1;
+        debuffTickTimer -= DEBUFF_TICK_RATE; // keeps it stable
+        activateDebuff();
+    }
         // slow timer
         if (m_SlowTimeRemaining > 0f)
         {
@@ -208,4 +228,55 @@ public class BaseEnemy : MonoBehaviour
             WaveManager.Instance.UnregisterEnemy(this);
         }
     }
+public void ApplyDebuff(DebuffType type, float stacksToAdd, float duration, Action<float> func)
+{
+    //Refresh duration and add stack if already on
+    if (Debuffs.ContainsKey(type))
+    {
+        Debuffs[type].amountOfStacks += stacksToAdd;
+        Debuffs[type].duration = duration; 
+    }
+    else
+    {
+        // Apply new debuff
+        Debuffs[type] = new Debuff(stacksToAdd, func, duration);
+    }
+}
+public void activateDebuff()
+    {
+ foreach (KeyValuePair<DebuffType, Debuff> entry in Debuffs)
+{
+
+    Debuff debuff = entry.Value;
+
+     debuff.func?.Invoke(debuff.amountOfStacks);
+}
+List<DebuffType> toRemove = new List<DebuffType>();
+
+foreach (var kvp in Debuffs)
+{
+    kvp.Value.duration -= Time.deltaTime;
+
+    if (kvp.Value.duration <= 0)
+        toRemove.Add(kvp.Key);
+}
+
+foreach (var key in toRemove)
+{
+    Debuffs.Remove(key);
+}
+    }
+    public void ApplyFire(float stacks)
+{
+      int damage = Mathf.RoundToInt(stacks);
+      Debug.Log("enemy takes fire Damage");
+    TakeDamage(damage);
+}
+public void ApplyAmp(float stacks)
+{
+   
+    Debug.Log("Amp Applied"+DamageAmp+" + "+stacks);
+    DamageAmp+=stacks;
+}
+    
 }

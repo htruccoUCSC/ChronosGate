@@ -49,7 +49,7 @@ public class RockmanUnit : BaseUnit
             projScript.speed = CalculateBallisticSpeed(diff, launchAngle, gravity);
         }
 
-        projScript.Setup(damage, direction, launchAngle, transform.position, true);
+        projScript.Setup(damage, direction, launchAngle, transform.position, true, this);
         projScript.EnableOnHitSlow(0.30f, 3f);
     }
 }

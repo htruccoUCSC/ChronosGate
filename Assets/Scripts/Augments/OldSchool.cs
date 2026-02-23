@@ -83,7 +83,7 @@ public void OldSchoolCall()
                 }
             }
 
-            buffs.AddRoundBuff(unit, 0, 0, 0, 0, buffAmount, 0, null);
+            buffs.AddRoundBuff(unit, 0, 0, 0, 0, buffAmount, 0, null, 0f);
         }
     }
 }

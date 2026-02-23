@@ -6,6 +6,7 @@ public abstract class BaseUnit : MonoBehaviour
     public UnitInstance myData;
     public float attackTimer;
     protected Transform currentTarget;
+     public BaseEnemy enemyHit;
     private float manaPerShot = 10f;
     public List<Buff> roundBuffs = new List<Buff>();
     public List<Buff> activeBuffs = new List<Buff>();
@@ -15,6 +16,8 @@ public abstract class BaseUnit : MonoBehaviour
     protected Sprite _projectileSprite;
     protected Vector3 _projectileScale = Vector3.one;
     private MeleeAttackBehavior m_MeleeAttackBehavior;
+
+
 
     // how much of the tile we want the unit to fill
     private const float TILE_FILL_RATIO = 1.0f;
@@ -105,6 +108,7 @@ public abstract class BaseUnit : MonoBehaviour
             attackTimer -= Time.deltaTime;
             if (attackTimer <= 0)
             {
+                //RecentlyHit(null);
                 // cast ability if mana is full, otherwise do basic attack
                 if (myData.CurrentMana >= myData.BaseDef.AbilityManaCost)
                 {
@@ -114,6 +118,7 @@ public abstract class BaseUnit : MonoBehaviour
                 else
                 {
                     PerformBasicAttack();
+                    //onHit();
                     myData.CurrentMana += manaPerShot;
                 }
                 attackTimer = 1f / myData.GetModifiedAttackSpeed();
@@ -208,7 +213,7 @@ public abstract class BaseUnit : MonoBehaviour
 
         if (didHit)
         {
-            onHit();
+            OnHit();
         }
 
         return didHit;
@@ -391,10 +396,10 @@ protected void SpawnSniperProjectile(GameObject prefab, float damage, bool isAOE
         return Mathf.Sqrt(v2);
     }
 
-    public void onHit()
+    public void OnHit()
     {
         for(int i = 0; i < roundBuffs.Count; i++){
-            roundBuffs[i].OnHit?.Invoke();
+            roundBuffs[i].OnHit?.Invoke(roundBuffs[i].OnhitModifier);
         }
     }
     public void DestroyAllProjectiles()
@@ -425,7 +430,47 @@ protected void SpawnSniperProjectile(GameObject prefab, float damage, bool isAOE
         }
     }
     // added this so that baseEnemy works
+public void ApplyFire(float stacks)
+{
+    if (enemyHit == null) return;
+    float amount = Mathf.Max(0f, stacks);
+    if (amount <= 0f) return;
 
+    enemyHit.ApplyDebuff(
+        BaseEnemy.DebuffType.Burn,
+        amount,
+        DebuffDuration.BurnDuration,
+        enemyHit.ApplyFire
+    );
+}
+
+public void ApplyFire()
+{
+    ApplyFire(1f); // default stack for Action OnHit
+}
+
+public void ApplyAmp(float stacks)
+{
+    if (enemyHit == null) return;
+    float amount = Mathf.Max(0f, stacks);
+    if (amount <= 0f) return;
+
+    enemyHit.ApplyDebuff(
+        BaseEnemy.DebuffType.DamageAmp,
+        amount,
+        DebuffDuration.AmpDuration,
+        enemyHit.ApplyAmp
+    );
+}
+
+public void ApplyAmp()
+{
+    ApplyAmp(0.01f);
+}
+    public void RecentlyHit(BaseEnemy hit)
+    {
+        enemyHit=hit;
+    }
     public bool IsDead
     {
         get

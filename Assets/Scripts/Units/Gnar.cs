@@ -104,7 +104,7 @@ public class Boomerang : BaseUnit
             projScript.speed = CalculateBallisticSpeed(distance, launchAngle, gravity);
         }
 
-        projScript.Setup(damage, direction, launchAngle, transform.position, isAoe);
+        projScript.Setup(damage, direction, launchAngle, transform.position, isAoe, this);
 
         LayerMask mask = m_TargetMask.value == 0 ? LayerMask.GetMask("Enemies") : m_TargetMask;
         projScript.EnableApexRetarget(mask, myData.BaseDef.Range * 4f, true);
