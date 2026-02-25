@@ -29,7 +29,7 @@ public class UnitInstance : ScriptableObject
         instance.CurrentMana = def.StartingMana;
         instance.Faction= def.Faction;
         instance.BaseAbilityPower = def.AbilityPower;
-        instance.AbilityPowerFlatMod = instance.BaseAbilityPower;
+        instance.AbilityPowerFlatMod = 0f;
         instance.MaxHP = def.Health; 
         instance.CurrentHP = instance.MaxHP; 
         return instance;

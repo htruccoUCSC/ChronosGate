@@ -31,6 +31,12 @@ public class Projectile : MonoBehaviour
     private float _slowPercent;
     private float _slowDuration;
     private BaseUnit _owner;
+    [Header("Penetration")]
+    [Tooltip("If true, projectile will not be destroyed when hitting an enemy and will pass through.")]
+    public bool passThroughEnemies = false;
+    [Tooltip("If > 0 and passThroughEnemies is true, projectile will be destroyed after hitting this many enemies.")]
+    public int maxPenetration = 0;
+    private int _penetrationCount = 0;
 
     // this is mainly for stuff like trebuchet/wizard where we already picked a target
     private Transform _designatedTarget;
@@ -245,6 +251,34 @@ public class Projectile : MonoBehaviour
             }
         }
 
+        // Destroy behavior: if projectile is configured to pass through enemies, don't auto-destroy
+        if (_isAoe)
+        {
+            Destroy(gameObject);
+            return;
+        }
+
+        if (passThroughEnemies)
+        {
+            if (maxPenetration > 0)
+            {
+                _penetrationCount++;
+                if (_penetrationCount >= maxPenetration)
+                {
+                    Destroy(gameObject);
+                }
+            }
+            // else: infinite penetration, only destroyed by lifetime or off-screen
+        }
+        else
+        {
+            Destroy(gameObject);
+        }
+    }
+
+    private void OnBecameInvisible()
+    {
+        // Ensure projectiles are cleaned up when they leave the camera view
         Destroy(gameObject);
     }
 
