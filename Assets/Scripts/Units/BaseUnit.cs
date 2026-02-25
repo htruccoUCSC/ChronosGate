@@ -402,6 +402,14 @@ protected void SpawnSniperProjectile(GameObject prefab, float damage, bool isAOE
             roundBuffs[i].OnHit?.Invoke(roundBuffs[i].OnhitModifier);
         }
     }
+
+    public void OnKill()
+    {
+        for (int i = 0; i < roundBuffs.Count; i++)
+        {
+            roundBuffs[i].OnKill?.Invoke(roundBuffs[i].OnKillModifier);
+        }
+    }
     public void DestroyAllProjectiles()
 {
     for (int i = 0; i < spawnedProjectiles.Count; i++)

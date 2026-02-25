@@ -61,7 +61,9 @@ public void UniqueCall()
                 abilityPowerFlat: 50f,
                 abilityPowerMult: 0f,
                 OnHit: null,
-                onHitModifier: 0f);
+                onHitModifier: 0f,
+                OnKill: null,
+                onKillModifier: 0f);
         }
     }
 }

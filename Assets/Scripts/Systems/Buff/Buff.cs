@@ -12,8 +12,10 @@ public class Buff
     public float AbilityPowerFlat;
     public float duration;
     public float OnhitModifier;
+    public float OnKillModifier;
 
     public Action<float> OnHit;
+    public Action<float> OnKill;
 
     public Buff() { }
 
@@ -25,8 +27,10 @@ public class Buff
         float AbilityPowerFlat,
         float duration,
         Action<float> OnHit = null,
+        Action<float> OnKill = null,
         float AbilityPowerMult = 0,
-        float OnhitModifier = 0f)
+        float OnhitModifier = 0f,
+        float OnKillModifier = 0f)
     {
         this.AttackSpeedFlat = AttackSpeedFlat;
         this.AttackDamageFlat = AttackDamageFlat;
@@ -36,6 +40,8 @@ public class Buff
         this.AbilityPowerMult = AbilityPowerMult;
         this.duration = duration;
         this.OnHit = OnHit;
+        this.OnKill = OnKill;
         this.OnhitModifier = OnhitModifier;
+        this.OnKillModifier = OnKillModifier;
     }
 }
