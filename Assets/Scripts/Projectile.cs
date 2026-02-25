@@ -185,7 +185,7 @@ public class Projectile : MonoBehaviour
 
                 BaseEnemy aoeEnemy = hit.GetComponentInParent<BaseEnemy>();
                 BaseEnemy aoeTestEnemy = null;
-
+               
                 if (aoeEnemy == null)
                 {
                     aoeTestEnemy = hit.GetComponentInParent<BaseEnemy>();
@@ -203,6 +203,10 @@ public class Projectile : MonoBehaviour
                   
                     int damage = Mathf.RoundToInt(dealt*aoeEnemy.DamageAmp);
                     aoeEnemy.TakeDamage(damage);
+                    if(aoeEnemy.currentHealth <= 0)
+                    {
+                        _owner.OnKill();
+                    }
                     if (_ampOnHitBool)
                 {
                     ApplyAmpIfConfigured(enemy);
@@ -214,6 +218,7 @@ public class Projectile : MonoBehaviour
                      _owner.OnHit();
                       int damage = Mathf.RoundToInt(dealt*aoeEnemy.DamageAmp);
                     aoeTestEnemy.TakeDamage(damage);
+
                     if (_ampOnHitBool)
                 {
                     ApplyAmpIfConfigured(enemy);
@@ -232,6 +237,10 @@ public class Projectile : MonoBehaviour
                  int damage = Mathf.RoundToInt(dealt*enemy.DamageAmp);
                    Debug.Log(dealt+"x Amp "+enemy.DamageAmp+" = "+damage);
                 enemy.TakeDamage(damage);
+                if(enemy.currentHealth <= 0)
+                    {
+                        _owner.OnKill();
+                    }
                 if (_ampOnHitBool)
                 {
                     ApplyAmpIfConfigured(enemy);
@@ -248,6 +257,7 @@ public class Projectile : MonoBehaviour
                     ApplyAmpIfConfigured(enemy);
                 }
                 ApplySlowIfConfigured(testEnemy);
+                
             }
         }
 

@@ -15,7 +15,9 @@ public class Buffs : MonoBehaviour
         float abilityPowerMult,
         int duration,
         Action<float> OnHit,
-        float onHitModifier = 0f)
+        float onHitModifier = 0f,
+        Action<float> OnKill = null,
+        float onKillModifier = 0f)
     {
         Buff buff = new Buff
         {
@@ -28,6 +30,8 @@ public class Buffs : MonoBehaviour
             duration = duration,
             OnHit = OnHit,
             OnhitModifier = onHitModifier,
+            OnKill = OnKill,
+            OnKillModifier = onKillModifier,
             AbilityPowerMult=abilityPowerMult,
         };
 
@@ -50,7 +54,9 @@ public class Buffs : MonoBehaviour
         float abilityPowerFlat,
         float abilityPowerMult,
         Action<float> OnHit,
-        float onHitModifier = 0f)
+        float onHitModifier = 0f,
+        Action<float> OnKill = null,
+        float onKillModifier = 0f)
     {
         Buff buff = new Buff
         {
@@ -63,6 +69,8 @@ public class Buffs : MonoBehaviour
             duration = 0f,
             OnHit = OnHit,
             OnhitModifier = onHitModifier,
+            OnKill = OnKill,
+            OnKillModifier = onKillModifier,
             AbilityPowerMult=abilityPowerMult,
         };
 

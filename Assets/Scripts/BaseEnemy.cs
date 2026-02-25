@@ -23,7 +23,7 @@ public class BaseEnemy : MonoBehaviour
 
     [Header("Health")]
     [SerializeField] protected int maxHealth = 50;
-    protected int currentHealth;
+    public int currentHealth;
 
     [Header("Melee vs Troops")]
     [SerializeField] protected float damagePerSecond = 5f;
