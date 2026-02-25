@@ -65,12 +65,16 @@ public class TargetDummyTest : MonoBehaviour
         }
     }
 
-    public void TakeDamage(int damage)
+    public void TakeDamage(int damage, BaseUnit attacker = null)
     {
         currentHealth -= damage;
         Debug.Log($"Target Dummy took {damage} damage, current health: {currentHealth}/{maxHealth}");
         if (currentHealth <= 0)
         {
+            if (attacker != null)
+            {
+                attacker.OnKill();
+            }
             Destroy(gameObject);
         }
     }
