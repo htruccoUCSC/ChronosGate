@@ -19,8 +19,6 @@ using System.Collections.Generic;
 public class ArtilleryUnit : BaseUnit
 {
     [SerializeField] private LayerMask m_TargetMask;
-    [SerializeField] private float m_CrewLoadSpeedBoost = 0.20f; // 20% attack speed increase
-    private Vector3 offsetTargetPosition; // Position 1 tile to the right of the target
 
     protected override void CastAbility()
     {
@@ -28,7 +26,7 @@ public class ArtilleryUnit : BaseUnit
         // This makes the unit fire 20% faster (shorter cooldown between attacks).
         Buff crewLoadBuff = new Buff
         {
-            AttackSpeedFlat = myData.GetModifiedAttackSpeed() * m_CrewLoadSpeedBoost,
+            AttackSpeedFlat = myData.GetModifiedAttackSpeed() * 0.20f,
             duration = float.MaxValue // Lasts for entire round
         };
         
@@ -38,37 +36,15 @@ public class ArtilleryUnit : BaseUnit
     }
 
     /// <summary>
-    /// Basic Attack: Fire an explosive (AOE) projectile at 1 tile to the right of the nearest enemy.
-    /// The offset position is calculated in ScanTargeting and stored in offsetTargetPosition.
-    /// This method uses that offset to spawn the projectile, creating detonation 1 tile behind the target.
+    /// Basic Attack: Fire an explosive (AOE) projectile at the nearest enemy.
+    /// Uses ballistic trajectory for dramatic effect.
     /// </summary>
     protected override void PerformBasicAttack()
     {
         if (currentTarget == null) return;
-
-        GameObject prefab = LoadProjectilePrefab();
-        if (prefab == null) return;
-
-        GameObject proj = InstantiateAndSetupProjectile(prefab);
-        if (proj == null) return;
-
-        Projectile projScript = proj.GetComponentInChildren<Projectile>();
-        if (projScript == null) return;
-
-        // Calculate direction and distance towards the offset position (1 tile to the right)
-        Vector2 diff = offsetTargetPosition - transform.position;
-        Vector2 direction = diff.normalized;
-        float launchAngle = myData.BaseDef.LaunchAngle;
-
-        if (launchAngle > 0)
-        {
-            float gravity = Mathf.Abs(Physics2D.gravity.y * 3f);
-            projScript.speed = CalculateBallisticSpeed(diff, launchAngle, gravity);
-        }
-
-        projScript.Setup(myData.GetModifiedDamage(), direction, launchAngle, transform.position, true, this);
+        SpawnProjectile(LoadProjectilePrefab(), myData.GetModifiedDamage(), true);
     }
-
+/*
     protected override void ScanTargeting()
     {
         if (myData == null)
@@ -77,19 +53,8 @@ public class ArtilleryUnit : BaseUnit
             return;
         }
 
-        // Get the nearest target using existing targeting logic
         List<Transform> nearest = GetNearestTargets(1);
-        
-        if (nearest.Count > 0)
-        {
-            currentTarget = nearest[0];
-            // Offset the target position 1 tile to the right (behind the target)
-            offsetTargetPosition = currentTarget.position + Vector3.right;
-        }
-        else
-        {
-            currentTarget = null;
-        }
+        currentTarget = nearest.Count > 0 ? nearest[0] : null;
     }
 
     /// <summary>
@@ -145,4 +110,5 @@ public class ArtilleryUnit : BaseUnit
 
         return result;
     }
+    */
 }
