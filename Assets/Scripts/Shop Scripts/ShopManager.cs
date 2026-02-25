@@ -118,7 +118,13 @@ public class ShopManager : MonoBehaviour
     {
         isShopOpen = true;
         shopPanel.SetActive(true);
-        toggleButton.interactable = true;
+        
+        // Make toggle button visible and interactable when entering shop
+        if (toggleButton != null)
+        {
+            toggleButton.gameObject.SetActive(true);
+            toggleButton.interactable = true;
+        }
         
         // Reroll shop for new round
         PopulateTowerSlots();
