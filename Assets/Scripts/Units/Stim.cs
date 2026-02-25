@@ -7,7 +7,6 @@ using System.Collections;
 public class StimUnit : BaseUnit
 {
     [SerializeField] private GameObject m_ProjectilePrefab;
-    [SerializeField] private float m_BasicAttackBuffAmount = 10f;
     private float m_buffDuration = 2f;
     private BoardManager m_BoardManager;
     private Buffs m_BuffSystem;
