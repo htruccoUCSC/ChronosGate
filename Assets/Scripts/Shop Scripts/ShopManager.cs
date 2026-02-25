@@ -131,6 +131,12 @@ public class ShopManager : MonoBehaviour
         isShopOpen = false;
         HideConsumableTooltip();
         
+        // Hide toggle button when moving to next round
+        if (toggleButton != null)
+        {
+            toggleButton.gameObject.SetActive(false);
+        }
+        
         // Notify game loop manager
         if (GameLoopManager.Instance != null)
         {

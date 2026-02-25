@@ -305,7 +305,7 @@ public class AugmentSelectionUI : MonoBehaviour
         isPanelOpen = false;
         Time.timeScale = 1f; // Resume game
         
-        // Keep toggle button active and visible even when panel is hidden
+        // Keep toggle button visible when panel is manually closed
         if (toggleButton != null)
         {
             toggleButton.gameObject.SetActive(true);
@@ -339,6 +339,12 @@ public class AugmentSelectionUI : MonoBehaviour
         
         // Hide the panel first
         HideAugmentSelection();
+        
+        // Hide toggle button when augment is selected
+        if (toggleButton != null)
+        {
+            toggleButton.gameObject.SetActive(false);
+        }
         
         // Trigger event for other systems (passing the index)
         OnAugmentSelected?.Invoke(augmentIndex);
