@@ -8,6 +8,12 @@ public class UnitSpawner : MonoBehaviour
     // CHANGED: Now accepts a Definition, creates the Instance internally
     public bool TrySpawnFromInventory(UnitDefinition def)
     {
+        if (def == null)
+        {
+            Debug.LogError("TrySpawnFromInventory: UnitDefinition is null!");
+            return false;
+        }
+
         Vector3 rawWorldPos = Camera.main.ScreenToWorldPoint(Mouse.current.position.ReadValue());
         rawWorldPos.z = 0;
         Vector3Int cellPos = board.GameTilemap.WorldToCell(rawWorldPos);
@@ -21,10 +27,24 @@ public class UnitSpawner : MonoBehaviour
 
             // create visuals
             GameObject prefab = Resources.Load<GameObject>(def.PrefabPath);
+            if (prefab == null)
+            {
+                Debug.LogError($"Failed to load prefab at path: {def.PrefabPath}");
+                return false;
+            }
+
             GameObject go = Instantiate(prefab, snapPos, Quaternion.identity);
             
             // add unit to board
-            go.GetComponent<BaseUnit>().Initialize(newInstance);
+            BaseUnit unitComponent = go.GetComponent<BaseUnit>();
+            if (unitComponent == null)
+            {
+                Debug.LogError($"Spawned unit '{go.name}' from prefab '{def.PrefabPath}' does not have a BaseUnit component! Check that the prefab has the correct unit script attached.");
+                Destroy(go);
+                return false;
+            }
+            
+            unitComponent.Initialize(newInstance);
             board.RegisterUnit(cellPos, go);
 
             return true;
