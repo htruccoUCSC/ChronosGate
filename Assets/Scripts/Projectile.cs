@@ -185,7 +185,7 @@ public class Projectile : MonoBehaviour
 
                 BaseEnemy aoeEnemy = hit.GetComponentInParent<BaseEnemy>();
                 BaseEnemy aoeTestEnemy = null;
-
+               
                 if (aoeEnemy == null)
                 {
                     aoeTestEnemy = hit.GetComponentInParent<BaseEnemy>();
@@ -202,7 +202,8 @@ public class Projectile : MonoBehaviour
                     _owner.OnHit();
                   
                     int damage = Mathf.RoundToInt(dealt*aoeEnemy.DamageAmp);
-                    aoeEnemy.TakeDamage(damage);
+                    aoeEnemy.TakeDamage(_owner, damage);
+
                     if (_ampOnHitBool)
                 {
                     ApplyAmpIfConfigured(enemy);
@@ -213,7 +214,8 @@ public class Projectile : MonoBehaviour
                 {
                      _owner.OnHit();
                       int damage = Mathf.RoundToInt(dealt*aoeEnemy.DamageAmp);
-                    aoeTestEnemy.TakeDamage(damage);
+                    aoeTestEnemy.TakeDamage(_owner, damage);
+
                     if (_ampOnHitBool)
                 {
                     ApplyAmpIfConfigured(enemy);
@@ -231,7 +233,7 @@ public class Projectile : MonoBehaviour
                 _owner.OnHit();
                  int damage = Mathf.RoundToInt(dealt*enemy.DamageAmp);
                    Debug.Log(dealt+"x Amp "+enemy.DamageAmp+" = "+damage);
-                enemy.TakeDamage(damage);
+                enemy.TakeDamage(_owner, damage);
                 if (_ampOnHitBool)
                 {
                     ApplyAmpIfConfigured(enemy);
@@ -242,12 +244,13 @@ public class Projectile : MonoBehaviour
             {
                 _owner.OnHit();
                 
-                testEnemy.TakeDamage(dealt);
+                testEnemy.TakeDamage(dealt, _owner);
                 if (_ampOnHitBool)
                 {
                     ApplyAmpIfConfigured(enemy);
                 }
                 ApplySlowIfConfigured(testEnemy);
+                
             }
         }
 

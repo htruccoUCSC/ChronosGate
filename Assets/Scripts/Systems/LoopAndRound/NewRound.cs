@@ -42,6 +42,11 @@ public class NewRound : MonoBehaviour
 
     public void BaseUnitNewRoundCalls()
     {
+        if (board == null || board.unitGrid == null)
+        {
+            return;
+        }
+
         int sizeX = board.unitGrid.GetLength(0);
         int sizeY = board.unitGrid.GetLength(1);
 

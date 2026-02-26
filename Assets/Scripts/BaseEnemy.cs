@@ -23,7 +23,7 @@ public class BaseEnemy : MonoBehaviour
 
     [Header("Health")]
     [SerializeField] protected int maxHealth = 50;
-    protected int currentHealth;
+    public int currentHealth;
 
     [Header("Melee vs Troops")]
     [SerializeField] protected float damagePerSecond = 5f;
@@ -169,12 +169,17 @@ private const float DEBUFF_TICK_RATE = 1f;
         }
     }
 
-    public virtual void TakeDamage(int damage)
+    public virtual void TakeDamage(BaseUnit unit, int damage)
     {
         currentHealth -= damage;
         if (currentHealth <= 0)
         {
+            if (unit != null)
+            {
+                unit.OnKill();
+            }
             Die();
+
         }
     }
 
@@ -266,11 +271,11 @@ foreach (var key in toRemove)
     Debuffs.Remove(key);
 }
     }
-    public void ApplyFire(float stacks)
+public void ApplyFire(float stacks)
 {
       int damage = Mathf.RoundToInt(stacks);
       Debug.Log("enemy takes fire Damage");
-    TakeDamage(damage);
+    TakeDamage(null, damage);
 }
 public void ApplyAmp(float stacks)
 {
