@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using Unity.VisualScripting;
 using UnityEngine;
 
 public class OrbitalLaserBehavior : MonoBehaviour
@@ -79,9 +78,9 @@ public void Initialize(
 
         foreach (var hit in hits)
         {
-            TargetDummyTest enemy = hit.GetComponent<TargetDummyTest>();
+            BaseEnemy enemy = hit.GetComponentInParent<BaseEnemy>();
             if (enemy != null)
-                enemy.TakeDamage(Mathf.RoundToInt(m_damage), orbit);
+                enemy.TakeDamage(orbit, Mathf.RoundToInt(m_damage));
         }
     }
 
@@ -94,8 +93,11 @@ public void Initialize(
 
     public bool HandleEnemyTrigger(Collider2D other)
     {
-         TargetDummyTest enemy = other.GetComponent<TargetDummyTest>();
-        enemy.TakeDamage(Mathf.RoundToInt(m_damage), orbit);
+        BaseEnemy enemy = other.GetComponentInParent<BaseEnemy>();
+        if (enemy == null)
+            return false;
+
+        enemy.TakeDamage(orbit, Mathf.RoundToInt(m_damage));
 
 
 
