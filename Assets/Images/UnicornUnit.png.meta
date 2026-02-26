@@ -1,0 +1,716 @@
+fileFormatVersion: 2
+guid: 21a8e5365c06b460884aee14ea6d98e7
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: 7581773991700321433
+    second: UnicornUnit_0
+  - first:
+      213: 3649860234792430080
+    second: UnicornUnit_1
+  - first:
+      213: -528012781397023611
+    second: UnicornUnit_2
+  - first:
+      213: -5120036207841311010
+    second: UnicornUnit_3
+  - first:
+      213: -6054209974965555607
+    second: UnicornUnit_4
+  - first:
+      213: -2166120530044006255
+    second: UnicornUnit_5
+  - first:
+      213: -9221710425624265100
+    second: UnicornUnit_6
+  - first:
+      213: -4333205594428393335
+    second: UnicornUnit_7
+  - first:
+      213: -3404612485309521680
+    second: UnicornUnit_8
+  - first:
+      213: -2166828625438740594
+    second: UnicornUnit_9
+  - first:
+      213: -7447700784293298351
+    second: UnicornUnit_10
+  - first:
+      213: 1557832644646040225
+    second: UnicornUnit_11
+  - first:
+      213: 8607539551042900156
+    second: UnicornUnit_12
+  - first:
+      213: 7084757822671720087
+    second: UnicornUnit_13
+  - first:
+      213: -286310032263261141
+    second: UnicornUnit_14
+  - first:
+      213: 2018280026026907290
+    second: UnicornUnit_15
+  - first:
+      213: -6489879260311799977
+    second: UnicornUnit_16
+  - first:
+      213: -2725468212147284237
+    second: UnicornUnit_17
+  - first:
+      213: -8709986844110121867
+    second: UnicornUnit_18
+  - first:
+      213: -7272741758891260404
+    second: UnicornUnit_19
+  - first:
+      213: -2696621335129560857
+    second: UnicornUnit_20
+  - first:
+      213: -1321825035334663101
+    second: UnicornUnit_21
+  - first:
+      213: -5525374386430540709
+    second: UnicornUnit_22
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 0
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 1
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 100
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationDetail: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 0
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: UnicornUnit_0
+      rect:
+        serializedVersion: 2
+        x: 456
+        y: 818
+        width: 420
+        height: 121
+      alignment: 9
+      pivot: {x: 1.0938914, y: 0.10346085}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 994d796864fd73960800000000000000
+      internalID: 7581773991700321433
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: UnicornUnit_1
+      rect:
+        serializedVersion: 2
+        x: 476
+        y: 960
+        width: 26
+        height: 31
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 00a60a6bb88e6a230800000000000000
+      internalID: 3649860234792430080
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: UnicornUnit_2
+      rect:
+        serializedVersion: 2
+        x: 502
+        y: 951
+        width: 17
+        height: 22
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 584e6ff3c2f1ca8f0800000000000000
+      internalID: -528012781397023611
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: UnicornUnit_3
+      rect:
+        serializedVersion: 2
+        x: 319
+        y: 897
+        width: 53
+        height: 49
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ed60b72323af1f8b0800000000000000
+      internalID: -5120036207841311010
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: UnicornUnit_4
+      rect:
+        serializedVersion: 2
+        x: 393
+        y: 904
+        width: 9
+        height: 8
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 96e2d86ba102bfba0800000000000000
+      internalID: -6054209974965555607
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: UnicornUnit_5
+      rect:
+        serializedVersion: 2
+        x: 299
+        y: 837
+        width: 19
+        height: 66
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 190db02cad460f1e0800000000000000
+      internalID: -2166120530044006255
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: UnicornUnit_6
+      rect:
+        serializedVersion: 2
+        x: 378
+        y: 876
+        width: 12
+        height: 12
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 47e36230a37e50080800000000000000
+      internalID: -9221710425624265100
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: UnicornUnit_7
+      rect:
+        serializedVersion: 2
+        x: 414
+        y: 864
+        width: 23
+        height: 13
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 9883c5d587c5dd3c0800000000000000
+      internalID: -4333205594428393335
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: UnicornUnit_8
+      rect:
+        serializedVersion: 2
+        x: 367
+        y: 849
+        width: 26
+        height: 18
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 0f02447abf260c0d0800000000000000
+      internalID: -3404612485309521680
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: UnicornUnit_9
+      rect:
+        serializedVersion: 2
+        x: 341
+        y: 761
+        width: 21
+        height: 17
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e8f639378d0ede1e0800000000000000
+      internalID: -2166828625438740594
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: UnicornUnit_10
+      rect:
+        serializedVersion: 2
+        x: 237
+        y: 854
+        width: 73
+        height: 49
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 15fbcc6a89374a890800000000000000
+      internalID: -7447700784293298351
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: UnicornUnit_11
+      rect:
+        serializedVersion: 2
+        x: 220
+        y: 984
+        width: 104
+        height: 40
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 1a272ab59888e9510800000000000000
+      internalID: 1557832644646040225
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: UnicornUnit_12
+      rect:
+        serializedVersion: 2
+        x: 336
+        y: 772
+        width: 32
+        height: 27
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: cb09902fd9f147770800000000000000
+      internalID: 8607539551042900156
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: UnicornUnit_13
+      rect:
+        serializedVersion: 2
+        x: 442
+        y: 857
+        width: 21
+        height: 16
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 79e840cf3bd125260800000000000000
+      internalID: 7084757822671720087
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: UnicornUnit_14
+      rect:
+        serializedVersion: 2
+        x: 452
+        y: 881
+        width: 107
+        height: 40
+      alignment: 9
+      pivot: {x: 0.25223035, y: 5.360408}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b245157ea82d60cf0800000000000000
+      internalID: -286310032263261141
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: UnicornUnit_16
+      rect:
+        serializedVersion: 2
+        x: 401
+        y: 765
+        width: 9
+        height: 11
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 757b0f592315fe5a0800000000000000
+      internalID: -6489879260311799977
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: UnicornUnit_17
+      rect:
+        serializedVersion: 2
+        x: 357
+        y: 822
+        width: 30
+        height: 29
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 3f69758e9113d2ad0800000000000000
+      internalID: -2725468212147284237
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: UnicornUnit_18
+      rect:
+        serializedVersion: 2
+        x: 657
+        y: 823
+        width: 14
+        height: 47
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 5749d7edc19ef1780800000000000000
+      internalID: -8709986844110121867
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: UnicornUnit_19
+      rect:
+        serializedVersion: 2
+        x: 322
+        y: 914
+        width: 147
+        height: 64
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c06032627e7021b90800000000000000
+      internalID: -7272741758891260404
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: UnicornUnit_20
+      rect:
+        serializedVersion: 2
+        x: 307
+        y: 135
+        width: 470
+        height: 498
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 7e8ecd9de2da39ad0800000000000000
+      internalID: -2696621335129560857
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: UnicornUnit_21
+      rect:
+        serializedVersion: 2
+        x: 649
+        y: 589
+        width: 46
+        height: 53
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 344c8a9322fe7ade0800000000000000
+      internalID: -1321825035334663101
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: UnicornUnit_22
+      rect:
+        serializedVersion: 2
+        x: 458
+        y: 869
+        width: 15
+        height: 11
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b5404cd254de153b0800000000000000
+      internalID: -5525374386430540709
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: UnicornUnit_23
+      rect:
+        serializedVersion: 2
+        x: 331
+        y: 703
+        width: 20
+        height: 234
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: a2f7db3bc30a4414d949c3b0d3542cee
+      internalID: 1342722786
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: 5e97eb03825dee720800000000000000
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries: []
+    nameFileIdTable:
+      UnicornUnit_0: 7581773991700321433
+      UnicornUnit_1: 3649860234792430080
+      UnicornUnit_10: -7447700784293298351
+      UnicornUnit_11: 1557832644646040225
+      UnicornUnit_12: 8607539551042900156
+      UnicornUnit_13: 7084757822671720087
+      UnicornUnit_14: -286310032263261141
+      UnicornUnit_15: 2018280026026907290
+      UnicornUnit_16: -6489879260311799977
+      UnicornUnit_17: -2725468212147284237
+      UnicornUnit_18: -8709986844110121867
+      UnicornUnit_19: -7272741758891260404
+      UnicornUnit_2: -528012781397023611
+      UnicornUnit_20: -2696621335129560857
+      UnicornUnit_21: -1321825035334663101
+      UnicornUnit_22: -5525374386430540709
+      UnicornUnit_23: 1342722786
+      UnicornUnit_3: -5120036207841311010
+      UnicornUnit_4: -6054209974965555607
+      UnicornUnit_5: -2166120530044006255
+      UnicornUnit_6: -9221710425624265100
+      UnicornUnit_7: -4333205594428393335
+      UnicornUnit_8: -3404612485309521680
+      UnicornUnit_9: -2166828625438740594
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
