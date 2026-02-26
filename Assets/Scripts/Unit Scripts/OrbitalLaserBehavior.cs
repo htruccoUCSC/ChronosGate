@@ -81,7 +81,7 @@ public void Initialize(
         {
             TargetDummyTest enemy = hit.GetComponent<TargetDummyTest>();
             if (enemy != null)
-                enemy.TakeDamage(Mathf.RoundToInt(m_damage));
+                enemy.TakeDamage(Mathf.RoundToInt(m_damage), orbit);
         }
     }
 
@@ -95,7 +95,7 @@ public void Initialize(
     public bool HandleEnemyTrigger(Collider2D other)
     {
          TargetDummyTest enemy = other.GetComponent<TargetDummyTest>();
-        enemy.TakeDamage(Mathf.RoundToInt(m_damage));
+        enemy.TakeDamage(Mathf.RoundToInt(m_damage), orbit);
 
 
 
