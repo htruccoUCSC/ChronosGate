@@ -1,5 +1,6 @@
 using UnityEngine;
 using System.Collections;
+using UnityEngine.SceneManagement;
 
 /// <summary>
 /// Main game loop manager that orchestrates the flow:
@@ -204,7 +205,13 @@ public class GameLoopManager : MonoBehaviour
         isGameActive = false;
         Debug.Log("=== GAME OVER ===");
         
-        Time.timeScale = 0f;
+        // Wait 5 seconds then load game over scene
+        Invoke(nameof(LoadGameOverScene), 3f);
+    }
+
+    private void LoadGameOverScene()
+    {
+        SceneManager.LoadScene("GameOver");
     }
 
     public bool IsGameActive()
