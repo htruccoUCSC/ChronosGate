@@ -437,6 +437,20 @@ protected void SpawnSniperProjectile(GameObject prefab, float damage, bool isAOE
         PerformBasicAttack();
         }
     }
+
+public void ApplySlow(float stacks)
+    {
+        if (enemyHit == null) return;
+        float amount = Mathf.Max(0f, stacks);
+        if (amount <= 0f) return;
+
+        enemyHit.ApplyDebuff(
+            BaseEnemy.DebuffType.Slow,
+            amount,
+            DebuffDuration.SlowDuration,
+            s => enemyHit.ApplySlow(s, DebuffDuration.SlowDuration)
+        );
+    }
     // added this so that baseEnemy works
 public void ApplyFire(float stacks)
 {
