@@ -5,7 +5,6 @@ public class Hero : BaseUnit
 {
     [Header("Combat Settings")]
     [SerializeField] private float meleeRange = 1.25f;
-    [SerializeField] private LayerMask enemyMask;
     
     [Header("Ability Settings")]
     [SerializeField] private float abilityBuffDuration = 5f; // Duration of attack speed buff in seconds
@@ -18,10 +17,6 @@ public class Hero : BaseUnit
 
     private void Awake()
     {
-        if (enemyMask.value == 0)
-        {
-            enemyMask = LayerMask.GetMask("Enemies");
-        }
         
         meleeAttackBehavior = GetComponent<MeleeAttackBehavior>();
         if (meleeAttackBehavior == null)
@@ -65,10 +60,6 @@ public class Hero : BaseUnit
         
         bool didHit = TryPerformMeleeAttack(damage, meleeRange);
         
-        if (didHit)
-        {
-            OnHit();
-        }
     }
 
     private void PerformRangedAttack(float damage)
