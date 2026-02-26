@@ -101,6 +101,11 @@ public class WaveManager : MonoBehaviour
         return leftLoseX; // enemies use this to know when they reached the end
     }
 
+    public bool IsGameOver()
+    {
+        return gameOver;
+    }
+
     private int AliveEnemyCount()
     {
         return aliveBaseEnemies.Count + aliveTestEnemies.Count;
@@ -166,6 +171,12 @@ public class WaveManager : MonoBehaviour
         }
 
         yield return new WaitUntil(() => AliveEnemyCount() == 0 || gameOver);
+
+        if (gameOver)
+        {
+            waveActive = false;
+            yield break;
+        }
 
         Debug.Log($"--- WAVE {currentWave} CLEARED ---");
 

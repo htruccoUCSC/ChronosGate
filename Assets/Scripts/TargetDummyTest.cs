@@ -17,12 +17,18 @@ public class TargetDummyTest : MonoBehaviour
     private int polymorphVersion = 0;
     private SpriteRenderer cachedRenderer;
     private Sprite baseSprite;
+    private Collider2D enemyCollider;
     [Header("Debug")]
     public bool showHitbox = true; // default off
 
     void Start()
     {
         currentHealth = maxHealth;
+        enemyCollider = GetComponent<Collider2D>();
+        if (enemyCollider == null)
+        {
+            enemyCollider = GetComponentInChildren<Collider2D>();
+        }
         cachedRenderer = GetComponentInChildren<SpriteRenderer>();
         if (cachedRenderer != null)
         {
@@ -57,7 +63,8 @@ public class TargetDummyTest : MonoBehaviour
         if (!alreadyCountedAsEscape && WaveManager.Instance != null)
         {
             float loseX = WaveManager.Instance.GetLoseLineX();
-            if (transform.position.x <= loseX)
+            float enemyLeftX = enemyCollider != null ? enemyCollider.bounds.min.x : transform.position.x;
+            if (enemyLeftX <= loseX)
             {
                 alreadyCountedAsEscape = true;
                 WaveManager.Instance.EnemyReachedEnd(this);

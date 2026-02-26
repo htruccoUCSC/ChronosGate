@@ -163,17 +163,16 @@ public class GameLoopManager : MonoBehaviour
 
     private IEnumerator WaitForWaveCompletion()
     {
-        // Wait until all enemies are cleared
-        yield return new WaitUntil(() => waveManager.IsWaveComplete());
+        // Stop waiting if the wave ends normally or if the player runs out of lives.
+        yield return new WaitUntil(() => waveManager.IsWaveComplete() || waveManager.IsGameOver());
 
-        Debug.Log("Wave cleared!");
-
-        // Check if game is over (no lives left)
-        if (waveManager.lives <= 0)
+        if (waveManager.IsGameOver() || waveManager.lives <= 0)
         {
             GameOver();
             yield break;
         }
+
+        Debug.Log("Wave cleared!");
 
         // Increment AFTER completing the wave
         currentWaveInCycle++;
