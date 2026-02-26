@@ -11,34 +11,39 @@ public class ConsumableSlot : MonoBehaviour, IPointerEnterHandler, IPointerExitH
     [SerializeField] private TextMeshProUGUI costText;
     [SerializeField] private Button button;
     
-    private ConsumableData consumableData;
+    private ItemDefinition itemDefinition;
     private ShopManager shopManager;
+    private ItemInventoryUI itemInventoryUI;
     
     private void Awake()
     {
         button.onClick.AddListener(OnSlotClicked);
     }
     
-    // NEW: Let ShopManager set itself
     public void Initialize(ShopManager manager)
     {
         shopManager = manager;
         Debug.Log($"ShopManager initialized for {gameObject.name}");
     }
     
-    public void Setup(ConsumableData data)
+    public void InitializeInventory(ItemInventoryUI inventory)
     {
-        consumableData = data;
+        itemInventoryUI = inventory;
+    }
+    
+    public void Setup(ItemDefinition data)
+    {
+        itemDefinition = data;
         
         if (data != null)
         {
-            iconImage.sprite = data.icon;
+            iconImage.sprite = data.Icon;
             iconImage.color = Color.white;
-            nameText.text = data.consumableName;
-            costText.text = $"Cost: {data.cost}";
+            nameText.text = data.DisplayName;
+            costText.text = $"Cost: {data.Cost}";
             button.interactable = true;
             
-            Debug.Log($"Consumable slot setup: {data.consumableName}");
+            Debug.Log($"Consumable slot setup: {data.DisplayName}");
         }
         else
         {
@@ -59,14 +64,14 @@ public class ConsumableSlot : MonoBehaviour, IPointerEnterHandler, IPointerExitH
     {
         Debug.Log($"Pointer entered {gameObject.name}");
         
-        if (consumableData != null && shopManager != null)
+        if (itemDefinition != null && shopManager != null)
         {
-            Debug.Log($"Showing tooltip for: {consumableData.consumableName}");
-            shopManager.ShowConsumableTooltip(consumableData.description);
+            Debug.Log($"Showing tooltip for: {itemDefinition.DisplayName}");
+            shopManager.ShowConsumableTooltip(itemDefinition.Description);
         }
         else
         {
-            Debug.LogWarning($"Cannot show tooltip - consumableData: {consumableData != null}, shopManager: {shopManager != null}");
+            Debug.LogWarning($"Cannot show tooltip - itemDefinition: {itemDefinition != null}, shopManager: {shopManager != null}");
         }
     }
     
@@ -82,9 +87,44 @@ public class ConsumableSlot : MonoBehaviour, IPointerEnterHandler, IPointerExitH
     
     private void OnSlotClicked()
     {
-        if (consumableData != null)
+        if (itemDefinition == null)
         {
-            Debug.Log($"Clicked consumable: {consumableData.consumableName}");
+            return;
+        }
+
+        if (itemInventoryUI == null)
+        {
+            Debug.LogWarning("ItemInventoryUI not assigned for consumable slot.");
+            return;
+        }
+
+        // Check currency before purchase
+        CurrencyManager currencyManager = CurrencyManager.Instance;
+        if (currencyManager == null)
+        {
+            Debug.LogError("CurrencyManager not found!");
+            return;
+        }
+
+        int cost = itemDefinition.Cost;
+
+        // Try to spend currency
+        if (!currencyManager.TrySpendCurrency(cost))
+        {
+            Debug.Log($"Cannot afford item! Need {cost}, have {currencyManager.GetCurrency()}");
+            return;
+        }
+
+        // Add item to inventory
+        if (itemInventoryUI.AddItem(itemDefinition))
+        {
+            Debug.Log($"Purchased {itemDefinition.DisplayName} for {cost} gold!");
+        }
+        else
+        {
+            Debug.Log("Item inventory is full.");
+            // Refund currency if inventory is full
+            currencyManager.AddCurrency(cost);
         }
     }
 }
