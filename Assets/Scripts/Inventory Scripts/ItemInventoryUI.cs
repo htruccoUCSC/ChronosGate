@@ -4,7 +4,7 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
-// Pretty much copy-paste from Unit InventoryUI but adapted for items
+// Pretty much copy-paste from Unit InventoryUI but adapted for items 
 [RequireComponent(typeof(RectTransform))]
 public class ItemInventoryUI : MonoBehaviour
 {
