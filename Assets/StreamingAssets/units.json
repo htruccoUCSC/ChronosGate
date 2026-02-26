@@ -639,7 +639,7 @@
       "AttackSpeed": 1,
       "AttackDamage": 10,
       "AbilityPower": 50,
-      "AbilityManaCost": 30,
+      "AbilityManaCost": 60,
       "StartingMana": 0,
       "AttackType": "None",
       "LaunchAngle": 0,
