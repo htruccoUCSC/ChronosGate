@@ -20,8 +20,8 @@ public class BaseEnemy : MonoBehaviour
     // Waves 4-6: +10% once
     // Waves 7-9: +10% twice, etc.
     private const int START_AFTER_WAVE = 3;
-    private const int SCALE_EVERY_N_WAVES = 4;   // change to 5 later if you want
-    private const float SCALE_PER_STEP = 0.10f;  // 10% per step
+    private const int SCALE_EVERY_N_WAVES = 3;   // change to 5 later if you want
+    private const float SCALE_PER_STEP = 0.5f;  // 10% per step
     private const bool COMPOUND = true;
 
     [Header("Movement")]

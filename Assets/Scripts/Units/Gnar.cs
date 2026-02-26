@@ -14,7 +14,7 @@ public class Boomerang : BaseUnit
     protected override void CastAbility()
     {
         Debug.Log("Boomerang uses ability");
-        SpawnArcApexProjectile(myData.GetModifiedDamage() * 2f, true);
+        SpawnArcApexProjectile(myData.GetModifiedDamage() , true);
     }
 
     protected override void PerformBasicAttack()
@@ -22,10 +22,10 @@ public class Boomerang : BaseUnit
         float damage = myData.GetModifiedDamage();
         SpawnSpreadAttack(damage);
 
-        if (!m_MoveScheduled)
-        {
-            StartCoroutine(MoveToAdjacentTileAfterDelay(m_MoveDelay));
-        }
+        // if (!m_MoveScheduled)
+        // {
+        //     StartCoroutine(MoveToAdjacentTileAfterDelay(m_MoveDelay));
+        // }
     }
 
     protected override void ScanTargeting()
