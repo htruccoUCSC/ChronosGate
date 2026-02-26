@@ -24,6 +24,7 @@ public abstract class BaseUnit : MonoBehaviour
 
     public virtual void Initialize(UnitInstance instance)
     {
+        EnsureHitTint();
         myData = instance;
         attackTimer = 1f / myData.GetModifiedAttackSpeed();
 
@@ -48,6 +49,12 @@ public abstract class BaseUnit : MonoBehaviour
     }
 
         NormalizeSpriteSize();
+    }
+
+    private void EnsureHitTint()
+    {
+        if (GetComponent<HitTint>() != null) return;
+        gameObject.AddComponent<HitTint>();
     }
     // scales the unit to fit nicely in a tile based on its sprite size
     private void NormalizeSpriteSize()
@@ -222,6 +229,11 @@ public abstract class BaseUnit : MonoBehaviour
     //TakeDamage function to be called by enemy
     protected virtual void TakeDamage(int amount, Transform attacker = null)
     {
+        if (myData == null) return;
+        if (amount <= 0) return;
+
+        HitTint hitTint = GetComponent<HitTint>();
+        if (hitTint != null) hitTint.Flash();
         myData.CurrentHP -= amount;
         if (myData.CurrentHP <= 0)
         {
@@ -504,15 +516,7 @@ public void ApplyAmp()
 
     public void TakeDamage(int damage)
     {
-        if (myData == null) return;
-        if (damage <= 0) return;
-
-        myData.CurrentHP -= damage;
-
-        if (myData.CurrentHP <= 0)
-        {
-            Destroy(gameObject);
-        }
+        TakeDamage(damage, null);
     }
     
 }

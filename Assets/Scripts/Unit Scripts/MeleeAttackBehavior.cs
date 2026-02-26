@@ -47,6 +47,27 @@ public class MeleeAttackBehavior : MonoBehaviour
         int finalDamage = Mathf.Max(0, Mathf.RoundToInt(damage));
         bool canDealDamage = finalDamage > 0;
 
+        if (target.TryGetComponent(out BaseEnemy directEnemy))
+        {
+            if (canDealDamage)
+            {
+                directEnemy.TakeDamage(attackerUnit, finalDamage);
+            }
+            SpawnSlashOnHit(attacker, target);
+            return true;
+        }
+
+        BaseEnemy parentEnemy = target.GetComponentInParent<BaseEnemy>();
+        if (parentEnemy != null)
+        {
+            if (canDealDamage)
+            {
+                parentEnemy.TakeDamage(attackerUnit, finalDamage);
+            }
+            SpawnSlashOnHit(attacker, target);
+            return true;
+        }
+
         if (target.TryGetComponent(out TargetDummyTest dummy))
         {
             if (canDealDamage)
