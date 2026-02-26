@@ -171,6 +171,11 @@ private const float DEBUFF_TICK_RATE = 1f;
 
     public virtual void TakeDamage(BaseUnit unit, int damage)
     {
+        HitTint hitTint = GetComponent<HitTint>();
+        if (hitTint != null)
+        {
+            hitTint.Flash();
+        }
         currentHealth -= damage;
         if (currentHealth <= 0)
         {
@@ -194,6 +199,11 @@ private const float DEBUFF_TICK_RATE = 1f;
 
     protected virtual void Die()
     {
+        HitTint hitTint = GetComponent<HitTint>();
+        if (hitTint != null)
+        {
+            hitTint.Flash();
+        }
         Destroy(gameObject);
     }
 
@@ -276,6 +286,11 @@ public void ApplyFire(float stacks)
       int damage = Mathf.RoundToInt(stacks);
       Debug.Log("enemy takes fire Damage");
     TakeDamage(null, damage);
+    HitTint hitTint = GetComponent<HitTint>();
+    if (hitTint != null)
+    {
+        hitTint.Flash();
+    }
 }
 public void ApplyAmp(float stacks)
 {
