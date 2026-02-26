@@ -18,8 +18,8 @@ public class WizardUnit : BaseUnit
         if (currentTarget == null) return;
 
         // ability still only works on the old dummy unless we add polymorph support to BaseEnemy
-        TargetDummyTest targetDummy = currentTarget.GetComponentInParent<TargetDummyTest>();
-        if (targetDummy == null) return;
+        BaseEnemy baseEnemy = currentTarget.GetComponentInParent<BaseEnemy>();
+        if (baseEnemy == null) return;
 
         if (m_SheepSprite == null)
         {
@@ -27,8 +27,8 @@ public class WizardUnit : BaseUnit
             return;
         }
 
-        targetDummy.ApplyPolymorph(m_SheepSprite, m_PolymorphDuration);
-        targetDummy.ApplySlow(m_PolymorphSlowPercent, m_PolymorphDuration);
+        baseEnemy.ApplyPolymorph(m_SheepSprite, m_PolymorphDuration);
+        baseEnemy.ApplySlow(m_PolymorphSlowPercent, m_PolymorphDuration);
     }
 
     protected override void PerformBasicAttack()

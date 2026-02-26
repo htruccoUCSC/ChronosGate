@@ -1,9 +1,17 @@
 using UnityEngine;
 using System;
+using System.Collections;
 using System.Collections.Generic;
+
 [RequireComponent(typeof(Rigidbody2D))]
 public class BaseEnemy : MonoBehaviour
 {
+        // For polymorph support (ported from TargetDummyTest)
+    private SpriteRenderer cachedRenderer;
+    private int polymorphVersion;
+    private Sprite baseSprite;
+    public float HealthPercent => (maxHealth > 0) ? (float)currentHealth / maxHealth : 0f;
+   
     // my take on wave scaling
     // Waves 1..START_AFTER_WAVE: base stats (no scaling)
     // After that, stats scale up once every SCALE_EVERY_N_WAVES.
@@ -55,6 +63,11 @@ private const float DEBUFF_TICK_RATE = 1f;
         rb.gravityScale = 0f;
         rb.bodyType = RigidbodyType2D.Kinematic;
         rb.freezeRotation = true;
+        cachedRenderer = GetComponentInChildren<SpriteRenderer>();
+        if (cachedRenderer != null)
+        {
+            baseSprite = cachedRenderer.sprite;
+        }
     }
 
     protected virtual void Start()
@@ -77,6 +90,36 @@ private const float DEBUFF_TICK_RATE = 1f;
         {
             Vector2 move = Vector2.left * moveSpeed * m_SlowMultiplier * Time.fixedDeltaTime;
             rb.MovePosition(rb.position + move);
+        }
+    }
+    public void ApplyPolymorph(Sprite sheepSprite, float duration)
+    {
+        if (cachedRenderer == null || sheepSprite == null)
+        {
+            return;
+        }
+
+        int version = ++polymorphVersion;
+        cachedRenderer.sprite = sheepSprite;
+
+        StartCoroutine(RemovePolymorphAfterDuration(version, Mathf.Max(0f, duration)));
+    }
+
+    private IEnumerator RemovePolymorphAfterDuration(int version, float duration)
+    {
+        if (duration > 0f)
+        {
+            yield return new WaitForSeconds(duration);
+        }
+
+        if (version != polymorphVersion)
+        {
+            yield break;
+        }
+
+        if (cachedRenderer != null)
+        {
+            cachedRenderer.sprite = baseSprite;
         }
     }
 
@@ -271,7 +314,7 @@ foreach (var key in toRemove)
     Debuffs.Remove(key);
 }
     }
-public void ApplyFire(float stacks)
+    public void ApplyFire(float stacks)
 {
       int damage = Mathf.RoundToInt(stacks);
       Debug.Log("enemy takes fire Damage");
