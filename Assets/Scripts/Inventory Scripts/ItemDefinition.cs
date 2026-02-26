@@ -10,6 +10,7 @@ public class ItemDefinition : ScriptableObject
 
     [Header("Item Stats")]
     [SerializeField] private int m_DamageValue;
+    [SerializeField] private int m_cost;
     // using same icon caching logic as UnitDefinition 
     private Sprite m_CachedIcon;
 
@@ -17,6 +18,7 @@ public class ItemDefinition : ScriptableObject
     public string Description => m_Description;
     public int DamageValue => m_DamageValue;
     public string PrefabPath => m_PrefabPath;
+    public int Cost => m_cost;
     // Icon logic
     public Sprite Icon
     { 

@@ -17,43 +17,10 @@ public class InventoryUI : MonoBehaviour
 
     public UnitSpawner unitSpawner; // Reference to UnitSpawner to spawn units from inventory
 
-    // debug starter unit
-    // you can set this to any valid UnitID from the DatabaseLoader
-    [Header("Starter Settings")]
-    public DatabaseLoader database;
-    public string starterUnitID = "archer_01";
-    public string starterUnitID2 = "boomer_01";
-
     private void Start()
     {
         m_Units = new UnitDefinition[m_Capacity];
         Build();
-
-        // Give the Database a split second to finish loading in Awake()
-        // Then grab our starter unit
-        if (database != null && !string.IsNullOrEmpty(starterUnitID))
-        {
-            if (database.UnitLookup.TryGetValue(starterUnitID, out UnitDefinition def))
-            {
-                AddUnit(def);
-            }
-            else
-            {
-                Debug.LogError($"Could not find Starter Unit: {starterUnitID}");
-            }
-        }
-
-        if (database != null && !string.IsNullOrEmpty(starterUnitID2))
-        {
-            if (database.UnitLookup.TryGetValue(starterUnitID2, out UnitDefinition def))
-            {
-                AddUnit(def);
-            }
-            else
-            {
-                Debug.LogError($"Could not find Starter Unit: {starterUnitID2}");
-            }
-        }
     }
 
     // Build the inventory UI

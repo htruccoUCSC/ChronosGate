@@ -9,7 +9,6 @@ using UnityEngine.UI;
 public class ItemInventoryUI : MonoBehaviour
 {
     [SerializeField] private ItemSpawner m_ItemSpawner;
-    [SerializeField] private ItemDefinition m_testItem; // For testing purposes
     [SerializeField] private int m_Capacity = 4;       //number of inventory slots
     [SerializeField] private Sprite m_SlotBackground;   //slot background
     [SerializeField] private Vector2 m_CellSize = new Vector2(64f, 64f);
@@ -22,9 +21,6 @@ public class ItemInventoryUI : MonoBehaviour
     {
         m_Items = new ItemDefinition[m_Capacity];
         Build();
-        AddItem(m_testItem); // Test item
-        AddItem(m_testItem);
-        AddItem(m_testItem);
     }
 
     // Build the inventory UI
