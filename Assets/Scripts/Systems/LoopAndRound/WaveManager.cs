@@ -17,9 +17,9 @@ public class WaveManager : MonoBehaviour
 
     [Header("Waves")]
     public int currentWave = 1;          // current wave number
-    public int enemiesPerWave = 1;       // how many enemies spawn this wave
-    public int enemiesAddedPerWave = 0;  // extra enemies added each new wave
-    public float timeBetweenWaves = 2f;  // wait time between waves
+    public int enemiesPerWave = 2;       // how many enemies spawn this wave
+    public int enemiesAddedPerWave = 4;  // extra enemies added each new wave
+    public float timeBetweenWaves = 3f;  // wait time between waves
 
     [Header("Lives")]
     public int lives = 3; // you start with 3 lives
@@ -35,6 +35,7 @@ public class WaveManager : MonoBehaviour
     private bool autoRunWaves = false;
 
     private float leftLoseX = 0f; // world X where enemies count as "reached the end"
+    private BoardManager boardManager;
 
     void Awake()
     {
@@ -50,6 +51,8 @@ public class WaveManager : MonoBehaviour
     void Start()
     {
         Debug.Log("WaveManager started.");
+
+        boardManager = FindFirstObjectByType<BoardManager>();
 
         // compute map end threshold once at start
         RecomputeMapEndX();
@@ -78,7 +81,7 @@ public class WaveManager : MonoBehaviour
             for (int y = bounds.yMin; y < bounds.yMax; y++)
             {
                 Vector3Int cell = new Vector3Int(x, y, 0);
-                if (tilemap.HasTile(cell) && x < leftmostXWithTile)
+                if (IsSpawnableCell(cell) && x < leftmostXWithTile)
                     leftmostXWithTile = x;
             }
         }
@@ -195,7 +198,7 @@ public class WaveManager : MonoBehaviour
             for (int y = bounds.yMin; y < bounds.yMax; y++)
             {
                 Vector3Int cell = new Vector3Int(x, y, 0);
-                if (tilemap.HasTile(cell) && x > rightmostXWithTile)
+                if (IsSpawnableCell(cell) && x > rightmostXWithTile)
                     rightmostXWithTile = x;
             }
         }
@@ -212,7 +215,7 @@ public class WaveManager : MonoBehaviour
         List<int> validYs = new List<int>();
         for (int y = bounds.yMin; y < bounds.yMax; y++)
         {
-            if (tilemap.HasTile(new Vector3Int(rightmostXWithTile, y, 0)))
+            if (IsSpawnableCell(new Vector3Int(rightmostXWithTile, y, 0)))
                 validYs.Add(y);
         }
 
@@ -222,14 +225,8 @@ public class WaveManager : MonoBehaviour
             return;
         }
 
-        // limit spawns to the 5 middle rows
-        validYs.Sort();
-        int takeCount = Mathf.Min(5, validYs.Count);
-        int midIndex = validYs.Count / 2;
-        int startIndex = Mathf.Clamp(midIndex - (takeCount / 2), 0, validYs.Count - takeCount);
-
-        List<int> middleYs = validYs.GetRange(startIndex, takeCount);
-        int chosenY = middleYs[Random.Range(0, middleYs.Count)];
+        // allow spawning on any valid row in the spawn column
+        int chosenY = validYs[Random.Range(0, validYs.Count)];
 
         // convert tile position to world space and spawn enemy
         Vector3Int spawnCell = new Vector3Int(spawnX, chosenY, 0);
@@ -253,6 +250,14 @@ public class WaveManager : MonoBehaviour
         }
 
         Debug.LogWarning("WaveManager: spawned enemyPrefab but it has no BaseEnemy or TargetDummyTest component");
+    }
+
+    private bool IsSpawnableCell(Vector3Int cell)
+    {
+        if (boardManager != null)
+            return boardManager.IsWalkable(cell);
+
+        return tilemap.HasTile(cell);
     }
 
     // --- registration for BaseEnemy (new) ---

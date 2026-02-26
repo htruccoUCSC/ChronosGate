@@ -22,7 +22,7 @@ public class OrbitalLaser : BaseUnit
 
             behavior.Initialize(
                 nearest[0],
-                myData.GetModifiedDamage() * 2f,
+                myData.GetModifiedAbilityPower()*0.4f,
                 5f, //lifetime
                 1f,//movespeed
                 0.5f, //radius
