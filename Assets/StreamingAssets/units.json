@@ -20,8 +20,8 @@
     {
       "UnitID": "martian_01",
       "Name": "Martian ",
-      "Description": "Shoots confusion ray low damage applies slow, ability kidnaps enemy and generates money",
-      "Cost": 1,
+      "Description": "Shoots confusion ray low damage applies slow, executes an enemy under 20% health",
+      "Cost": 100,
       "Health": 5,
       "Range": 5,
       "AttackSpeed": 1,
@@ -30,7 +30,7 @@
       "AbilityManaCost": 30,
       "StartingMana": 0,
       "AttackType": "Projectile",
-      "LaunchAngle": 60,
+      "LaunchAngle": 0,
       "Faction": "Cosmic",
       "PrefabPath": "Prefabs/Units/martian_01"
     },
