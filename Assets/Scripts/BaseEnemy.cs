@@ -1,9 +1,17 @@
 using UnityEngine;
 using System;
+using System.Collections;
 using System.Collections.Generic;
+
 [RequireComponent(typeof(Rigidbody2D))]
 public class BaseEnemy : MonoBehaviour
 {
+        // For polymorph support (ported from TargetDummyTest)
+    private SpriteRenderer cachedRenderer;
+    private int polymorphVersion;
+    private Sprite baseSprite;
+    public float HealthPercent => (maxHealth > 0) ? (float)currentHealth / maxHealth : 0f;
+   
     // my take on wave scaling
     // Waves 1..START_AFTER_WAVE: base stats (no scaling)
     // After that, stats scale up once every SCALE_EVERY_N_WAVES.
@@ -23,7 +31,7 @@ public class BaseEnemy : MonoBehaviour
 
     [Header("Health")]
     [SerializeField] protected int maxHealth = 50;
-    protected int currentHealth;
+    public int currentHealth;
 
     [Header("Melee vs Troops")]
     [SerializeField] protected float damagePerSecond = 5f;
@@ -55,6 +63,11 @@ private const float DEBUFF_TICK_RATE = 1f;
         rb.gravityScale = 0f;
         rb.bodyType = RigidbodyType2D.Kinematic;
         rb.freezeRotation = true;
+        cachedRenderer = GetComponentInChildren<SpriteRenderer>();
+        if (cachedRenderer != null)
+        {
+            baseSprite = cachedRenderer.sprite;
+        }
     }
 
     protected virtual void Start()
@@ -77,6 +90,36 @@ private const float DEBUFF_TICK_RATE = 1f;
         {
             Vector2 move = Vector2.left * moveSpeed * m_SlowMultiplier * Time.fixedDeltaTime;
             rb.MovePosition(rb.position + move);
+        }
+    }
+    public void ApplyPolymorph(Sprite sheepSprite, float duration)
+    {
+        if (cachedRenderer == null || sheepSprite == null)
+        {
+            return;
+        }
+
+        int version = ++polymorphVersion;
+        cachedRenderer.sprite = sheepSprite;
+
+        StartCoroutine(RemovePolymorphAfterDuration(version, Mathf.Max(0f, duration)));
+    }
+
+    private IEnumerator RemovePolymorphAfterDuration(int version, float duration)
+    {
+        if (duration > 0f)
+        {
+            yield return new WaitForSeconds(duration);
+        }
+
+        if (version != polymorphVersion)
+        {
+            yield break;
+        }
+
+        if (cachedRenderer != null)
+        {
+            cachedRenderer.sprite = baseSprite;
         }
     }
 
@@ -169,12 +212,22 @@ private const float DEBUFF_TICK_RATE = 1f;
         }
     }
 
-    public virtual void TakeDamage(int damage)
+    public virtual void TakeDamage(BaseUnit unit, int damage)
     {
+        HitTint hitTint = GetComponent<HitTint>();
+        if (hitTint != null)
+        {
+            hitTint.Flash();
+        }
         currentHealth -= damage;
         if (currentHealth <= 0)
         {
+            if (unit != null)
+            {
+                unit.OnKill();
+            }
             Die();
+
         }
     }
 
@@ -189,6 +242,11 @@ private const float DEBUFF_TICK_RATE = 1f;
 
     protected virtual void Die()
     {
+        HitTint hitTint = GetComponent<HitTint>();
+        if (hitTint != null)
+        {
+            hitTint.Flash();
+        }
         Destroy(gameObject);
     }
 
@@ -270,7 +328,12 @@ foreach (var key in toRemove)
 {
       int damage = Mathf.RoundToInt(stacks);
       Debug.Log("enemy takes fire Damage");
-    TakeDamage(damage);
+    TakeDamage(null, damage);
+    HitTint hitTint = GetComponent<HitTint>();
+    if (hitTint != null)
+    {
+        hitTint.Flash();
+    }
 }
 public void ApplyAmp(float stacks)
 {

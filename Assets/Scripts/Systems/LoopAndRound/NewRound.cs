@@ -42,9 +42,17 @@ public class NewRound : MonoBehaviour
 
     public void BaseUnitNewRoundCalls()
     {
-        for (int x = 0; x < tileMapManager.Width; x++)
+        if (board == null || board.unitGrid == null)
         {
-            for (int y = 0; y < tileMapManager.Height; y++)
+            return;
+        }
+
+        int sizeX = board.unitGrid.GetLength(0);
+        int sizeY = board.unitGrid.GetLength(1);
+
+        for (int x = 0; x < sizeX; x++)
+        {
+            for (int y = 0; y < sizeY; y++)
             {
                 BaseUnit unit = board.unitGrid[x, y];
                 if (unit == null) continue;

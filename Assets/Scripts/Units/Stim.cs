@@ -7,7 +7,6 @@ using System.Collections;
 public class StimUnit : BaseUnit
 {
     [SerializeField] private GameObject m_ProjectilePrefab;
-    [SerializeField] private float m_BasicAttackBuffAmount = 10f;
     private float m_buffDuration = 2f;
     private BoardManager m_BoardManager;
     private Buffs m_BuffSystem;
@@ -32,7 +31,7 @@ public class StimUnit : BaseUnit
             int dur = Mathf.CeilToInt(m_buffDuration);
             if (m_BuffSystem != null)
             {
-                m_BuffSystem.AddTempBuff(tower, mult, 0f, 0f, 0f, 0f, 0f, dur, null, 0f);
+                m_BuffSystem.AddTempBuff(tower, mult, 0f, 0f, 0f, 0f, 0f, dur, null, 0f, null, 0f);
             }
             else
             {
@@ -58,7 +57,7 @@ public class StimUnit : BaseUnit
         int basicDur = Mathf.CeilToInt(m_buffDuration);
         if (m_BuffSystem != null)
         {
-            m_BuffSystem.AddTempBuff(buffTarget, basicMult, 0f, 0f, 0f, 0f, 0f, basicDur, null, 0f);
+            m_BuffSystem.AddTempBuff(buffTarget, basicMult, 0f, 0f, 0f, 0f, 0f, basicDur, null, 0f, null, 0f);
              Debug.Log($"{buffTarget.name} receives Stim's attack buff for {m_buffDuration} seconds");
         }
         else

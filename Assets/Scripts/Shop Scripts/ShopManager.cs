@@ -19,13 +19,14 @@ public class ShopManager : MonoBehaviour
     [Header("Data Sources")]
     [SerializeField] private DatabaseLoader databaseLoader;
     [SerializeField] private InventoryUI inventoryUI;
+    [SerializeField] private ItemInventoryUI itemInventoryUI;
     
     [Header("Tooltip")]
     [SerializeField] private GameObject consumableTooltip;
     [SerializeField] private TextMeshProUGUI tooltipText;
     
-    [Header("Test Data")]
-    [SerializeField] private ConsumableData[] testConsumableData;
+    [Header("Item Definition Source")]
+    [SerializeField] private ItemDefinition[] availableItems;
     
     private bool isShopOpen = false;
     private int rerollCost = 1;
@@ -64,33 +65,26 @@ public class ShopManager : MonoBehaviour
             inventoryUI = FindFirstObjectByType<InventoryUI>();
         }
 
+        if (itemInventoryUI == null)
+        {
+            itemInventoryUI = FindFirstObjectByType<ItemInventoryUI>();
+        }
+
+        // Initialize consumable slots with item inventory UI
+        foreach (ConsumableSlot slot in consumableSlots)
+        {
+            if (slot != null && itemInventoryUI != null)
+            {
+                slot.InitializeInventory(itemInventoryUI);
+            }
+        }
+
         foreach (TowerSlot slot in towerSlots)
         {
             if (slot != null)
             {
                 slot.Initialize(inventoryUI);
             }
-        }
-        
-        // Setup consumable slots with test data
-        if (testConsumableData != null && testConsumableData.Length > 0)
-        {
-            Debug.Log($"Setting up {testConsumableData.Length} consumable slots");
-            for (int i = 0; i < consumableSlots.Length && i < testConsumableData.Length; i++)
-            {
-                if (consumableSlots[i] != null && testConsumableData[i] != null)
-                {
-                    consumableSlots[i].Setup(testConsumableData[i]);
-                }
-                else
-                {
-                    Debug.LogWarning($"Consumable slot {i} or data is null - Slot: {consumableSlots[i] != null}, Data: {testConsumableData[i] != null}");
-                }
-            }
-        }
-        else
-        {
-            Debug.LogWarning("testConsumableData is null or empty! No consumable slots will be populated.");
         }
 
         if (databaseLoader == null)
@@ -99,6 +93,7 @@ public class ShopManager : MonoBehaviour
         }
 
         UpdateRerollCostDisplay();
+        PopulateConsumableSlots();
         PopulateTowerSlots();
     }
     
@@ -118,9 +113,23 @@ public class ShopManager : MonoBehaviour
     {
         isShopOpen = true;
         shopPanel.SetActive(true);
-        toggleButton.interactable = true;
+        
+        // Make toggle button visible and interactable when entering shop
+        if (toggleButton != null)
+        {
+            toggleButton.gameObject.SetActive(true);
+            toggleButton.interactable = true;
+        }
+        
+        // Make next round button visible and interactable
+        if (nextRoundButton != null)
+        {
+            nextRoundButton.gameObject.SetActive(true);
+            nextRoundButton.interactable = true;
+        }
         
         // Reroll shop for new round
+        PopulateConsumableSlots();
         PopulateTowerSlots();
     }
     
@@ -128,8 +137,21 @@ public class ShopManager : MonoBehaviour
     {
         // Close shop
         shopPanel.SetActive(false);
+        nextRoundButton.gameObject.SetActive(false);
         isShopOpen = false;
         HideConsumableTooltip();
+        
+        // Hide toggle button when moving to next round
+        if (toggleButton != null)
+        {
+            toggleButton.gameObject.SetActive(false);
+        }
+        
+        // Keep next round button visible even when shop panel closes
+        if (nextRoundButton != null)
+        {
+            nextRoundButton.gameObject.SetActive(false);
+        }
         
         // Notify game loop manager
         if (GameLoopManager.Instance != null)
@@ -155,6 +177,7 @@ public class ShopManager : MonoBehaviour
         Debug.Log($"[ShopManager] Rerolled shop for {rerollCost} gold!");
         rerollCost += 2; // Increase cost by 2 for next reroll
         UpdateRerollCostDisplay();
+        PopulateConsumableSlots();
         PopulateTowerSlots();
     }
     
@@ -183,6 +206,38 @@ public class ShopManager : MonoBehaviour
     private void RerollShop()
     {
         PopulateTowerSlots();
+    }
+
+    private void PopulateConsumableSlots()
+    {
+        if (consumableSlots == null || consumableSlots.Length == 0)
+        {
+            return;
+        }
+
+        if (availableItems == null || availableItems.Length == 0)
+        {
+            Debug.LogWarning("No available items assigned to populate consumable slots.");
+            for (int i = 0; i < consumableSlots.Length; i++)
+            {
+                if (consumableSlots[i] != null)
+                {
+                    consumableSlots[i].Setup(null);
+                }
+            }
+            return;
+        }
+
+        for (int i = 0; i < consumableSlots.Length; i++)
+        {
+            if (consumableSlots[i] == null)
+            {
+                continue;
+            }
+
+            ItemDefinition randomItem = availableItems[Random.Range(0, availableItems.Length)];
+            consumableSlots[i].Setup(randomItem);
+        }
     }
 
     // This method populates tower slots with random eligible UnitDefinitions from the database

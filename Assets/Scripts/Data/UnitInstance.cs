@@ -5,6 +5,7 @@ public class UnitInstance : ScriptableObject
     // pointer to the base definition (shared data)
     public UnitDefinition BaseDef;
     public string Faction;
+        public string Name;
     public float MaxHP;
     public float CurrentHP;
     public float CurrentMana;
@@ -28,8 +29,9 @@ public class UnitInstance : ScriptableObject
         instance.StartingMana = def.StartingMana;
         instance.CurrentMana = def.StartingMana;
         instance.Faction= def.Faction;
+        instance.Name= def.Name;
         instance.BaseAbilityPower = def.AbilityPower;
-        instance.AbilityPowerFlatMod = instance.BaseAbilityPower;
+        instance.AbilityPowerFlatMod = 0f;
         instance.MaxHP = def.Health; 
         instance.CurrentHP = instance.MaxHP; 
         return instance;
