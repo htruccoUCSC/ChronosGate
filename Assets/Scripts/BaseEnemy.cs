@@ -42,6 +42,7 @@ public class BaseEnemy : MonoBehaviour
     protected bool alreadyCountedAsEscape = false; // prevents double life loss
 
     protected Rigidbody2D rb;
+    protected Collider2D enemyCollider;
     public enum DebuffType
 {
     Poison,
@@ -63,6 +64,11 @@ private const float DEBUFF_TICK_RATE = 1f;
         rb.gravityScale = 0f;
         rb.bodyType = RigidbodyType2D.Kinematic;
         rb.freezeRotation = true;
+        enemyCollider = GetComponent<Collider2D>();
+        if (enemyCollider == null)
+        {
+            enemyCollider = GetComponentInChildren<Collider2D>();
+        }
         cachedRenderer = GetComponentInChildren<SpriteRenderer>();
         if (cachedRenderer != null)
         {
@@ -165,7 +171,8 @@ private const float DEBUFF_TICK_RATE = 1f;
         if (!alreadyCountedAsEscape && WaveManager.Instance != null)
         {
             float loseX = WaveManager.Instance.GetLoseLineX();
-            if (transform.position.x <= loseX)
+            float enemyLeftX = enemyCollider != null ? enemyCollider.bounds.min.x : transform.position.x;
+            if (enemyLeftX <= loseX)
             {
                 alreadyCountedAsEscape = true;
                 WaveManager.Instance.EnemyReachedEnd(this);
