@@ -202,11 +202,8 @@ public class Projectile : MonoBehaviour
                     _owner.OnHit();
                   
                     int damage = Mathf.RoundToInt(dealt*aoeEnemy.DamageAmp);
-                    aoeEnemy.TakeDamage(damage);
-                    if(aoeEnemy.currentHealth <= 0)
-                    {
-                        _owner.OnKill();
-                    }
+                    aoeEnemy.TakeDamage(_owner, damage);
+
                     if (_ampOnHitBool)
                 {
                     ApplyAmpIfConfigured(enemy);
@@ -217,7 +214,7 @@ public class Projectile : MonoBehaviour
                 {
                      _owner.OnHit();
                       int damage = Mathf.RoundToInt(dealt*aoeEnemy.DamageAmp);
-                    aoeTestEnemy.TakeDamage(damage);
+                    aoeTestEnemy.TakeDamage(_owner, damage);
 
                     if (_ampOnHitBool)
                 {
@@ -236,11 +233,7 @@ public class Projectile : MonoBehaviour
                 _owner.OnHit();
                  int damage = Mathf.RoundToInt(dealt*enemy.DamageAmp);
                    Debug.Log(dealt+"x Amp "+enemy.DamageAmp+" = "+damage);
-                enemy.TakeDamage(damage);
-                if(enemy.currentHealth <= 0)
-                    {
-                        _owner.OnKill();
-                    }
+                enemy.TakeDamage(_owner, damage);
                 if (_ampOnHitBool)
                 {
                     ApplyAmpIfConfigured(enemy);
@@ -251,7 +244,7 @@ public class Projectile : MonoBehaviour
             {
                 _owner.OnHit();
                 
-                testEnemy.TakeDamage(dealt);
+                testEnemy.TakeDamage(dealt, _owner);
                 if (_ampOnHitBool)
                 {
                     ApplyAmpIfConfigured(enemy);

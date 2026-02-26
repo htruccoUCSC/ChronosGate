@@ -14,7 +14,8 @@ public class AugmentSetup : MonoBehaviour
     public LongGame longGame;
     public WildFire wildFire;
     public Exposure exposure;
-
+    public LucrativeProfession lucrativeProfession;
+    public Clastrophobic clastrophobic;
     public OldSchool oldSchool;
 
     void Start()
@@ -32,8 +33,10 @@ public class AugmentSetup : MonoBehaviour
         Augment LongGameWrapper = new Augment(() => longGame.LongGameCall(),"LongGame","All units gain 0.1x ability power for  round that have passed , Future Units gain a 50 AP");
         Augment WildfireWrapper = new Augment(() => wildFire.WildFireCall(),"Wildfire","All units apply fire onHit");
          Augment ExposureWrapper = new Augment(() => exposure.ExposureCall(),"Exposure","All units 5% damage amp per shot");
+         Augment LucrativeProfessionWrapper = new Augment(() => lucrativeProfession.LucrativeProfessionCall(),"Lucrative Profession","bounty hunters generate 1 gold for each 5 kills");
+         Augment ClastrophobicWrapper = new Augment(() => clastrophobic.ClastrophobicCall(),"Clastrophobic","All units gain +current round in AS,AD,AP for each empty column");
 
-
+        augmentManager.AddInactiveAugment(LucrativeProfessionWrapper);
         augmentManager.AddInactiveAugment(ToTheMoonWrapper);
         augmentManager.AddInactiveAugment(ApeTogetherStrongWrapper);
         augmentManager.AddInactiveAugment(ReserveADWrapper);
@@ -45,6 +48,7 @@ public class AugmentSetup : MonoBehaviour
         augmentManager.AddInactiveAugment(RenovationsWrapper);
         augmentManager.AddInactiveAugment(WildfireWrapper);
         augmentManager.AddInactiveAugment(ExposureWrapper);
+        augmentManager.AddInactiveAugment(ClastrophobicWrapper);
         //ACTIVE FOR TESTING ONLY IF STARTED HERE, DELETE LATER
         // augmentManager.AddActiveAugment(testAugmentWrapper);
         // augmentManager.AddActiveAugment(ApeTogetherStrongWrapper);
@@ -53,5 +57,6 @@ public class AugmentSetup : MonoBehaviour
         //  augmentManager.AddActiveAugment(UniqueWrapper);
          //augmentManager.AddActiveAugment(OldSchoolWrapper);      
        // augmentManager.AddActiveAugment(LongGameWrapper);
+       //augmentManager.AddActiveAugment(LucrativeProfessionWrapper);
     }
 }

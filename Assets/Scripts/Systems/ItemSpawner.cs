@@ -175,7 +175,14 @@ public class ItemSpawner : MonoBehaviour
 
             if (hits[i].TryGetComponent(out TargetDummyTest dummy))
             {
-                dummy.TakeDamage(item.DamageValue);
+                dummy.TakeDamage(item.DamageValue, null);
+                continue;
+            }
+
+            BaseEnemy enemy = hits[i].GetComponentInParent<BaseEnemy>();
+            if (enemy != null)
+            {
+                enemy.TakeDamage(null, item.DamageValue);
                 continue;
             }
 

@@ -66,7 +66,7 @@ public class BoomerangProjectileBehavior : MonoBehaviour
         if (currentPhaseHits.Contains(targetId)) return true;
 
         currentPhaseHits.Add(targetId);
-        enemy.TakeDamage(Mathf.RoundToInt(m_Projectile.Damage));
+        enemy.TakeDamage(Mathf.RoundToInt(m_Projectile.Damage), m_Projectile.Owner);
 
         if (!m_IsReturning && m_IntendedTarget != null && other.transform == m_IntendedTarget)
         {
