@@ -118,7 +118,20 @@ public class ShopManager : MonoBehaviour
     {
         isShopOpen = true;
         shopPanel.SetActive(true);
-        toggleButton.interactable = true;
+        
+        // Make toggle button visible and interactable when entering shop
+        if (toggleButton != null)
+        {
+            toggleButton.gameObject.SetActive(true);
+            toggleButton.interactable = true;
+        }
+        
+        // Make next round button visible and interactable
+        if (nextRoundButton != null)
+        {
+            nextRoundButton.gameObject.SetActive(true);
+            nextRoundButton.interactable = true;
+        }
         
         // Reroll shop for new round
         PopulateTowerSlots();
@@ -128,8 +141,21 @@ public class ShopManager : MonoBehaviour
     {
         // Close shop
         shopPanel.SetActive(false);
+        nextRoundButton.gameObject.SetActive(false);
         isShopOpen = false;
         HideConsumableTooltip();
+        
+        // Hide toggle button when moving to next round
+        if (toggleButton != null)
+        {
+            toggleButton.gameObject.SetActive(false);
+        }
+        
+        // Keep next round button visible even when shop panel closes
+        if (nextRoundButton != null)
+        {
+            nextRoundButton.gameObject.SetActive(false);
+        }
         
         // Notify game loop manager
         if (GameLoopManager.Instance != null)
