@@ -8,12 +8,16 @@ public class WaveManager : MonoBehaviour
     public static WaveManager Instance { get; private set; } // global access so enemies can register / report escapes
 
     [Header("References")]
-    public GameObject enemyPrefab; // what enemy gets spawned
+    public GameObject enemyPrefab; //BaseEnemy Default
+    public List<GameObject> enemyPrefabs = new List<GameObject>(); //OPTIONAL RANDOM SPAWN FROM LIST
+    public GameObject baseEnemyPrefab; //explicit base enemy prefab 
+    public GameObject shadowEnemyPrefab; //explicit shadow enemy prefab
     public Tilemap tilemap;        // tilemap used to figure out spawn + map edges
 
     [Header("Spawn")]
     public int spawnOffsetCells = 0;   // how far past the right edge enemies spawn
     public float spawnDelay = 0.75f;   // delay between enemy spawns in a wave
+    [Range(0f, 1f)] public float shadowSpawnChance = 0.2f;
 
     [Header("Waves")]
     public int currentWave = 1;          // current wave number
@@ -188,9 +192,10 @@ public class WaveManager : MonoBehaviour
     private void TrySpawnEnemyOnTile()
     {
         // safety checks
-        if (enemyPrefab == null)
+        if (enemyPrefab == null && (enemyPrefabs == null || enemyPrefabs.Count == 0)
+            && baseEnemyPrefab == null && shadowEnemyPrefab == null)
         {
-            Debug.LogError("WaveManager: enemyPrefab not assigned.");
+            Debug.LogError("WaveManager: no enemy prefab assigned.");
             return;
         }
 
@@ -243,7 +248,17 @@ public class WaveManager : MonoBehaviour
         Vector3Int spawnCell = new Vector3Int(spawnX, chosenY, 0);
         Vector3 spawnWorld = tilemap.GetCellCenterWorld(spawnCell);
 
-        GameObject go = Instantiate(enemyPrefab, spawnWorld, Quaternion.identity);
+        GameObject prefabToSpawn = enemyPrefab;
+        if (baseEnemyPrefab != null && shadowEnemyPrefab != null)
+        {
+            prefabToSpawn = Random.value < shadowSpawnChance ? shadowEnemyPrefab : baseEnemyPrefab;
+        }
+        else if (enemyPrefabs != null && enemyPrefabs.Count > 0)
+        {
+            prefabToSpawn = enemyPrefabs[Random.Range(0, enemyPrefabs.Count)];
+        }
+
+        GameObject go = Instantiate(prefabToSpawn, spawnWorld, Quaternion.identity);
 
         // try BaseEnemy first (new system), otherwise fall back to TargetDummyTest (older system)
         BaseEnemy baseEnemy = go.GetComponentInParent<BaseEnemy>();
