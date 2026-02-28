@@ -4,7 +4,7 @@ using UnityEngine.SceneManagement;
 
 /// <summary>
 /// Main game loop manager that orchestrates the flow:
-/// Game Start -> Augment Selection -> 3x(Shop -> Wave) -> Back to Augment Selection
+/// Game Start -> Augment Selection -> 3x(Choose Shop/Portal -> Shop -> Wave) -> Back to Augment Selection
 /// </summary>
 public class GameLoopManager : MonoBehaviour
 {
@@ -12,6 +12,7 @@ public class GameLoopManager : MonoBehaviour
 
     [Header("References")]
     [SerializeField] private AugmentSelectionUI augmentSelectionUI;
+    [SerializeField] private PortalManager portalManager;
     [SerializeField] private ShopManager shopManager;
     [SerializeField] private WaveManager waveManager;
      public AugmentManager augmentManager;
@@ -24,10 +25,11 @@ public class GameLoopManager : MonoBehaviour
     private int currentWaveInCycle = 0;
     private bool isGameActive = false;
     private bool waitingForNextRound = false;
-
+    private string selectedFaction = null;
     public enum GameState
     {
         AugmentSelection,
+        PortalSelection,
         Shopping,
         Combat,
         GameOver
@@ -55,6 +57,10 @@ public class GameLoopManager : MonoBehaviour
         if (shopManager == null)
         {
             shopManager = FindFirstObjectByType<ShopManager>();
+        }
+        if (portalManager == null)
+        {
+            portalManager = FindFirstObjectByType<PortalManager>();
         }
         if (waveManager == null)
         {
@@ -110,12 +116,44 @@ public class GameLoopManager : MonoBehaviour
 
     private void OnAugmentSelected(int augmentIndex)
     {
-        Debug.Log($"Player selected augment {augmentIndex}. Starting shop phase.");
+        Debug.Log($"[GameLoopManager] Augment {augmentIndex} selected. Starting portal selection.");
         
         // Reset wave cycle counter
         currentWaveInCycle = 0;
         
-        // Move to shopping phase
+        // Move to Portal Select/shopping phase
+        StartPortalSelect();
+    }
+
+    private void StartPortalSelect()
+    {
+        CurrentState = GameState.PortalSelection;
+        Debug.Log("[GameLoopManager] Entering portal selection.");
+        selectedFaction = null;
+        if (portalManager != null)
+        {
+            portalManager.OpenSelection();
+        }
+        else
+        {
+            Debug.LogWarning("[GameLoopManager] PortalManager missing, starting shop phase directly.");
+            StartShoppingPhase();
+        }
+
+
+
+    }
+
+    public void OnPortalSelected(int portalIndex, string faction)
+    {
+        if (CurrentState != GameState.PortalSelection)
+        {
+            Debug.LogWarning($"[GameLoopManager] Ignoring portal selection {portalIndex}, state is {CurrentState}.");
+            return;
+        }
+
+        selectedFaction = string.IsNullOrWhiteSpace(faction) ? null : faction;
+        Debug.Log($"Portal {portalIndex} selected (Faction: {selectedFaction ?? "Any"}). Starting shop phase.");
         StartShoppingPhase();
     }
 
@@ -126,6 +164,7 @@ public class GameLoopManager : MonoBehaviour
         
         if (shopManager != null)
         {
+            shopManager.SetFactionFilter(selectedFaction);
             shopManager.OpenShop();
         }
 
@@ -193,7 +232,7 @@ public class GameLoopManager : MonoBehaviour
             Debug.Log($"Moving to next shopping phase... (Next: Wave {currentWaveInCycle + 1}/{wavesPerAugmentCycle})");
             yield return new WaitForSeconds(1f); // Brief pause
             newRound.startNewRound();
-            StartShoppingPhase();
+            StartPortalSelect();
         }
     }
 
