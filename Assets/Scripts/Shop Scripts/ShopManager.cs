@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
+using System;
 using System.Collections.Generic;
 
 public class ShopManager : MonoBehaviour
@@ -31,6 +32,7 @@ public class ShopManager : MonoBehaviour
     private bool isShopOpen = false;
     private int rerollCost = 1;
     private CurrencyManager currencyManager;
+    private string factionFilter = null;
     
     private void Start()
     {
@@ -235,7 +237,7 @@ public class ShopManager : MonoBehaviour
                 continue;
             }
 
-            ItemDefinition randomItem = availableItems[Random.Range(0, availableItems.Length)];
+            ItemDefinition randomItem = availableItems[UnityEngine.Random.Range(0, availableItems.Length)];
             consumableSlots[i].Setup(randomItem);
         }
     }
@@ -269,7 +271,11 @@ public class ShopManager : MonoBehaviour
         {
             if (HasValidPrefab(unitDef))
             {
+                if (string.IsNullOrWhiteSpace(factionFilter)
+                    || string.Equals(unitDef.Faction, factionFilter, StringComparison.OrdinalIgnoreCase))
+                {
                 eligibleUnits.Add(unitDef);
+                }
             }
         }
 
@@ -293,7 +299,7 @@ public class ShopManager : MonoBehaviour
                 continue;
             }
 
-            UnitDefinition randomUnit = eligibleUnits[Random.Range(0, eligibleUnits.Count)];
+            UnitDefinition randomUnit = eligibleUnits[UnityEngine.Random.Range(0, eligibleUnits.Count)];
             towerSlots[i].Setup(randomUnit);
         }
     }
@@ -307,7 +313,13 @@ public class ShopManager : MonoBehaviour
 
         return Resources.Load<GameObject>(unitDef.PrefabPath) != null;
     }
-    
+
+    public void SetFactionFilter(string faction)
+    {
+        factionFilter = string.IsNullOrWhiteSpace(faction) ? null : faction;
+        Debug.Log($"[ShopManager] Faction filter set to: {factionFilter ?? "Any"}");
+    }
+
     public void ShowConsumableTooltip(string description)
     {
         Debug.Log($"ShowConsumableTooltip called with: {description}");
