@@ -322,6 +322,42 @@ public class BoardManager : MonoBehaviour
         return true;
     }
 
+    public bool TryGetUnitAtCell(Vector3Int cellPos, out BaseUnit unit)
+    {
+        unit = null;
+
+        if (cellPos.x < 0 || cellPos.x >= Width || cellPos.y < 0 || cellPos.y >= Height)
+        {
+            return false;
+        }
+
+        BaseUnit found = unitGrid[cellPos.x, cellPos.y];
+        if (found == null)
+        {
+            return false;
+        }
+
+        unit = found;
+        return true;
+    }
+
+    public bool RemoveUnit(BaseUnit unit)
+    {
+        if (unit == null) return false;
+        if (!TryGetUnitCell(unit.gameObject, out Vector3Int cellPos)) return false;
+
+        occupiedTiles.Remove(cellPos);
+
+        if (cellPos.x >= 0 && cellPos.x < Width && cellPos.y >= 0 && cellPos.y < Height)
+        {
+            unitGrid[cellPos.x, cellPos.y] = null;
+        }
+
+        unitList.Remove(unit);
+        Destroy(unit.gameObject);
+        return true;
+    }
+
     void CenterCamera()
     {
         // 1. Get the Board's current starting position (e.g., if you moved it to 100, 100)
