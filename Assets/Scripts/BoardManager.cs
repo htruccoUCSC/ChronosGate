@@ -5,6 +5,8 @@ using UnityEngine.Tilemaps;
 
 public class BoardManager : MonoBehaviour
 {
+    private const float TILE_FILL_RATIO = 1.0f;
+
     // I hade to change this to public get so other scripts can access the tilemap
     public Tilemap GameTilemap { get; private set; }
     public TileMapManager TileMapManager;
@@ -29,11 +31,15 @@ public class BoardManager : MonoBehaviour
     private void Awake()
     {
         GameTilemap = GetComponentInChildren<Tilemap>();
-                Width = TileMapManager.Width;
-                Height = TileMapManager.Height;
+        if (TileMapManager != null)
+        {
+            TileMapManager.board = this;
+            Width = TileMapManager.Width;
+            Height = TileMapManager.Height;
+        }
 
-                // unitGrid first index is X (width), second is Y (height)
-                unitGrid = new BaseUnit[Width, Height];
+        // unitGrid first index is X (width), second is Y (height)
+        unitGrid = new BaseUnit[Width, Height];
         // Auto-create buckets if you forgot to make them in Editor
         if (UnitsParent == null)
         {
@@ -50,38 +56,208 @@ public class BoardManager : MonoBehaviour
         GenerateBoard();
         CenterCamera();
     }
-    void GenerateBoard()
+    public void GenerateBoard()
     {
+        int newWidth = Width;
+        int newHeight = Height;
+        if (TileMapManager != null)
+        {
+            newWidth = TileMapManager.Width;
+            newHeight = TileMapManager.Height;
+            TileMapManager.board = this;
+        }
+
+        if (GameTilemap == null)
+        {
+            GameTilemap = GetComponentInChildren<Tilemap>();
+        }
+
+        if (GameTilemap == null)
+        {
+            Debug.LogError("BoardManager: No Tilemap found to generate the board.");
+            return;
+        }
+
+        HandleUnitsAffectedByResize(newWidth, newHeight);
+
+        Width = newWidth;
+        Height = newHeight;
+        GameTilemap.ClearAllTiles();
+        unitGrid = new BaseUnit[Width, Height];
+        RebuildUnitGridFromOccupancy();
+
         for (int y = 0; y < Height; ++y)
         {
+            int index = y % 2;
             for (int x = 0; x < Width; ++x)
             {
                 Tile tile;
               
-                if (x == 0 || y == 0 || x == Width - 1 || y == Height - 1)
+                if  (y == 0 || y == Height - 1)
                 {
-                    tile = WallTiles[Random.Range(0, WallTiles.Length)];
+                tile = WallTiles[Random.Range(0, WallTiles.Length)];
                 }
                 else
                 {
-                    tile = GroundTiles[Random.Range(0, GroundTiles.Length)];
+                     tile = GroundTiles[index];
+                    if (index == 1)
+                    {
+                        index=0;
+                    }
+                    else
+                    {
+                        index=1;
+                    }
                 }
               
-                GameTilemap.SetTile(new Vector3Int(x, y, 0), tile);
+                Vector3Int cellPos = new Vector3Int(x, y, 0);
+                GameTilemap.SetTile(cellPos, tile);
+                NormalizeTileSize(cellPos, tile);
             }
+        }
+
+        CenterCamera();
+    }
+
+    private void HandleUnitsAffectedByResize(int newWidth, int newHeight)
+    {
+        if (occupiedTiles.Count == 0)
+        {
+            return;
+        }
+
+        InventoryUI inventory = FindFirstObjectByType<InventoryUI>();
+        List<Vector3Int> cellsToRemove = new List<Vector3Int>();
+
+        foreach (KeyValuePair<Vector3Int, GameObject> entry in occupiedTiles)
+        {
+            Vector3Int cellPos = entry.Key;
+            GameObject unitObject = entry.Value;
+            if (unitObject == null)
+            {
+                cellsToRemove.Add(cellPos);
+                continue;
+            }
+
+            if (IsCellValidAfterResize(cellPos, newWidth, newHeight))
+            {
+                continue;
+            }
+
+            cellsToRemove.Add(cellPos);
+            EvictUnitFromBoard(unitObject, inventory);
+        }
+
+        for (int i = 0; i < cellsToRemove.Count; i++)
+        {
+            occupiedTiles.Remove(cellsToRemove[i]);
         }
     }
 
+    private bool IsCellValidAfterResize(Vector3Int cellPos, int newWidth, int newHeight)
+    {
+        if (cellPos.x < 0 || cellPos.x >= newWidth || cellPos.y < 0 || cellPos.y >= newHeight)
+        {
+            return false;
+        }
+
+        return cellPos.y != 0 && cellPos.y != newHeight - 1;
+    }
+
+    private void EvictUnitFromBoard(GameObject unitObject, InventoryUI inventory)
+    {
+        BaseUnit baseUnit = unitObject.GetComponent<BaseUnit>();
+        UnitDefinition definition = baseUnit != null && baseUnit.myData != null ? baseUnit.myData.BaseDef : null;
+
+        bool movedToInventory = inventory != null && definition != null && inventory.AddUnit(definition);
+        if (!movedToInventory)
+        {
+            Destroy(unitObject);
+            return;
+        }
+
+        unitObject.SetActive(false);
+        Destroy(unitObject);
+    }
+
+    private void RebuildUnitGridFromOccupancy()
+    {
+        List<Vector3Int> invalidCells = new List<Vector3Int>();
+        unitList.Clear();
+
+        foreach (KeyValuePair<Vector3Int, GameObject> entry in occupiedTiles)
+        {
+            Vector3Int cellPos = entry.Key;
+            GameObject unitObject = entry.Value;
+            if (unitObject == null)
+            {
+                invalidCells.Add(cellPos);
+                continue;
+            }
+
+            if (cellPos.x < 0 || cellPos.x >= Width || cellPos.y < 0 || cellPos.y >= Height)
+            {
+                invalidCells.Add(cellPos);
+                continue;
+            }
+
+            BaseUnit baseUnit = unitObject.GetComponent<BaseUnit>();
+            if (baseUnit == null)
+            {
+                invalidCells.Add(cellPos);
+                continue;
+            }
+
+            unitGrid[cellPos.x, cellPos.y] = baseUnit;
+            unitList.Add(baseUnit);
+            unitObject.transform.position = GameTilemap.GetCellCenterWorld(cellPos);
+            unitObject.transform.SetParent(UnitsParent);
+        }
+
+        for (int i = 0; i < invalidCells.Count; i++)
+        {
+            occupiedTiles.Remove(invalidCells[i]);
+        }
+    }
+
+    private void NormalizeTileSize(Vector3Int cellPos, Tile tile)
+    {
+        if (tile == null || tile.sprite == null)
+        {
+            return;
+        }
+
+        Vector3 spriteSize = tile.sprite.bounds.size;
+        float maxDimension = Mathf.Max(spriteSize.x, spriteSize.y);
+        if (maxDimension <= 0f)
+        {
+            return;
+        }
+
+        float scaleFactor = TILE_FILL_RATIO / maxDimension;
+        GameTilemap.SetTileFlags(cellPos, TileFlags.None);
+        GameTilemap.SetTransformMatrix(cellPos, Matrix4x4.Scale(Vector3.one * scaleFactor));
+    }
+
+    void UpdateBoard()
+    {
+        
+
+    }
     // Helper function to check if a specific cell is valid for placement
     // I called it isWalkable cause enmies will need this too
     public bool IsWalkable(Vector3Int cellPos)
     {
+        if (cellPos.x < 0 || cellPos.x >= Width || cellPos.y < 0 || cellPos.y >= Height)
+        {
+            return false;
+        }
+
         // Check if a tile exists there
         if (!GameTilemap.HasTile(cellPos)) return false;
 
-        // Check if it's not a wall tile (assuming walls are on the border)
-        // We can porbably get rid of wall tiles but I didn't want to just start deleting peoples stuff
-        if (cellPos.x == 0 || cellPos.y == 0 || cellPos.x == Width - 1 || cellPos.y == Height - 1)
+        // Top and bottom rows remain blocked.
+        if (cellPos.y == 0 || cellPos.y == Height - 1)
             return false;
 
         // check if the tiled is occupied someone already here?
@@ -143,6 +319,42 @@ public class BoardManager : MonoBehaviour
         }
 
         unit.transform.position = GameTilemap.GetCellCenterWorld(toCell);
+        return true;
+    }
+
+    public bool TryGetUnitAtCell(Vector3Int cellPos, out BaseUnit unit)
+    {
+        unit = null;
+
+        if (cellPos.x < 0 || cellPos.x >= Width || cellPos.y < 0 || cellPos.y >= Height)
+        {
+            return false;
+        }
+
+        BaseUnit found = unitGrid[cellPos.x, cellPos.y];
+        if (found == null)
+        {
+            return false;
+        }
+
+        unit = found;
+        return true;
+    }
+
+    public bool RemoveUnit(BaseUnit unit)
+    {
+        if (unit == null) return false;
+        if (!TryGetUnitCell(unit.gameObject, out Vector3Int cellPos)) return false;
+
+        occupiedTiles.Remove(cellPos);
+
+        if (cellPos.x >= 0 && cellPos.x < Width && cellPos.y >= 0 && cellPos.y < Height)
+        {
+            unitGrid[cellPos.x, cellPos.y] = null;
+        }
+
+        unitList.Remove(unit);
+        Destroy(unit.gameObject);
         return true;
     }
 

@@ -96,8 +96,8 @@ public class WaveManager : MonoBehaviour
             return;
         }
 
-        // left edge "lose line" is the center of that leftmost tile column
-        leftLoseX = tilemap.GetCellCenterWorld(new Vector3Int(leftmostXWithTile, 0, 0)).x;
+        // Enemies should count as escaped once they fully cross the left edge of the lane.
+        leftLoseX = tilemap.CellToWorld(new Vector3Int(leftmostXWithTile, 0, 0)).x;
     }
 
     public float GetLoseLineX()
@@ -225,7 +225,7 @@ public class WaveManager : MonoBehaviour
             return;
         }
 
-        int spawnX = rightmostXWithTile + spawnOffsetCells;
+        int spawnX = rightmostXWithTile + Mathf.Max(1, spawnOffsetCells);
 
         // collect all valid Y rows in that rightmost tile column
         List<int> validYs = new List<int>();

@@ -19,8 +19,16 @@ public class InventoryUI : MonoBehaviour
 
     private void Start()
     {
-        m_Units = new UnitDefinition[m_Capacity];
+        EnsureStorageInitialized();
         Build();
+    }
+
+    private void EnsureStorageInitialized()
+    {
+        if (m_Units == null || m_Units.Length != m_Capacity)
+        {
+            m_Units = new UnitDefinition[m_Capacity];
+        }
     }
 
     // Build the inventory UI
@@ -62,6 +70,13 @@ public class InventoryUI : MonoBehaviour
 
     public void Refresh()
     {
+        EnsureStorageInitialized();
+
+        if (m_Icons.Count < m_Capacity)
+        {
+            return;
+        }
+
         for (int i = 0; i < m_Capacity; i++)
         {
             if (m_Units[i] != null)
@@ -80,6 +95,8 @@ public class InventoryUI : MonoBehaviour
 
     public bool AddUnit(UnitDefinition def)
     {
+        EnsureStorageInitialized();
+
         for (int i = 0; i < m_Units.Length; i++)
         {
             if (m_Units[i] == null)
@@ -95,12 +112,14 @@ public class InventoryUI : MonoBehaviour
     // gets unit definition at index
     public UnitDefinition GetUnit(int index)
     {
+        EnsureStorageInitialized();
         if (index < 0 || index >= m_Units.Length) return null;
         return m_Units[index];
     }
 
     public void SetUnit(int index, UnitDefinition unit)
     {
+        EnsureStorageInitialized();
         if (index >= 0 && index < m_Units.Length)
         {
             m_Units[index] = unit;
@@ -110,6 +129,7 @@ public class InventoryUI : MonoBehaviour
 
     public void SwapUnits(int indexA, int indexB)
     {
+        EnsureStorageInitialized();
         var temp = m_Units[indexA];
         m_Units[indexA] = m_Units[indexB];
         m_Units[indexB] = temp;
