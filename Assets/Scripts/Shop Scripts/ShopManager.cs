@@ -2,6 +2,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 using System.Collections.Generic;
+using System.Collections;
 
 public class ShopManager : MonoBehaviour
 {
@@ -28,20 +29,31 @@ public class ShopManager : MonoBehaviour
     [Header("Item Definition Source")]
     [SerializeField] private ItemDefinition[] availableItems;
     
+    [Header("Progression Settings")]
+    [SerializeField] private bool useProgressionFiltering = true;
+    
     private bool isShopOpen = false;
     private int rerollCost = 1;
     private CurrencyManager currencyManager;
+    private UnitUnlockManager unlockManager;
     
     private void Start()
     {
         currencyManager = CurrencyManager.Instance;
         if (currencyManager == null)
         {
-            Debug.LogError("CurrencyManager not found!");
+            Debug.LogWarning("[ShopManager] CurrencyManager not found at Start! Will try again when needed.");
         }
         else
         {
             currencyManager.OnCurrencyChanged += UpdateRerollButtonState;
+        }
+        
+        unlockManager = UnitUnlockManager.Instance;
+        if (unlockManager == null && useProgressionFiltering)
+        {
+            Debug.LogWarning("[ShopManager] UnitUnlockManager not found! Progression filtering will be disabled.");
+            useProgressionFiltering = false;
         }
         
         toggleButton.onClick.AddListener(ToggleShop);
@@ -93,6 +105,27 @@ public class ShopManager : MonoBehaviour
         }
 
         UpdateRerollCostDisplay();
+        
+        // Wait for progression system to initialize before populating (WebGL compatibility)
+        StartCoroutine(WaitAndPopulateShop());
+    }
+    
+    /// <summary>
+    /// Waits for UnitUnlockManager to finish initializing, then populates shop.
+    /// Required for WebGL async JSON loading.
+    /// </summary>
+    private IEnumerator WaitAndPopulateShop()
+    {
+        // Wait for unlock manager to be ready
+        if (useProgressionFiltering && unlockManager != null)
+        {
+            while (!unlockManager.IsReady())
+            {
+                yield return null;
+            }
+            Debug.Log("[ShopManager] UnitUnlockManager ready, populating shop...");
+        }
+        
         PopulateConsumableSlots();
         PopulateTowerSlots();
     }
@@ -162,9 +195,15 @@ public class ShopManager : MonoBehaviour
     
     private void OnRerollButtonClicked()
     {
+        // Try to get currency manager if not already cached
         if (currencyManager == null)
         {
-            Debug.LogError("[ShopManager] CurrencyManager not found!");
+            currencyManager = CurrencyManager.Instance;
+        }
+        
+        if (currencyManager == null)
+        {
+            Debug.LogError("[ShopManager] CurrencyManager not found! Make sure CurrencyManager exists in the scene and has initialized.");
             return;
         }
 
@@ -194,6 +233,15 @@ public class ShopManager : MonoBehaviour
         if (rerollButton != null)
         {
             rerollButton.interactable = currentCurrency >= rerollCost;
+        }
+    }
+    
+    private void OnDestroy()
+    {
+        // Unsubscribe from events to prevent memory leaks
+        if (currencyManager != null)
+        {
+            currencyManager.OnCurrencyChanged -= UpdateRerollButtonState;
         }
     }
     
@@ -265,12 +313,32 @@ public class ShopManager : MonoBehaviour
         }
 
         var eligibleUnits = new List<UnitDefinition>();
+        
+        // Get unlocked unit IDs from progression system
+        List<string> unlockedUnitIDs = null;
+        if (useProgressionFiltering && unlockManager != null)
+        {
+            unlockedUnitIDs = unlockManager.GetUnlockedUnitIDs();
+            Debug.Log($"[ShopManager] Filtering shop by {(unlockedUnitIDs != null ? unlockedUnitIDs.Count.ToString() : "all")} unlocked units.");
+        }
+        
         foreach (var unitDef in databaseLoader.UnitLookup.Values)
         {
-            if (HasValidPrefab(unitDef))
+            if (!HasValidPrefab(unitDef))
             {
-                eligibleUnits.Add(unitDef);
+                continue;
             }
+            
+            // Filter by unlocked status if progression mode is enabled
+            if (useProgressionFiltering && unlockedUnitIDs != null)
+            {
+                if (!unlockedUnitIDs.Contains(unitDef.UnitID))
+                {
+                    continue; // Skip locked units
+                }
+            }
+            
+            eligibleUnits.Add(unitDef);
         }
 
         if (eligibleUnits.Count == 0)
@@ -363,11 +431,15 @@ public class ShopManager : MonoBehaviour
 
     public void OnUnitPurchased(UnitDefinition unitDef)
     {
-        CurrencyManager currencyManager = CurrencyManager.Instance;
+        // Try to get currency manager if not already cached
+        if (currencyManager == null)
+        {
+            currencyManager = CurrencyManager.Instance;
+        }
         
         if (currencyManager == null)
         {
-            Debug.LogError("CurrencyManager not found!");
+            Debug.LogError("[ShopManager] CurrencyManager not found!");
             return;
         }
         
