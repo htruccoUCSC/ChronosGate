@@ -39,7 +39,21 @@ public class UnitInstance : ScriptableObject
 
     // equations for modified stats with buffs
     //Clamp to prervent negative or zero values where it would break things
-    public float GetModifiedAttackSpeed() => Mathf.Max(0.1f, (BaseDef.AttackSpeed + SpeedFlatMod) * SpeedMultMod);
+    public float GetModifiedAttackSpeed()
+    {
+        float baseSpeed = Mathf.Max(0.1f, BaseDef.AttackSpeed);
+        float linearSpeed = Mathf.Max(0.1f, (BaseDef.AttackSpeed + SpeedFlatMod) * SpeedMultMod);
+
+        if (linearSpeed <= baseSpeed)
+        {
+            return linearSpeed;
+        }
+
+        float normalizedBonus = (linearSpeed - baseSpeed) / baseSpeed;
+        float logScaledSpeed = baseSpeed * (1f + Mathf.Log(1f + normalizedBonus));
+
+        return Mathf.Max(0.1f, logScaledSpeed);
+    }
     public float GetModifiedDamage() => Mathf.Max(1f, (BaseDef.AttackDamage + DamageFlatMod) * DamageMultMod);
     public float GetModifiedAbilityPower() => Mathf.Max(0f, (BaseDef.AbilityPower + AbilityPowerFlatMod) * AbilityPowerMult);
 }
