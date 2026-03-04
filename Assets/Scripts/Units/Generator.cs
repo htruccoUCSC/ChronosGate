@@ -5,6 +5,7 @@ public class Generator : BaseUnit
     [SerializeField] private CurrencyPickup currencyPickupPrefab;
     [SerializeField] private int baseCurrencyAmount = 1;
     [SerializeField] private float spawnRadius = 0.4f;
+    [SerializeField] private int pickupSortingOrder = 1000;
 
     protected override void ScanTargeting()
     {
@@ -23,5 +24,17 @@ public class Generator : BaseUnit
         Vector2 offset = Random.insideUnitCircle * spawnRadius;
         CurrencyPickup pickup = Instantiate(currencyPickupPrefab, transform.position + (Vector3)offset, Quaternion.identity);
         pickup.Configure(amount);
+
+        // Set sorting order to render on top of all units
+        SpriteRenderer pickupRenderer = pickup.GetComponent<SpriteRenderer>();
+        if (pickupRenderer == null)
+        {
+            pickupRenderer = pickup.GetComponentInChildren<SpriteRenderer>();
+        }
+
+        if (pickupRenderer != null)
+        {
+            pickupRenderer.sortingOrder = pickupSortingOrder;
+        }
     }
 }

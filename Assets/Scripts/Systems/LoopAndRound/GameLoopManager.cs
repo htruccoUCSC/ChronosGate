@@ -1,5 +1,6 @@
 using UnityEngine;
 using System.Collections;
+using UnityEngine.SceneManagement;
 
 /// <summary>
 /// Main game loop manager that orchestrates the flow:
@@ -10,18 +11,18 @@ public class GameLoopManager : MonoBehaviour
     public static GameLoopManager Instance { get; private set; }
 
     [Header("References")]
-    [SerializeField] private AugmentSelectionUI augmentSelectionUI;
-    [SerializeField] private ShopManager shopManager;
-    [SerializeField] private WaveManager waveManager;
+    [SerializeField] protected AugmentSelectionUI augmentSelectionUI;
+    [SerializeField] protected ShopManager shopManager;
+    [SerializeField] protected WaveManager waveManager;
      public AugmentManager augmentManager;
 
     public NewRound newRound;
 
     [Header("Settings")]
-    [SerializeField] private int wavesPerAugmentCycle = 3;
+    [SerializeField] protected int wavesPerAugmentCycle = 3;
 
-    private int currentWaveInCycle = 0;
-    private bool isGameActive = false;
+    protected int currentWaveInCycle = 0;
+    protected bool isGameActive = false;
     private bool waitingForNextRound = false;
 
     public enum GameState
@@ -44,7 +45,7 @@ public class GameLoopManager : MonoBehaviour
         Instance = this;
     }
 
-    private void Start()
+    protected void Start()
     {
         // Find references if not assigned
         if (augmentSelectionUI == null)
@@ -70,7 +71,7 @@ public class GameLoopManager : MonoBehaviour
         StartCoroutine(StartGameLoopDelayed());
     }
 
-    private IEnumerator StartGameLoopDelayed()
+    protected virtual IEnumerator StartGameLoopDelayed()
     {
         // Wait one frame to ensure all Start() methods have run
         yield return null;
@@ -96,7 +97,7 @@ public class GameLoopManager : MonoBehaviour
         ShowAugmentSelection();
     }
 
-    private void ShowAugmentSelection()
+    protected void ShowAugmentSelection()
     {
         CurrentState = GameState.AugmentSelection;
         Debug.Log("=== AUGMENT SELECTION PHASE ===");
@@ -118,7 +119,7 @@ public class GameLoopManager : MonoBehaviour
         StartShoppingPhase();
     }
 
-    private void StartShoppingPhase()
+    protected void StartShoppingPhase()
     {
         CurrentState = GameState.Shopping;
         Debug.Log($"=== SHOPPING PHASE (Wave {currentWaveInCycle + 1}/{wavesPerAugmentCycle}) ===");
@@ -160,19 +161,18 @@ public class GameLoopManager : MonoBehaviour
         StartCoroutine(WaitForWaveCompletion());
     }
 
-    private IEnumerator WaitForWaveCompletion()
+    protected virtual IEnumerator WaitForWaveCompletion()
     {
-        // Wait until all enemies are cleared
-        yield return new WaitUntil(() => waveManager.IsWaveComplete());
+        // Stop waiting if the wave ends normally or if the player runs out of lives.
+        yield return new WaitUntil(() => waveManager.IsWaveComplete() || waveManager.IsGameOver());
 
-        Debug.Log("Wave cleared!");
-
-        // Check if game is over (no lives left)
-        if (waveManager.lives <= 0)
+        if (waveManager.IsGameOver() || waveManager.lives <= 0)
         {
             GameOver();
             yield break;
         }
+
+        Debug.Log("Wave cleared!");
 
         // Increment AFTER completing the wave
         currentWaveInCycle++;
@@ -198,13 +198,19 @@ public class GameLoopManager : MonoBehaviour
     }
 
     // triggers when we run out of lives 
-    private void GameOver()
+    protected void GameOver()
     {
         CurrentState = GameState.GameOver;
         isGameActive = false;
         Debug.Log("=== GAME OVER ===");
         
-        Time.timeScale = 0f;
+        // Wait 5 seconds then load game over scene
+        Invoke(nameof(LoadGameOverScene), 3f);
+    }
+
+    private void LoadGameOverScene()
+    {
+        SceneManager.LoadScene("GameOver");
     }
 
     public bool IsGameActive()

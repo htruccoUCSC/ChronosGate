@@ -38,14 +38,41 @@ public class MeleeAttackBehavior : MonoBehaviour
             }
         }
 
+        BaseUnit attackerUnit = attacker.GetComponent<BaseUnit>();
+        if (attackerUnit == null)
+        {
+            attackerUnit = attacker.GetComponentInParent<BaseUnit>();
+        }
+
         int finalDamage = Mathf.Max(0, Mathf.RoundToInt(damage));
         bool canDealDamage = finalDamage > 0;
+
+        if (target.TryGetComponent(out BaseEnemy directEnemy))
+        {
+            if (canDealDamage)
+            {
+                directEnemy.TakeDamage(attackerUnit, finalDamage);
+            }
+            SpawnSlashOnHit(attacker, target);
+            return true;
+        }
+
+        BaseEnemy parentEnemy = target.GetComponentInParent<BaseEnemy>();
+        if (parentEnemy != null)
+        {
+            if (canDealDamage)
+            {
+                parentEnemy.TakeDamage(attackerUnit, finalDamage);
+            }
+            SpawnSlashOnHit(attacker, target);
+            return true;
+        }
 
         if (target.TryGetComponent(out TargetDummyTest dummy))
         {
             if (canDealDamage)
             {
-                dummy.TakeDamage(finalDamage);
+                dummy.TakeDamage(finalDamage, attackerUnit);
             }
             SpawnSlashOnHit(attacker, target);
             return true;
@@ -56,7 +83,7 @@ public class MeleeAttackBehavior : MonoBehaviour
         {
             if (canDealDamage)
             {
-                parentDummy.TakeDamage(finalDamage);
+                parentDummy.TakeDamage(finalDamage, attackerUnit);
             }
             SpawnSlashOnHit(attacker, target);
             return true;

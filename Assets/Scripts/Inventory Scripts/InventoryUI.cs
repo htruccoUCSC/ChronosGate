@@ -17,42 +17,17 @@ public class InventoryUI : MonoBehaviour
 
     public UnitSpawner unitSpawner; // Reference to UnitSpawner to spawn units from inventory
 
-    // debug starter unit
-    // you can set this to any valid UnitID from the DatabaseLoader
-    [Header("Starter Settings")]
-    public DatabaseLoader database;
-    public string starterUnitID = "archer_01";
-    public string starterUnitID2 = "boomer_01";
-
     private void Start()
     {
-        m_Units = new UnitDefinition[m_Capacity];
+        EnsureStorageInitialized();
         Build();
+    }
 
-        // Give the Database a split second to finish loading in Awake()
-        // Then grab our starter unit
-        if (database != null && !string.IsNullOrEmpty(starterUnitID))
+    private void EnsureStorageInitialized()
+    {
+        if (m_Units == null || m_Units.Length != m_Capacity)
         {
-            if (database.UnitLookup.TryGetValue(starterUnitID, out UnitDefinition def))
-            {
-                AddUnit(def);
-            }
-            else
-            {
-                Debug.LogError($"Could not find Starter Unit: {starterUnitID}");
-            }
-        }
-
-        if (database != null && !string.IsNullOrEmpty(starterUnitID2))
-        {
-            if (database.UnitLookup.TryGetValue(starterUnitID2, out UnitDefinition def))
-            {
-                AddUnit(def);
-            }
-            else
-            {
-                Debug.LogError($"Could not find Starter Unit: {starterUnitID2}");
-            }
+            m_Units = new UnitDefinition[m_Capacity];
         }
     }
 
@@ -95,6 +70,13 @@ public class InventoryUI : MonoBehaviour
 
     public void Refresh()
     {
+        EnsureStorageInitialized();
+
+        if (m_Icons.Count < m_Capacity)
+        {
+            return;
+        }
+
         for (int i = 0; i < m_Capacity; i++)
         {
             if (m_Units[i] != null)
@@ -113,6 +95,8 @@ public class InventoryUI : MonoBehaviour
 
     public bool AddUnit(UnitDefinition def)
     {
+        EnsureStorageInitialized();
+
         for (int i = 0; i < m_Units.Length; i++)
         {
             if (m_Units[i] == null)
@@ -128,12 +112,14 @@ public class InventoryUI : MonoBehaviour
     // gets unit definition at index
     public UnitDefinition GetUnit(int index)
     {
+        EnsureStorageInitialized();
         if (index < 0 || index >= m_Units.Length) return null;
         return m_Units[index];
     }
 
     public void SetUnit(int index, UnitDefinition unit)
     {
+        EnsureStorageInitialized();
         if (index >= 0 && index < m_Units.Length)
         {
             m_Units[index] = unit;
@@ -143,6 +129,7 @@ public class InventoryUI : MonoBehaviour
 
     public void SwapUnits(int indexA, int indexB)
     {
+        EnsureStorageInitialized();
         var temp = m_Units[indexA];
         m_Units[indexA] = m_Units[indexB];
         m_Units[indexB] = temp;

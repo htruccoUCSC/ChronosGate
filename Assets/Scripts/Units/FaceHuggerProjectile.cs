@@ -107,7 +107,7 @@ public class FaceHuggerProjectile : MonoBehaviour
                 if (damageTimer >= 1f)
                 {
                     int damageAmount = Mathf.RoundToInt(damagePerSecond);
-                    attachedEnemy.TakeDamage(damageAmount);
+                    attachedEnemy.TakeDamage(owner, damageAmount);
                     damageTimer -= 1f;
                 }
             }
@@ -171,7 +171,7 @@ public class FaceHuggerProjectile : MonoBehaviour
 
         // Apply initial burst damage
         int initialDamage = Mathf.RoundToInt(damage);
-        enemy.TakeDamage(initialDamage);
+        enemy.TakeDamage(owner, initialDamage);
 
         // Make the facehugger smaller when attached
         transform.localScale *= 0.5f;

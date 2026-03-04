@@ -6,26 +6,19 @@ public class Boomerang : BaseUnit
 {
     [SerializeField] private LayerMask m_TargetMask;
     [SerializeField] private float m_SpreadAngle = 12f;
-    [SerializeField] private float m_MoveDelay = 0.5f;
 
     private BoardManager m_Board;
-    private bool m_MoveScheduled;
 
     protected override void CastAbility()
     {
         Debug.Log("Boomerang uses ability");
-        SpawnArcApexProjectile(myData.GetModifiedDamage() * 2f, true);
+        SpawnArcApexProjectile(myData.GetModifiedDamage() , true);
     }
 
     protected override void PerformBasicAttack()
     {
         float damage = myData.GetModifiedDamage();
         SpawnSpreadAttack(damage);
-
-        if (!m_MoveScheduled)
-        {
-            StartCoroutine(MoveToAdjacentTileAfterDelay(m_MoveDelay));
-        }
     }
 
     protected override void ScanTargeting()
@@ -116,49 +109,5 @@ public class Boomerang : BaseUnit
         }
 
         boomerBehavior.Initialize(projScript, currentTarget, transform);
-    }
-
-    private IEnumerator MoveToAdjacentTileAfterDelay(float delay)
-    {
-        m_MoveScheduled = true;
-        yield return new WaitForSeconds(delay);
-
-        if (m_Board == null || m_Board.GameTilemap == null)
-        {
-            m_MoveScheduled = false;
-            yield break;
-        }
-
-        if (!m_Board.TryGetUnitCell(gameObject, out Vector3Int currentCell))
-        {
-            m_MoveScheduled = false;
-            yield break;
-        }
-
-        Vector3Int[] offsets =
-        {
-            Vector3Int.up,
-            Vector3Int.down,
-            Vector3Int.left,
-            Vector3Int.right
-        };
-
-        List<Vector3Int> availableCells = new List<Vector3Int>();
-        foreach (Vector3Int offset in offsets)
-        {
-            Vector3Int candidate = currentCell + offset;
-            if (m_Board.IsWalkable(candidate))
-            {
-                availableCells.Add(candidate);
-            }
-        }
-
-        if (availableCells.Count > 0)
-        {
-            Vector3Int nextCell = availableCells[Random.Range(0, availableCells.Count)];
-            m_Board.MoveUnit(gameObject, nextCell);
-        }
-
-        m_MoveScheduled = false;
     }
 }

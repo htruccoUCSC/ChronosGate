@@ -8,18 +8,22 @@ public class WaveManager : MonoBehaviour
     public static WaveManager Instance { get; private set; } // global access so enemies can register / report escapes
 
     [Header("References")]
-    public GameObject enemyPrefab; // what enemy gets spawned
+    public GameObject enemyPrefab; //BaseEnemy Default
+    public List<GameObject> enemyPrefabs = new List<GameObject>(); //OPTIONAL RANDOM SPAWN FROM LIST
+    public GameObject baseEnemyPrefab; //explicit base enemy prefab 
+    public GameObject shadowEnemyPrefab; //explicit shadow enemy prefab
     public Tilemap tilemap;        // tilemap used to figure out spawn + map edges
 
     [Header("Spawn")]
     public int spawnOffsetCells = 0;   // how far past the right edge enemies spawn
     public float spawnDelay = 0.75f;   // delay between enemy spawns in a wave
+    [Range(0f, 1f)] public float shadowSpawnChance = 0.2f;
 
     [Header("Waves")]
     public int currentWave = 1;          // current wave number
-    public int enemiesPerWave = 1;       // how many enemies spawn this wave
-    public int enemiesAddedPerWave = 0;  // extra enemies added each new wave
-    public float timeBetweenWaves = 2f;  // wait time between waves
+    public int enemiesPerWave = 2;       // how many enemies spawn this wave
+    public int enemiesAddedPerWave = 4;  // extra enemies added each new wave
+    public float timeBetweenWaves = 3f;  // wait time between waves
 
     [Header("Lives")]
     public int lives = 3; // you start with 3 lives
@@ -35,6 +39,7 @@ public class WaveManager : MonoBehaviour
     private bool autoRunWaves = false;
 
     private float leftLoseX = 0f; // world X where enemies count as "reached the end"
+    private BoardManager boardManager;
 
     void Awake()
     {
@@ -50,6 +55,8 @@ public class WaveManager : MonoBehaviour
     void Start()
     {
         Debug.Log("WaveManager started.");
+
+        boardManager = FindFirstObjectByType<BoardManager>();
 
         // compute map end threshold once at start
         RecomputeMapEndX();
@@ -78,7 +85,7 @@ public class WaveManager : MonoBehaviour
             for (int y = bounds.yMin; y < bounds.yMax; y++)
             {
                 Vector3Int cell = new Vector3Int(x, y, 0);
-                if (tilemap.HasTile(cell) && x < leftmostXWithTile)
+                if (IsSpawnableCell(cell) && x < leftmostXWithTile)
                     leftmostXWithTile = x;
             }
         }
@@ -89,13 +96,18 @@ public class WaveManager : MonoBehaviour
             return;
         }
 
-        // left edge "lose line" is the center of that leftmost tile column
-        leftLoseX = tilemap.GetCellCenterWorld(new Vector3Int(leftmostXWithTile, 0, 0)).x;
+        // Enemies should count as escaped once they fully cross the left edge of the lane.
+        leftLoseX = tilemap.CellToWorld(new Vector3Int(leftmostXWithTile, 0, 0)).x;
     }
 
     public float GetLoseLineX()
     {
         return leftLoseX; // enemies use this to know when they reached the end
+    }
+
+    public bool IsGameOver()
+    {
+        return gameOver;
     }
 
     private int AliveEnemyCount()
@@ -164,6 +176,12 @@ public class WaveManager : MonoBehaviour
 
         yield return new WaitUntil(() => AliveEnemyCount() == 0 || gameOver);
 
+        if (gameOver)
+        {
+            waveActive = false;
+            yield break;
+        }
+
         Debug.Log($"--- WAVE {currentWave} CLEARED ---");
 
         currentWave++;
@@ -174,9 +192,10 @@ public class WaveManager : MonoBehaviour
     private void TrySpawnEnemyOnTile()
     {
         // safety checks
-        if (enemyPrefab == null)
+        if (enemyPrefab == null && (enemyPrefabs == null || enemyPrefabs.Count == 0)
+            && baseEnemyPrefab == null && shadowEnemyPrefab == null)
         {
-            Debug.LogError("WaveManager: enemyPrefab not assigned.");
+            Debug.LogError("WaveManager: no enemy prefab assigned.");
             return;
         }
 
@@ -195,7 +214,7 @@ public class WaveManager : MonoBehaviour
             for (int y = bounds.yMin; y < bounds.yMax; y++)
             {
                 Vector3Int cell = new Vector3Int(x, y, 0);
-                if (tilemap.HasTile(cell) && x > rightmostXWithTile)
+                if (IsSpawnableCell(cell) && x > rightmostXWithTile)
                     rightmostXWithTile = x;
             }
         }
@@ -206,13 +225,13 @@ public class WaveManager : MonoBehaviour
             return;
         }
 
-        int spawnX = rightmostXWithTile + spawnOffsetCells;
+        int spawnX = rightmostXWithTile + Mathf.Max(1, spawnOffsetCells);
 
         // collect all valid Y rows in that rightmost tile column
         List<int> validYs = new List<int>();
         for (int y = bounds.yMin; y < bounds.yMax; y++)
         {
-            if (tilemap.HasTile(new Vector3Int(rightmostXWithTile, y, 0)))
+            if (IsSpawnableCell(new Vector3Int(rightmostXWithTile, y, 0)))
                 validYs.Add(y);
         }
 
@@ -222,20 +241,24 @@ public class WaveManager : MonoBehaviour
             return;
         }
 
-        // limit spawns to the 5 middle rows
-        validYs.Sort();
-        int takeCount = Mathf.Min(5, validYs.Count);
-        int midIndex = validYs.Count / 2;
-        int startIndex = Mathf.Clamp(midIndex - (takeCount / 2), 0, validYs.Count - takeCount);
-
-        List<int> middleYs = validYs.GetRange(startIndex, takeCount);
-        int chosenY = middleYs[Random.Range(0, middleYs.Count)];
+        // allow spawning on any valid row in the spawn column
+        int chosenY = validYs[Random.Range(0, validYs.Count)];
 
         // convert tile position to world space and spawn enemy
         Vector3Int spawnCell = new Vector3Int(spawnX, chosenY, 0);
         Vector3 spawnWorld = tilemap.GetCellCenterWorld(spawnCell);
 
-        GameObject go = Instantiate(enemyPrefab, spawnWorld, Quaternion.identity);
+        GameObject prefabToSpawn = enemyPrefab;
+        if (baseEnemyPrefab != null && shadowEnemyPrefab != null)
+        {
+            prefabToSpawn = Random.value < shadowSpawnChance ? shadowEnemyPrefab : baseEnemyPrefab;
+        }
+        else if (enemyPrefabs != null && enemyPrefabs.Count > 0)
+        {
+            prefabToSpawn = enemyPrefabs[Random.Range(0, enemyPrefabs.Count)];
+        }
+
+        GameObject go = Instantiate(prefabToSpawn, spawnWorld, Quaternion.identity);
 
         // try BaseEnemy first (new system), otherwise fall back to TargetDummyTest (older system)
         BaseEnemy baseEnemy = go.GetComponentInParent<BaseEnemy>();
@@ -253,6 +276,14 @@ public class WaveManager : MonoBehaviour
         }
 
         Debug.LogWarning("WaveManager: spawned enemyPrefab but it has no BaseEnemy or TargetDummyTest component");
+    }
+
+    private bool IsSpawnableCell(Vector3Int cell)
+    {
+        if (boardManager != null)
+            return boardManager.IsWalkable(cell);
+
+        return tilemap.HasTile(cell);
     }
 
     // --- registration for BaseEnemy (new) ---

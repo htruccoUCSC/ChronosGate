@@ -1,5 +1,11 @@
 # Contributing
 
+## Unity License
+
+If working on a fork you must add a unity license to your repository.
+
+The steps to add one can be found in the [gameCI](https://game.ci/docs/github/activation/) docs.
+
 ## How to add a unit
 
 Current flow for adding a unit:

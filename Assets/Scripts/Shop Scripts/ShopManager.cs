@@ -2,6 +2,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 using System.Collections.Generic;
+using System.Collections;
 
 public class ShopManager : MonoBehaviour
 {
@@ -19,28 +20,40 @@ public class ShopManager : MonoBehaviour
     [Header("Data Sources")]
     [SerializeField] private DatabaseLoader databaseLoader;
     [SerializeField] private InventoryUI inventoryUI;
+    [SerializeField] private ItemInventoryUI itemInventoryUI;
     
     [Header("Tooltip")]
     [SerializeField] private GameObject consumableTooltip;
     [SerializeField] private TextMeshProUGUI tooltipText;
     
-    [Header("Test Data")]
-    [SerializeField] private ConsumableData[] testConsumableData;
+    [Header("Item Definition Source")]
+    [SerializeField] private ItemDefinition[] availableItems;
+    
+    [Header("Progression Settings")]
+    [SerializeField] private bool useProgressionFiltering = true;
     
     private bool isShopOpen = false;
     private int rerollCost = 1;
     private CurrencyManager currencyManager;
+    private UnitUnlockManager unlockManager;
     
     private void Start()
     {
         currencyManager = CurrencyManager.Instance;
         if (currencyManager == null)
         {
-            Debug.LogError("CurrencyManager not found!");
+            Debug.LogWarning("[ShopManager] CurrencyManager not found at Start! Will try again when needed.");
         }
         else
         {
             currencyManager.OnCurrencyChanged += UpdateRerollButtonState;
+        }
+        
+        unlockManager = UnitUnlockManager.Instance;
+        if (unlockManager == null && useProgressionFiltering)
+        {
+            Debug.LogWarning("[ShopManager] UnitUnlockManager not found! Progression filtering will be disabled.");
+            useProgressionFiltering = false;
         }
         
         toggleButton.onClick.AddListener(ToggleShop);
@@ -64,33 +77,26 @@ public class ShopManager : MonoBehaviour
             inventoryUI = FindFirstObjectByType<InventoryUI>();
         }
 
+        if (itemInventoryUI == null)
+        {
+            itemInventoryUI = FindFirstObjectByType<ItemInventoryUI>();
+        }
+
+        // Initialize consumable slots with item inventory UI
+        foreach (ConsumableSlot slot in consumableSlots)
+        {
+            if (slot != null && itemInventoryUI != null)
+            {
+                slot.InitializeInventory(itemInventoryUI);
+            }
+        }
+
         foreach (TowerSlot slot in towerSlots)
         {
             if (slot != null)
             {
                 slot.Initialize(inventoryUI);
             }
-        }
-        
-        // Setup consumable slots with test data
-        if (testConsumableData != null && testConsumableData.Length > 0)
-        {
-            Debug.Log($"Setting up {testConsumableData.Length} consumable slots");
-            for (int i = 0; i < consumableSlots.Length && i < testConsumableData.Length; i++)
-            {
-                if (consumableSlots[i] != null && testConsumableData[i] != null)
-                {
-                    consumableSlots[i].Setup(testConsumableData[i]);
-                }
-                else
-                {
-                    Debug.LogWarning($"Consumable slot {i} or data is null - Slot: {consumableSlots[i] != null}, Data: {testConsumableData[i] != null}");
-                }
-            }
-        }
-        else
-        {
-            Debug.LogWarning("testConsumableData is null or empty! No consumable slots will be populated.");
         }
 
         if (databaseLoader == null)
@@ -99,6 +105,28 @@ public class ShopManager : MonoBehaviour
         }
 
         UpdateRerollCostDisplay();
+        
+        // Wait for progression system to initialize before populating (WebGL compatibility)
+        StartCoroutine(WaitAndPopulateShop());
+    }
+    
+    /// <summary>
+    /// Waits for UnitUnlockManager to finish initializing, then populates shop.
+    /// Required for WebGL async JSON loading.
+    /// </summary>
+    private IEnumerator WaitAndPopulateShop()
+    {
+        // Wait for unlock manager to be ready
+        if (useProgressionFiltering && unlockManager != null)
+        {
+            while (!unlockManager.IsReady())
+            {
+                yield return null;
+            }
+            Debug.Log("[ShopManager] UnitUnlockManager ready, populating shop...");
+        }
+        
+        PopulateConsumableSlots();
         PopulateTowerSlots();
     }
     
@@ -118,9 +146,23 @@ public class ShopManager : MonoBehaviour
     {
         isShopOpen = true;
         shopPanel.SetActive(true);
-        toggleButton.interactable = true;
+        
+        // Make toggle button visible and interactable when entering shop
+        if (toggleButton != null)
+        {
+            toggleButton.gameObject.SetActive(true);
+            toggleButton.interactable = true;
+        }
+        
+        // Make next round button visible and interactable
+        if (nextRoundButton != null)
+        {
+            nextRoundButton.gameObject.SetActive(true);
+            nextRoundButton.interactable = true;
+        }
         
         // Reroll shop for new round
+        PopulateConsumableSlots();
         PopulateTowerSlots();
     }
     
@@ -128,8 +170,21 @@ public class ShopManager : MonoBehaviour
     {
         // Close shop
         shopPanel.SetActive(false);
+        nextRoundButton.gameObject.SetActive(false);
         isShopOpen = false;
         HideConsumableTooltip();
+        
+        // Hide toggle button when moving to next round
+        if (toggleButton != null)
+        {
+            toggleButton.gameObject.SetActive(false);
+        }
+        
+        // Keep next round button visible even when shop panel closes
+        if (nextRoundButton != null)
+        {
+            nextRoundButton.gameObject.SetActive(false);
+        }
         
         // Notify game loop manager
         if (GameLoopManager.Instance != null)
@@ -140,9 +195,15 @@ public class ShopManager : MonoBehaviour
     
     private void OnRerollButtonClicked()
     {
+        // Try to get currency manager if not already cached
         if (currencyManager == null)
         {
-            Debug.LogError("[ShopManager] CurrencyManager not found!");
+            currencyManager = CurrencyManager.Instance;
+        }
+        
+        if (currencyManager == null)
+        {
+            Debug.LogError("[ShopManager] CurrencyManager not found! Make sure CurrencyManager exists in the scene and has initialized.");
             return;
         }
 
@@ -155,6 +216,7 @@ public class ShopManager : MonoBehaviour
         Debug.Log($"[ShopManager] Rerolled shop for {rerollCost} gold!");
         rerollCost += 2; // Increase cost by 2 for next reroll
         UpdateRerollCostDisplay();
+        PopulateConsumableSlots();
         PopulateTowerSlots();
     }
     
@@ -174,6 +236,15 @@ public class ShopManager : MonoBehaviour
         }
     }
     
+    private void OnDestroy()
+    {
+        // Unsubscribe from events to prevent memory leaks
+        if (currencyManager != null)
+        {
+            currencyManager.OnCurrencyChanged -= UpdateRerollButtonState;
+        }
+    }
+    
     public void ResetRerollCost()
     {
         rerollCost = 1;
@@ -183,6 +254,38 @@ public class ShopManager : MonoBehaviour
     private void RerollShop()
     {
         PopulateTowerSlots();
+    }
+
+    private void PopulateConsumableSlots()
+    {
+        if (consumableSlots == null || consumableSlots.Length == 0)
+        {
+            return;
+        }
+
+        if (availableItems == null || availableItems.Length == 0)
+        {
+            Debug.LogWarning("No available items assigned to populate consumable slots.");
+            for (int i = 0; i < consumableSlots.Length; i++)
+            {
+                if (consumableSlots[i] != null)
+                {
+                    consumableSlots[i].Setup(null);
+                }
+            }
+            return;
+        }
+
+        for (int i = 0; i < consumableSlots.Length; i++)
+        {
+            if (consumableSlots[i] == null)
+            {
+                continue;
+            }
+
+            ItemDefinition randomItem = availableItems[Random.Range(0, availableItems.Length)];
+            consumableSlots[i].Setup(randomItem);
+        }
     }
 
     // This method populates tower slots with random eligible UnitDefinitions from the database
@@ -210,12 +313,32 @@ public class ShopManager : MonoBehaviour
         }
 
         var eligibleUnits = new List<UnitDefinition>();
+        
+        // Get unlocked unit IDs from progression system
+        List<string> unlockedUnitIDs = null;
+        if (useProgressionFiltering && unlockManager != null)
+        {
+            unlockedUnitIDs = unlockManager.GetUnlockedUnitIDs();
+            Debug.Log($"[ShopManager] Filtering shop by {(unlockedUnitIDs != null ? unlockedUnitIDs.Count.ToString() : "all")} unlocked units.");
+        }
+        
         foreach (var unitDef in databaseLoader.UnitLookup.Values)
         {
-            if (HasValidPrefab(unitDef))
+            if (!HasValidPrefab(unitDef))
             {
-                eligibleUnits.Add(unitDef);
+                continue;
             }
+            
+            // Filter by unlocked status if progression mode is enabled
+            if (useProgressionFiltering && unlockedUnitIDs != null)
+            {
+                if (!unlockedUnitIDs.Contains(unitDef.UnitID))
+                {
+                    continue; // Skip locked units
+                }
+            }
+            
+            eligibleUnits.Add(unitDef);
         }
 
         if (eligibleUnits.Count == 0)
@@ -308,11 +431,15 @@ public class ShopManager : MonoBehaviour
 
     public void OnUnitPurchased(UnitDefinition unitDef)
     {
-        CurrencyManager currencyManager = CurrencyManager.Instance;
+        // Try to get currency manager if not already cached
+        if (currencyManager == null)
+        {
+            currencyManager = CurrencyManager.Instance;
+        }
         
         if (currencyManager == null)
         {
-            Debug.LogError("CurrencyManager not found!");
+            Debug.LogError("[ShopManager] CurrencyManager not found!");
             return;
         }
         

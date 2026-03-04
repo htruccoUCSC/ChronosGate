@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.IO;
 using Newtonsoft.Json;
 using UnityEngine;
+using UnityEngine.Networking;
+using System.Collections;
 
 public class DatabaseLoader : MonoBehaviour
 {
@@ -18,56 +20,80 @@ public class DatabaseLoader : MonoBehaviour
 
     public void LoadData()
     {
+        StartCoroutine(LoadDataCoroutine());
+    }
+
+    private IEnumerator LoadDataCoroutine()
+    {
         string filePath = Path.Combine(Application.streamingAssetsPath, fileName);
 
+#if UNITY_WEBGL && !UNITY_EDITOR
+        using (var request = UnityWebRequest.Get(filePath))
+        {
+            yield return request.SendWebRequest();
+
+            if (request.result != UnityWebRequest.Result.Success)
+            {
+                Debug.LogError($"Cannot load JSON file at {filePath}: {request.error}");
+                yield break;
+            }
+
+            ParseJson(request.downloadHandler.text);
+        }
+#else
         if (File.Exists(filePath))
         {
             string jsonText = File.ReadAllText(filePath);
-
-            UnitDatabase dataBatch = JsonConvert.DeserializeObject<UnitDatabase>(jsonText);
-
-            UnitLookup.Clear();
-
-            foreach (var unit in dataBatch.AllUnits)
-            {
-                // creates unity scriptable object instance
-                UnitDefinition unitDef = ScriptableObject.CreateInstance<UnitDefinition>();
-
-                // c sharp reflection (some bullshit) to copy fields from raw data to scriptable object
-                // this is done to write less repetitive code assigning each field one by one
-                var rawFields = typeof(UnitRawData).GetFields();
-                var defType = typeof(UnitDefinition);
-
-                foreach (var field in rawFields)
-                { 
-                    var targetField = defType.GetField(field.Name);
-
-                    if (targetField != null)
-                    {
-                        targetField.SetValue(unitDef, field.GetValue(unit));
-                    }
-
-                }
-
-                // parse attack type string to enum
-                if (Enum.TryParse(unit.AttackType, out BasicAttackType type))
-                {
-                    unitDef.AttackFunction = type;
-                }
-                else
-                {
-                    // if parsing fails, set to none
-                    unitDef.AttackFunction = BasicAttackType.None;
-                }
-
-                UnitLookup.Add(unitDef.UnitID, unitDef);
-            }
-
-
+            ParseJson(jsonText);
         }
         else
         {
             Debug.LogError("Cannot find JSON file at " + filePath);
+        }
+#endif
+
+        yield return null;
+    }
+
+    private void ParseJson(string jsonText)
+    {
+        UnitDatabase dataBatch = JsonConvert.DeserializeObject<UnitDatabase>(jsonText);
+
+        UnitLookup.Clear();
+
+        foreach (var unit in dataBatch.AllUnits)
+        {
+            // creates unity scriptable object instance
+            UnitDefinition unitDef = ScriptableObject.CreateInstance<UnitDefinition>();
+
+            // c sharp reflection (some bullshit) to copy fields from raw data to scriptable object
+            // this is done to write less repetitive code assigning each field one by one
+            var rawFields = typeof(UnitRawData).GetFields();
+            var defType = typeof(UnitDefinition);
+
+            foreach (var field in rawFields)
+            { 
+                var targetField = defType.GetField(field.Name);
+
+                if (targetField != null)
+                {
+                    targetField.SetValue(unitDef, field.GetValue(unit));
+                }
+
+            }
+
+            // parse attack type string to enum
+            if (Enum.TryParse(unit.AttackType, out BasicAttackType type))
+            {
+                unitDef.AttackFunction = type;
+            }
+            else
+            {
+                // if parsing fails, set to none
+                unitDef.AttackFunction = BasicAttackType.None;
+            }
+
+            UnitLookup.Add(unitDef.UnitID, unitDef);
         }
     }
 }
