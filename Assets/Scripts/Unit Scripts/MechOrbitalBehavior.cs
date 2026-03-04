@@ -27,7 +27,7 @@ public class TileSpawner : MonoBehaviour
     }
 
     // Helper: instantiate, scale, reset animator and schedule destroy
-    private static GameObject InstantiateAndPrepare(GameObject prefab, Vector3 worldPos, Quaternion rotation, float spawnScale, float lifetime)
+    private static GameObject InstantiateAndPrepare(GameObject prefab, Vector3 worldPos, Quaternion rotation, float spawnScale, float lifetime, BaseUnit owner, float damage)
     {
         if (prefab == null) return null;
         GameObject obj = GameObject.Instantiate(prefab, worldPos, rotation);
@@ -45,13 +45,36 @@ public class TileSpawner : MonoBehaviour
             animator.Play(state.shortNameHash, 0, 0f);
         }
 
+        ConfigureProjectile(obj, worldPos, lifetime, owner, damage);
+
         if (lifetime > 0f)
             Destroy(obj, lifetime);
 
         return obj;
     }
+
+    private static void ConfigureProjectile(GameObject obj, Vector3 worldPos, float lifetime, BaseUnit owner, float damage)
+    {
+        if (obj == null || owner == null) return;
+
+        Projectile proj = obj.GetComponentInChildren<Projectile>();
+        if (proj == null) return;
+
+        proj.lifetime = Mathf.Max(0.01f, lifetime);
+        proj.speed = 0f;
+        proj.passThroughEnemies = true;
+        proj.maxPenetration = 0;
+        proj.SetIgnoreRowCheck(true);
+
+        Collider2D col = proj.GetComponent<Collider2D>();
+        if (col == null) col = proj.GetComponentInChildren<Collider2D>();
+        if (col != null) col.isTrigger = true;
+
+        float finalDamage = Mathf.Max(1f, damage);
+        proj.Setup(finalDamage, Vector2.right, 0f, worldPos, false, owner);
+    }
     // Pick `count` random occupied tiles from WaveManager.tilemap and instantiate `prefab` there.
-    public static void SpawnOnRandomTiles(int count, GameObject prefab, float lifetime = 5f, LayerMask targetMask = default)
+    public static void SpawnOnRandomTiles(int count, GameObject prefab, float lifetime = 5f, LayerMask targetMask = default, BaseUnit owner = null, float damage = 0f)
     {
         if (prefab == null) return;
 
@@ -85,12 +108,12 @@ public class TileSpawner : MonoBehaviour
             occupied.RemoveAt(idx);
 
             Vector3 worldPos = tilemap.GetCellCenterWorld(chosen);
-            InstantiateAndPrepare(prefab, worldPos, Quaternion.Euler(0f, 0f, 90f), 1.5f, lifetime);
+            InstantiateAndPrepare(prefab, worldPos, Quaternion.Euler(0f, 0f, 90f), 1.5f, lifetime, owner, damage);
         }
     }
 
     // Spawn a percentage of tiles that are NOT occupied by any BaseUnit.
-    public static void SpawnPercentUnoccupiedTiles(float percent, GameObject prefab, float lifetime = 5f, LayerMask targetMask = default)
+    public static void SpawnPercentUnoccupiedTiles(float percent, GameObject prefab, float lifetime = 5f, LayerMask targetMask = default, BaseUnit owner = null, float damage = 0f)
     {
         if (prefab == null) return;
         if (percent <= 0f) return;
@@ -142,7 +165,7 @@ public class TileSpawner : MonoBehaviour
             unoccupied.RemoveAt(idx);
 
             Vector3 worldPos = tilemap.GetCellCenterWorld(chosen);
-            InstantiateAndPrepare(prefab, worldPos, Quaternion.identity, 3.5f, lifetime);
+            InstantiateAndPrepare(prefab, worldPos, Quaternion.identity, 3.5f, lifetime, owner, damage);
         }
     }
 }

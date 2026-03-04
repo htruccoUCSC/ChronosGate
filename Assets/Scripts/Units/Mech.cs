@@ -55,7 +55,8 @@ public class Mech : BaseUnit
         if (prefabToSpawn != null && percentAP > 0f)
         {
             float capped = Mathf.Min(percentAP, m_MaxSpawnPercent);
-            TileSpawner.SpawnPercentUnoccupiedTiles(capped, prefabToSpawn, m_OrbitalLifetime, m_TargetMask);
+            float orbitalDamage = Mathf.Max(1f, myData.GetModifiedAbilityPower());
+            TileSpawner.SpawnPercentUnoccupiedTiles(capped, prefabToSpawn, m_OrbitalLifetime, m_TargetMask, this, orbitalDamage);
             Debug.Log($"Mech ability requested spawn on {capped * 100f}% (raw {percentAP * 100f}%) of unoccupied tiles using prefab: {prefabToSpawn.name}");
         }
 
