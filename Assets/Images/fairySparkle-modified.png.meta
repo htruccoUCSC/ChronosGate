@@ -1,0 +1,663 @@
+fileFormatVersion: 2
+guid: 1aa7ac1cfe201a342a9bec999c6c0142
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: -1331795352150375276
+    second: fairySparkle-modified_0
+  - first:
+      213: -7866887159264269953
+    second: fairySparkle-modified_1
+  - first:
+      213: -4598910377441672177
+    second: fairySparkle-modified_2
+  - first:
+      213: 6561601595211583238
+    second: fairySparkle-modified_3
+  - first:
+      213: -6332874818611196974
+    second: fairySparkle-modified_4
+  - first:
+      213: -7682843296406558805
+    second: fairySparkle-modified_5
+  - first:
+      213: 6688094344021572761
+    second: fairySparkle-modified_6
+  - first:
+      213: 8630136687995374092
+    second: fairySparkle-modified_7
+  - first:
+      213: 6811095493012585085
+    second: fairySparkle-modified_8
+  - first:
+      213: -153723588072771619
+    second: fairySparkle-modified_9
+  - first:
+      213: 6343532983191414445
+    second: fairySparkle-modified_10
+  - first:
+      213: 2989156182846788792
+    second: fairySparkle-modified_11
+  - first:
+      213: 5967315894821863733
+    second: fairySparkle-modified_12
+  - first:
+      213: 8682374831584239639
+    second: fairySparkle-modified_13
+  - first:
+      213: -9217736127096469429
+    second: fairySparkle-modified_14
+  - first:
+      213: 2144203630615084059
+    second: fairySparkle-modified_15
+  - first:
+      213: -617673802744568645
+    second: fairySparkle-modified_16
+  - first:
+      213: -3898562209959324650
+    second: fairySparkle-modified_17
+  - first:
+      213: 3512171703721865065
+    second: fairySparkle-modified_18
+  - first:
+      213: -6807147420822974506
+    second: fairySparkle-modified_19
+  - first:
+      213: 7079805701484632961
+    second: fairySparkle-modified_20
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 1
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 100
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationDetail: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: fairySparkle-modified_0
+      rect:
+        serializedVersion: 2
+        x: 171
+        y: 95
+        width: 16
+        height: 21
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 4948f81fe23848de0800000000000000
+      internalID: -1331795352150375276
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: fairySparkle-modified_1
+      rect:
+        serializedVersion: 2
+        x: 203
+        y: 110
+        width: 9
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f79a8f72fc333d290800000000000000
+      internalID: -7866887159264269953
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: fairySparkle-modified_2
+      rect:
+        serializedVersion: 2
+        x: 144
+        y: 99
+        width: 8
+        height: 9
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f044bb6b0636d20c0800000000000000
+      internalID: -4598910377441672177
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: fairySparkle-modified_3
+      rect:
+        serializedVersion: 2
+        x: 145
+        y: 92
+        width: 10
+        height: 9
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 60f0930d2ed7f0b50800000000000000
+      internalID: 6561601595211583238
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: fairySparkle-modified_4
+      rect:
+        serializedVersion: 2
+        x: 167
+        y: 98
+        width: 8
+        height: 6
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 2dbc9adc7eb1d18a0800000000000000
+      internalID: -6332874818611196974
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: fairySparkle-modified_5
+      rect:
+        serializedVersion: 2
+        x: 188
+        y: 98
+        width: 9
+        height: 9
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ba722b43abe016590800000000000000
+      internalID: -7682843296406558805
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: fairySparkle-modified_6
+      rect:
+        serializedVersion: 2
+        x: 207
+        y: 89
+        width: 13
+        height: 12
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 99c74bfee52e0dc50800000000000000
+      internalID: 6688094344021572761
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: fairySparkle-modified_7
+      rect:
+        serializedVersion: 2
+        x: 221
+        y: 93
+        width: 11
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c0ac703e79764c770800000000000000
+      internalID: 8630136687995374092
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: fairySparkle-modified_8
+      rect:
+        serializedVersion: 2
+        x: 155
+        y: 85
+        width: 9
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d7a7740a34fd58e50800000000000000
+      internalID: 6811095493012585085
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: fairySparkle-modified_9
+      rect:
+        serializedVersion: 2
+        x: 222
+        y: 77
+        width: 10
+        height: 13
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ddfe25b063dddddf0800000000000000
+      internalID: -153723588072771619
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: fairySparkle-modified_10
+      rect:
+        serializedVersion: 2
+        x: 238
+        y: 87
+        width: 8
+        height: 10
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: da6291483a1c80850800000000000000
+      internalID: 6343532983191414445
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: fairySparkle-modified_11
+      rect:
+        serializedVersion: 2
+        x: 111
+        y: 64
+        width: 15
+        height: 13
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 8b4deb806bd9b7920800000000000000
+      internalID: 2989156182846788792
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: fairySparkle-modified_12
+      rect:
+        serializedVersion: 2
+        x: 134
+        y: 76
+        width: 9
+        height: 10
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 531466da03a20d250800000000000000
+      internalID: 5967315894821863733
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: fairySparkle-modified_13
+      rect:
+        serializedVersion: 2
+        x: 238
+        y: 59
+        width: 17
+        height: 20
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 710ee5b78edfd7870800000000000000
+      internalID: 8682374831584239639
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: fairySparkle-modified_14
+      rect:
+        serializedVersion: 2
+        x: 100
+        y: 41
+        width: 13
+        height: 11
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b48412f74d5041080800000000000000
+      internalID: -9217736127096469429
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: fairySparkle-modified_15
+      rect:
+        serializedVersion: 2
+        x: 259
+        y: 37
+        width: 15
+        height: 17
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b1c3ae077ddb1cd10800000000000000
+      internalID: 2144203630615084059
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: fairySparkle-modified_16
+      rect:
+        serializedVersion: 2
+        x: 262
+        y: 56
+        width: 20
+        height: 16
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: bb46850f2f49d67f0800000000000000
+      internalID: -617673802744568645
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: fairySparkle-modified_17
+      rect:
+        serializedVersion: 2
+        x: 288
+        y: 52
+        width: 16
+        height: 18
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 614dc94535685e9c0800000000000000
+      internalID: -3898562209959324650
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: fairySparkle-modified_18
+      rect:
+        serializedVersion: 2
+        x: 55
+        y: 34
+        width: 12
+        height: 9
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 96f25866e8dbdb030800000000000000
+      internalID: 3512171703721865065
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: fairySparkle-modified_19
+      rect:
+        serializedVersion: 2
+        x: 77
+        y: 33
+        width: 16
+        height: 16
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 6df41209c772881a0800000000000000
+      internalID: -6807147420822974506
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: fairySparkle-modified_20
+      rect:
+        serializedVersion: 2
+        x: 86
+        y: 24
+        width: 9
+        height: 10
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 18bd6cb66c5804260800000000000000
+      internalID: 7079805701484632961
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: 
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries: []
+    nameFileIdTable:
+      fairySparkle-modified_0: -1331795352150375276
+      fairySparkle-modified_1: -7866887159264269953
+      fairySparkle-modified_10: 6343532983191414445
+      fairySparkle-modified_11: 2989156182846788792
+      fairySparkle-modified_12: 5967315894821863733
+      fairySparkle-modified_13: 8682374831584239639
+      fairySparkle-modified_14: -9217736127096469429
+      fairySparkle-modified_15: 2144203630615084059
+      fairySparkle-modified_16: -617673802744568645
+      fairySparkle-modified_17: -3898562209959324650
+      fairySparkle-modified_18: 3512171703721865065
+      fairySparkle-modified_19: -6807147420822974506
+      fairySparkle-modified_2: -4598910377441672177
+      fairySparkle-modified_20: 7079805701484632961
+      fairySparkle-modified_3: 6561601595211583238
+      fairySparkle-modified_4: -6332874818611196974
+      fairySparkle-modified_5: -7682843296406558805
+      fairySparkle-modified_6: 6688094344021572761
+      fairySparkle-modified_7: 8630136687995374092
+      fairySparkle-modified_8: 6811095493012585085
+      fairySparkle-modified_9: -153723588072771619
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
