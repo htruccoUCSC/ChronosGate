@@ -110,6 +110,11 @@ public abstract class BaseUnit : MonoBehaviour
 
         ScanTargeting();
 
+        if (myData.CurrentMana >= myData.BaseDef.AbilityManaCost)
+                {
+                    CastAbility();
+                    myData.CurrentMana = 0;
+                }
         if (currentTarget != null)
         {
             attackTimer -= Time.deltaTime;
@@ -117,17 +122,12 @@ public abstract class BaseUnit : MonoBehaviour
             {
                 //RecentlyHit(null);
                 // cast ability if mana is full, otherwise do basic attack
-                if (myData.CurrentMana >= myData.BaseDef.AbilityManaCost)
-                {
-                    CastAbility();
-                    myData.CurrentMana = 0;
-                }
-                else
-                {
+                
+
                     PerformBasicAttack();
-                    //onHit();
+
                     myData.CurrentMana += manaPerShot;
-                }
+                
                 attackTimer = 1f / myData.GetModifiedAttackSpeed();
             }
         }

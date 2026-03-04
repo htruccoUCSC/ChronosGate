@@ -18,6 +18,7 @@ public class ProgressionGameLoopManager : GameLoopManager
     private LaneProgressionManager laneProgressionManager;
     private bool waitingForPickup = false;
     private UnlockPickup currentPickup;
+    public WaveManager board;
     
     private new void Start()
     {
