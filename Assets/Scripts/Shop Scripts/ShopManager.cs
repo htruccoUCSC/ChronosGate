@@ -12,6 +12,9 @@ public class ShopManager : MonoBehaviour
     [SerializeField] private Button rerollButton;
     [SerializeField] private Button nextRoundButton;
     [SerializeField] private TextMeshProUGUI rerollCostText;
+    [SerializeField] private TextMeshProUGUI toggleButtonLabel;
+    [SerializeField] private string openShopText = "Open Shop";
+    [SerializeField] private string closeShopText = "Close Shop";
     
     [Header("Shop Slots")]
     [SerializeField] private ConsumableSlot[] consumableSlots = new ConsumableSlot[2];
@@ -59,9 +62,12 @@ public class ShopManager : MonoBehaviour
         toggleButton.onClick.AddListener(ToggleShop);
         nextRoundButton.onClick.AddListener(OnNextRoundButtonClicked);
         rerollButton.onClick.AddListener(OnRerollButtonClicked);
+
+        CacheToggleButtonLabel();
         
         shopPanel.SetActive(false);
         consumableTooltip.SetActive(false);
+        UpdateShopUIState();
         
         // Initialize all consumable slots with reference to this manager
         foreach (ConsumableSlot slot in consumableSlots)
@@ -133,8 +139,8 @@ public class ShopManager : MonoBehaviour
     public void ToggleShop()
     {
         isShopOpen = !isShopOpen;
-        shopPanel.SetActive(isShopOpen);
-        
+        UpdateShopUIState();
+
         if (!isShopOpen)
         {
             HideConsumableTooltip();
@@ -145,47 +151,73 @@ public class ShopManager : MonoBehaviour
     public void OpenShop()
     {
         isShopOpen = true;
-        shopPanel.SetActive(true);
-        
-        // Make toggle button visible and interactable when entering shop
+        UpdateShopUIState();
+
+        // Reroll shop for new round
+        PopulateConsumableSlots();
+        PopulateTowerSlots();
+    }
+
+    private void UpdateShopUIState()
+    {
+        if (shopPanel != null)
+        {
+            shopPanel.SetActive(isShopOpen);
+        }
+
         if (toggleButton != null)
         {
             toggleButton.gameObject.SetActive(true);
             toggleButton.interactable = true;
         }
-        
-        // Make next round button visible and interactable
+
+        UpdateToggleButtonLabel();
+
         if (nextRoundButton != null)
         {
-            nextRoundButton.gameObject.SetActive(true);
-            nextRoundButton.interactable = true;
+            // Next Round only appears when shop is closed.
+            bool showNextRound = !isShopOpen;
+            nextRoundButton.gameObject.SetActive(showNextRound);
+            nextRoundButton.interactable = showNextRound;
         }
-        
-        // Reroll shop for new round
-        PopulateConsumableSlots();
-        PopulateTowerSlots();
     }
     
+    private void CacheToggleButtonLabel()
+    {
+        if (toggleButtonLabel != null || toggleButton == null)
+        {
+            return;
+        }
+
+        toggleButtonLabel = toggleButton.GetComponentInChildren<TextMeshProUGUI>(true);
+    }
+
+    private void UpdateToggleButtonLabel()
+    {
+        if (toggleButtonLabel == null)
+        {
+            return;
+        }
+
+        toggleButtonLabel.text = isShopOpen ? closeShopText : openShopText;
+    }
     private void OnNextRoundButtonClicked()
     {
-        // Close shop
-        shopPanel.SetActive(false);
-        nextRoundButton.gameObject.SetActive(false);
         isShopOpen = false;
+        UpdateShopUIState();
         HideConsumableTooltip();
-        
-        // Hide toggle button when moving to next round
+
+        // Hide shop controls when moving to combat.
         if (toggleButton != null)
         {
             toggleButton.gameObject.SetActive(false);
         }
-        
-        // Keep next round button visible even when shop panel closes
+
         if (nextRoundButton != null)
         {
             nextRoundButton.gameObject.SetActive(false);
         }
-        
+
         // Notify game loop manager
         if (GameLoopManager.Instance != null)
         {
@@ -456,3 +488,5 @@ public class ShopManager : MonoBehaviour
         // Proceed with adding unit to inventory
     }
 }
+
+

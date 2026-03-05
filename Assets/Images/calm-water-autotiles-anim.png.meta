@@ -1,10 +1,10 @@
 fileFormatVersion: 2
-guid: 641cb76858e78f44b8f496d465715ba7
+guid: 532dfc81dfe1306488bc0eab6db20c8e
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: -5247588236319130771
-    second: Purple_tile_0
+      213: -866934803029043261
+    second: calm-water-autotiles-anim_0
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -37,7 +37,7 @@ TextureImporter:
   maxTextureSize: 2048
   textureSettings:
     serializedVersion: 2
-    filterMode: 0
+    filterMode: 1
     aniso: 1
     mipBias: 0
     wrapU: 1
@@ -75,7 +75,7 @@ TextureImporter:
     maxTextureSize: 2048
     resizeAlgorithm: 0
     textureFormat: -1
-    textureCompression: 0
+    textureCompression: 1
     compressionQuality: 50
     crunchedCompression: 0
     allowsAlphaSplitting: 0
@@ -100,13 +100,13 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: Purple_tile_0
+      name: calm-water-autotiles-anim_0
       rect:
         serializedVersion: 2
         x: 0
         y: 0
-        width: 32
-        height: 32
+        width: 1536
+        height: 128
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -115,8 +115,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: d6bfdae4d42dc27b0800000000000000
-      internalID: -5247588236319130771
+      spriteID: 3c7d70ec36708f3f0800000000000000
+      internalID: -866934803029043261
       vertices: []
       indices: 
       edges: []
@@ -135,7 +135,7 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      Purple_tile_0: -5247588236319130771
+      calm-water-autotiles-anim_0: -866934803029043261
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

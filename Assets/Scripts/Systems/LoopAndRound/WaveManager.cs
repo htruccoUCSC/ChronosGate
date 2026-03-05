@@ -13,6 +13,10 @@ public class WaveManager : MonoBehaviour
     public GameObject baseEnemyPrefab; //explicit base enemy prefab 
     public GameObject shadowEnemyPrefab; //explicit shadow enemy prefab
     public Tilemap tilemap;        // tilemap used to figure out spawn + map edges
+    public TileMapManager tileMapManager;
+    public int roundsOfGrowth =4;
+    public int roundsOfGrowthTracker=0;
+
 
     [Header("Spawn")]
     public int spawnOffsetCells = 0;   // how far past the right edge enemies spawn
@@ -340,5 +344,14 @@ public class WaveManager : MonoBehaviour
             gameOver = true;
             Debug.Log("GAME OVER (0 lives).");
         }
+    }
+    public void expandBoard()
+    {
+         if (roundsOfGrowthTracker < roundsOfGrowth)
+            {
+                roundsOfGrowthTracker++;
+                tileMapManager.expansion();
+            }
+        
     }
 }

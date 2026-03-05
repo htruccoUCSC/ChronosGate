@@ -168,6 +168,7 @@ public class Projectile : MonoBehaviour
 
         // row check using the enemy root transform (not the collider child)
         Transform enemyRoot = (enemy != null) ? enemy.transform : testEnemy.transform;
+        if (!IsDesignatedTarget(enemyRoot)) return;
         if (!IsSameRow(enemyRoot)) return;
 
         if (_boomerangBehavior != null && _boomerangBehavior.HandleEnemyTrigger(other))
@@ -175,7 +176,7 @@ public class Projectile : MonoBehaviour
             return;
         }
 
-        if (_isAoe)
+        if (_isAoe && _designatedTarget == null)
         {
             // If it's an AOE projectile, we want to hit all enemies in a radius
             Collider2D[] hits = Physics2D.OverlapCircleAll(transform.position, 1f, enemyMask); // uses enemy layer mask
@@ -255,7 +256,7 @@ public class Projectile : MonoBehaviour
         }
 
         // Destroy behavior: if projectile is configured to pass through enemies, don't auto-destroy
-        if (_isAoe)
+        if (_isAoe && _designatedTarget == null)
         {
             Destroy(gameObject);
             return;
@@ -285,6 +286,29 @@ public class Projectile : MonoBehaviour
         Destroy(gameObject);
     }
 
+    private bool IsDesignatedTarget(Transform enemyRoot)
+    {
+        if (_designatedTarget == null || enemyRoot == null)
+        {
+            return true;
+        }
+
+        BaseEnemy designatedEnemy = _designatedTarget.GetComponentInParent<BaseEnemy>();
+        BaseEnemy hitEnemy = enemyRoot.GetComponentInParent<BaseEnemy>();
+        if (designatedEnemy != null && hitEnemy != null)
+        {
+            return designatedEnemy == hitEnemy;
+        }
+
+        TargetDummyTest designatedDummy = _designatedTarget.GetComponentInParent<TargetDummyTest>();
+        TargetDummyTest hitDummy = enemyRoot.GetComponentInParent<TargetDummyTest>();
+        if (designatedDummy != null && hitDummy != null)
+        {
+            return designatedDummy == hitDummy;
+        }
+
+        return enemyRoot == _designatedTarget;
+    }
     private bool IsSameRow(Transform target)
     {
         if (_ignoreRowCheck) return true;
@@ -398,3 +422,4 @@ public class Projectile : MonoBehaviour
         enemy.ApplySlow(_slowPercent, _slowDuration);
     }
 }
+

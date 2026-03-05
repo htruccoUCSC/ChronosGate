@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.Tilemaps;
 using System.Collections.Generic;
 public abstract class BaseUnit : MonoBehaviour
 {
@@ -21,6 +22,166 @@ public abstract class BaseUnit : MonoBehaviour
 
     // how much of the tile we want the unit to fill
     private const float TILE_FILL_RATIO = 1.0f;
+
+    [Header("Range Preview")]
+    [SerializeField] private RangePreviewMode m_RangePreviewMode = RangePreviewMode.SameLaneForward;
+
+    public enum RangePreviewMode
+    {
+        SameLaneForward,
+        AllLanesForward,
+        AdjacentCardinal,
+        AdjacentRight,
+        AdjacentUpDown,
+        AdjacentLeftRight
+    }
+
+    protected virtual RangePreviewMode GetRangePreviewMode()
+    {
+        return m_RangePreviewMode;
+    }
+
+    public void CollectRangePreviewCells(BoardManager board, Vector3Int originCell, UnitDefinition defOverride, List<Vector3Int> results)
+    {
+        if (results == null) return;
+        results.Clear();
+
+        if (board == null || board.GameTilemap == null)
+        {
+            return;
+        }
+
+        RangePreviewMode previewMode = GetRangePreviewMode();
+        if (previewMode == RangePreviewMode.AdjacentCardinal
+            || previewMode == RangePreviewMode.AdjacentRight
+            || previewMode == RangePreviewMode.AdjacentUpDown
+            || previewMode == RangePreviewMode.AdjacentLeftRight)
+        {
+            AddAdjacentPreviewCells(board, originCell, previewMode, results);
+            return;
+        }
+
+        UnitDefinition def = defOverride;
+        if (def == null && myData != null)
+        {
+            def = myData.BaseDef;
+        }
+
+        if (def == null)
+        {
+            return;
+        }
+
+        int forwardCells = GetRangePreviewForwardCells(board.GameTilemap, def.Range);
+        if (forwardCells <= 0)
+        {
+            return;
+        }
+
+        int minRow = 1;
+        int maxRow = board.Height - 2;
+
+        if (previewMode == RangePreviewMode.AllLanesForward)
+        {
+            for (int y = minRow; y <= maxRow; y++)
+            {
+                AddForwardCells(board.GameTilemap, originCell.x, y, forwardCells, results);
+            }
+
+            return;
+        }
+
+        int originRow = originCell.y;
+        if (originRow < minRow || originRow > maxRow)
+        {
+            return;
+        }
+
+        AddForwardCells(board.GameTilemap, originCell.x, originRow, forwardCells, results);
+    }
+
+    private void AddAdjacentPreviewCells(BoardManager board, Vector3Int originCell, RangePreviewMode mode, List<Vector3Int> results)
+    {
+        if (board == null || board.GameTilemap == null) return;
+
+        int minRow = 1;
+        int maxRow = board.Height - 2;
+
+        if (originCell.y < minRow || originCell.y > maxRow)
+        {
+            return;
+        }
+
+        if (mode == RangePreviewMode.AdjacentCardinal)
+        {
+            AddAdjacentCell(board, originCell.x + 1, originCell.y, results);
+            AddAdjacentCell(board, originCell.x - 1, originCell.y, results);
+            AddAdjacentCell(board, originCell.x, originCell.y + 1, results);
+            AddAdjacentCell(board, originCell.x, originCell.y - 1, results);
+            return;
+        }
+
+        if (mode == RangePreviewMode.AdjacentRight)
+        {
+            AddAdjacentCell(board, originCell.x + 1, originCell.y, results);
+            return;
+        }
+
+        if (mode == RangePreviewMode.AdjacentUpDown)
+        {
+            AddAdjacentCell(board, originCell.x, originCell.y + 1, results);
+            AddAdjacentCell(board, originCell.x, originCell.y - 1, results);
+            return;
+        }
+
+        if (mode == RangePreviewMode.AdjacentLeftRight)
+        {
+            AddAdjacentCell(board, originCell.x + 1, originCell.y, results);
+            AddAdjacentCell(board, originCell.x - 1, originCell.y, results);
+        }
+    }
+
+    private void AddAdjacentCell(BoardManager board, int x, int y, List<Vector3Int> results)
+    {
+        int minRow = 1;
+        int maxRow = board.Height - 2;
+        if (y < minRow || y > maxRow)
+        {
+            return;
+        }
+
+        Vector3Int cell = new Vector3Int(x, y, 0);
+        if (board.GameTilemap != null && board.GameTilemap.HasTile(cell))
+        {
+            results.Add(cell);
+        }
+    }
+
+    private void AddForwardCells(Tilemap tilemap, int originX, int row, int forwardCells, List<Vector3Int> results)
+    {
+        for (int x = 1; x <= forwardCells; x++)
+        {
+            Vector3Int cell = new Vector3Int(originX + x, row, 0);
+            if (tilemap.HasTile(cell))
+            {
+                results.Add(cell);
+            }
+        }
+    }
+
+    protected virtual int GetRangePreviewForwardCells(Tilemap tilemap, float range)
+    {
+        if (tilemap == null) return 0;
+
+        float cellSize = Mathf.Abs(tilemap.cellSize.x);
+        if (cellSize <= 0.0001f)
+        {
+            return 0;
+        }
+
+        int cells = Mathf.FloorToInt(range / cellSize + 0.0001f);
+        return Mathf.Max(0, cells);
+    }
 
     public virtual void Initialize(UnitInstance instance)
     {
@@ -110,6 +271,11 @@ public abstract class BaseUnit : MonoBehaviour
 
         ScanTargeting();
 
+        if (myData.CurrentMana >= myData.BaseDef.AbilityManaCost)
+                {
+                    CastAbility();
+                    myData.CurrentMana = 0;
+                }
         if (currentTarget != null)
         {
             attackTimer -= Time.deltaTime;
@@ -117,17 +283,12 @@ public abstract class BaseUnit : MonoBehaviour
             {
                 //RecentlyHit(null);
                 // cast ability if mana is full, otherwise do basic attack
-                if (myData.CurrentMana >= myData.BaseDef.AbilityManaCost)
-                {
-                    CastAbility();
-                    myData.CurrentMana = 0;
-                }
-                else
-                {
+                
+
                     PerformBasicAttack();
-                    //onHit();
+
                     myData.CurrentMana += manaPerShot;
-                }
+                
                 attackTimer = 1f / myData.GetModifiedAttackSpeed();
             }
         }
