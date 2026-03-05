@@ -138,12 +138,12 @@ public class InventoryUI : MonoBehaviour
 }
 
 // Drag and Drop behavior for inventory slots
-public class InventorySlotDrag : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHandler, IDropHandler, IPointerEnterHandler, IPointerExitHandler
+public class InventorySlotDrag : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHandler, IDropHandler
 {
     private InventoryUI m_InventoryUI;
     private int m_Index;
     private GameObject m_DragObject;
-    private CanvasGroup m_CanvasGroup; // Used to let raycasts pass through the icon
+    private CanvasGroup m_CanvasGroup;
     private UnitRangePreview m_RangePreview;
     private BaseUnit m_PreviewProvider;
     private UnitDefinition m_DragUnit;
@@ -154,20 +154,6 @@ public class InventorySlotDrag : MonoBehaviour, IBeginDragHandler, IDragHandler,
     {
         m_InventoryUI = inventoryUI;
         m_Index = index;
-    }
-
-    public void OnPointerEnter(PointerEventData eventData)
-    {
-        var unit = m_InventoryUI.GetUnit(m_Index);
-        if (unit != null && TowerTooltipUI.Instance != null)
-        {
-            TowerTooltipUI.Instance.ShowTooltip(unit);
-        }
-    }
-
-    public void OnPointerExit(PointerEventData eventData)
-    {
-        // Tooltip persists - do NOT hide it
     }
 
     public void OnBeginDrag(PointerEventData eventData)
