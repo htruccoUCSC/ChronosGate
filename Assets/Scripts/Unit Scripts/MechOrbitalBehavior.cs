@@ -133,6 +133,13 @@ public class TileSpawner : MonoBehaviour
         foreach (var cell in walkable)
         {
             Vector3 worldPos = tilemap.GetCellCenterWorld(cell);
+
+            // When an owner is provided, only allow spawns in front of that unit.
+            if (owner != null && worldPos.x <= owner.transform.position.x + 0.05f)
+            {
+                continue;
+            }
+
             Collider2D[] hits = Physics2D.OverlapCircleAll(worldPos, 0.35f);
             bool occupied = false;
             foreach (var hit in hits)

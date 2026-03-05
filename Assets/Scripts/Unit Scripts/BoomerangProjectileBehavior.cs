@@ -40,7 +40,13 @@ public class BoomerangProjectileBehavior : MonoBehaviour
 
         if (m_IsReturning)
         {
+            if (TryCatchAtReturnTarget())
+            {
+                return;
+            }
+
             UpdateReturnArc();
+            TryCatchAtReturnTarget();
             return;
         }
 
@@ -141,5 +147,23 @@ public class BoomerangProjectileBehavior : MonoBehaviour
         }
 
         return m_FallbackReturnPoint;
+    }
+
+    private bool TryCatchAtReturnTarget()
+    {
+        if (!m_IsReturning)
+        {
+            return false;
+        }
+
+        Vector2 returnCenter = GetReturnPoint();
+        float catchDistanceSqr = m_CatchRadius * m_CatchRadius;
+        if (((Vector2)transform.position - returnCenter).sqrMagnitude <= catchDistanceSqr)
+        {
+            Destroy(gameObject);
+            return true;
+        }
+
+        return false;
     }
 }

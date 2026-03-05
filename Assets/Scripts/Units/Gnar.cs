@@ -6,6 +6,7 @@ public class Boomerang : BaseUnit
 {
     [SerializeField] private LayerMask m_TargetMask;
     [SerializeField] private float m_SpreadAngle = 12f;
+    [SerializeField] private int m_ProjectilesPerAttack = 1;
 
     private BoardManager m_Board;
 
@@ -46,10 +47,9 @@ public class Boomerang : BaseUnit
             if (enemy == null) continue;
 
             Vector2 toEnemy = enemy.transform.position - transform.position;
-
-            // Prefer enemies in front of the unit, but still allow cross-lane targeting.
-            bool isBehind = toEnemy.x < -0.05f;
-            float score = toEnemy.sqrMagnitude + (isBehind ? 1000f : 0f);
+            // Ignore enemies behind this unit.
+            if (toEnemy.x <= 0.05f) continue;
+            float score = toEnemy.sqrMagnitude;
 
             if (score < bestScore)
             {
@@ -69,6 +69,20 @@ public class Boomerang : BaseUnit
     private void SpawnSpreadAttack(float damage)
     {
         if (currentTarget == null) return;
+
+        int projectileCount = Mathf.Clamp(m_ProjectilesPerAttack, 1, 3);
+        if (projectileCount == 1)
+        {
+            SpawnArcApexProjectile(damage, false, 0f);
+            return;
+        }
+
+        if (projectileCount == 2)
+        {
+            SpawnArcApexProjectile(damage, false, -m_SpreadAngle * 0.5f);
+            SpawnArcApexProjectile(damage, false, m_SpreadAngle * 0.5f);
+            return;
+        }
 
         SpawnArcApexProjectile(damage, false, -m_SpreadAngle);
         SpawnArcApexProjectile(damage, false, 0f);
