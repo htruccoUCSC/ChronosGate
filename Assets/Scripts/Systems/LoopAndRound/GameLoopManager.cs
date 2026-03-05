@@ -21,6 +21,8 @@ public class GameLoopManager : MonoBehaviour
 
     [Header("Settings")]
     [SerializeField] protected int wavesPerAugmentCycle = 3;
+    [SerializeField] protected int wavesPerRound = 3;
+    [SerializeField] protected float roundSpeedMultiplier = 2f;
 
     protected int currentWaveInCycle = 0;
     protected bool isGameActive = false;
@@ -164,41 +166,75 @@ public class GameLoopManager : MonoBehaviour
 
     protected virtual IEnumerator WaitForWaveCompletion()
     {
-        // Stop waiting if the wave ends normally or if the player runs out of lives.
-        yield return new WaitUntil(() => waveManager.IsWaveComplete() || waveManager.IsGameOver());
+        float originalSpawnDelay = waveManager != null ? waveManager.spawnDelay : 0f;
+        float originalTimeBetweenWaves = waveManager != null ? waveManager.timeBetweenWaves : 0f;
 
-        if (waveManager.IsGameOver() || waveManager.lives <= 0)
+        ApplyRoundSpeedBoost();
+
+        int wavesRemaining = Mathf.Max(1, wavesPerRound);
+
+        while (wavesRemaining > 0)
         {
-            GameOver();
-            yield break;
+            yield return new WaitUntil(() => waveManager.IsWaveComplete() || waveManager.IsGameOver());
+
+            if (waveManager.IsGameOver() || waveManager.lives <= 0)
+            {
+                RestoreWaveTiming(originalSpawnDelay, originalTimeBetweenWaves);
+                GameOver();
+                yield break;
+            }
+
+            Debug.Log("Wave cleared!");
+            currentWaveInCycle++;
+            wavesRemaining--;
+            Debug.Log($"Waves completed in cycle: {currentWaveInCycle}/{wavesPerAugmentCycle}");
+
+            if (wavesRemaining > 0)
+            {
+                waveManager.StartNextWave();
+            }
         }
 
-        Debug.Log("Wave cleared!");
+        RestoreWaveTiming(originalSpawnDelay, originalTimeBetweenWaves);
 
-        // Increment AFTER completing the wave
-        currentWaveInCycle++;
-        Debug.Log($"Waves completed in cycle: {currentWaveInCycle}/{wavesPerAugmentCycle}");
-
-        // Check if we've completed the cycle (3 waves)
         if (currentWaveInCycle >= wavesPerAugmentCycle)
         {
-            // Return to augment selection
             Debug.Log("Cycle complete! Returning to augment selection...");
-            yield return new WaitForSeconds(1f); // Brief pause
+            yield return new WaitForSeconds(0.35f);
             ShowAugmentSelection();
         }
         else
         {
-
-            // Continue to next shop phase. Wave done
             Debug.Log($"Moving to next shopping phase... (Next: Wave {currentWaveInCycle + 1}/{wavesPerAugmentCycle})");
-            yield return new WaitForSeconds(1f); // Brief pause
+            yield return new WaitForSeconds(0.35f);
             newRound.startNewRound();
-           waveManager.expandBoard();
+            waveManager.expandBoard();
             StartShoppingPhase();
         }
     }
 
+    private void ApplyRoundSpeedBoost()
+    {
+        if (waveManager == null)
+        {
+            return;
+        }
+
+        float speedMult = Mathf.Max(1f, roundSpeedMultiplier);
+        waveManager.spawnDelay = Mathf.Max(0.05f, waveManager.spawnDelay / speedMult);
+        waveManager.timeBetweenWaves = Mathf.Max(0f, waveManager.timeBetweenWaves / speedMult);
+    }
+
+    private void RestoreWaveTiming(float spawnDelay, float timeBetweenWaves)
+    {
+        if (waveManager == null)
+        {
+            return;
+        }
+
+        waveManager.spawnDelay = spawnDelay;
+        waveManager.timeBetweenWaves = timeBetweenWaves;
+    }
     // triggers when we run out of lives 
     protected void GameOver()
     {
@@ -228,3 +264,4 @@ public class GameLoopManager : MonoBehaviour
         }
     }
 }
+

@@ -87,51 +87,77 @@ public class ProgressionGameLoopManager : GameLoopManager
     /// </summary>
     protected override IEnumerator WaitForWaveCompletion()
     {
-        // Wait for wave to complete
-        yield return new WaitUntil(() => waveManager.IsWaveComplete() || waveManager.IsGameOver());
+        float originalSpawnDelay = waveManager != null ? waveManager.spawnDelay : 0f;
+        float originalTimeBetweenWaves = waveManager != null ? waveManager.timeBetweenWaves : 0f;
 
-        if (waveManager.IsGameOver() || waveManager.lives <= 0)
+        if (waveManager != null)
         {
-            GameOver();
-            yield break;
+            float speedMult = Mathf.Max(1f, roundSpeedMultiplier);
+            waveManager.spawnDelay = Mathf.Max(0.05f, waveManager.spawnDelay / speedMult);
+            waveManager.timeBetweenWaves = Mathf.Max(0f, waveManager.timeBetweenWaves / speedMult);
         }
 
-        Debug.Log("Wave cleared!");
-        
-        // Check for unit unlock BEFORE incrementing wave
-        int completedWaveNumber = waveManager.currentWave;
-        
-        // Check for lane unlock FIRST (affects board space)
-        bool lanesUnlocked = CheckForLaneUnlock(completedWaveNumber);
-        if (lanesUnlocked)
-        {
-            yield return new WaitForSeconds(unlockPhaseDelay * 0.5f); // Brief pause to see board resize
-        }
-        
-        // Then check for unit unlock
-        WaveUnlock pendingUnlock = CheckForUnlock(completedWaveNumber);
-        
-        // Increment wave counter
-        currentWaveInCycle++;
-        Debug.Log($"Waves completed in cycle: {currentWaveInCycle}/{wavesPerAugmentCycle}");
+        int wavesRemaining = Mathf.Max(1, wavesPerRound);
 
-        // If there's an unlock, spawn the pickup and wait
-        if (pendingUnlock != null)
+        while (wavesRemaining > 0)
         {
-            yield return StartCoroutine(HandleUnlockPhase(pendingUnlock));
+            yield return new WaitUntil(() => waveManager.IsWaveComplete() || waveManager.IsGameOver());
+
+            if (waveManager.IsGameOver() || waveManager.lives <= 0)
+            {
+                if (waveManager != null)
+                {
+                    waveManager.spawnDelay = originalSpawnDelay;
+                    waveManager.timeBetweenWaves = originalTimeBetweenWaves;
+                }
+
+                GameOver();
+                yield break;
+            }
+
+            Debug.Log("Wave cleared!");
+
+            int completedWaveNumber = waveManager.currentWave;
+
+            bool lanesUnlocked = CheckForLaneUnlock(completedWaveNumber);
+            if (lanesUnlocked)
+            {
+                yield return new WaitForSeconds(unlockPhaseDelay * 0.5f);
+            }
+
+            WaveUnlock pendingUnlock = CheckForUnlock(completedWaveNumber);
+
+            currentWaveInCycle++;
+            wavesRemaining--;
+            Debug.Log($"Waves completed in cycle: {currentWaveInCycle}/{wavesPerAugmentCycle}");
+
+            if (pendingUnlock != null)
+            {
+                yield return StartCoroutine(HandleUnlockPhase(pendingUnlock));
+            }
+
+            if (wavesRemaining > 0)
+            {
+                waveManager.StartNextWave();
+            }
         }
-        
-        // Continue with normal flow
+
+        if (waveManager != null)
+        {
+            waveManager.spawnDelay = originalSpawnDelay;
+            waveManager.timeBetweenWaves = originalTimeBetweenWaves;
+        }
+
         if (currentWaveInCycle >= wavesPerAugmentCycle)
         {
             Debug.Log("Cycle complete! Returning to augment selection...");
-            yield return new WaitForSeconds(1f);
+            yield return new WaitForSeconds(0.35f);
             ShowAugmentSelection();
         }
         else
         {
             Debug.Log($"Moving to next shopping phase... (Next: Wave {currentWaveInCycle + 1}/{wavesPerAugmentCycle})");
-            yield return new WaitForSeconds(1f);
+            yield return new WaitForSeconds(0.35f);
             newRound.startNewRound();
             StartShoppingPhase();
         }
@@ -270,3 +296,4 @@ public class ProgressionGameLoopManager : GameLoopManager
         return null;
     }
 }
+
