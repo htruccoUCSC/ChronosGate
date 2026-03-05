@@ -11,6 +11,7 @@ public class Fairy : BaseUnit
     [SerializeField] private float m_CurrencySpawnRadius = 0.4f;
 
     private BoardManager m_BoardManager;
+    private int m_BasicAttackCounter = 0;
 
     private void Awake()
     {
@@ -29,8 +30,13 @@ public class Fairy : BaseUnit
 
     protected override void PerformBasicAttack()
     {
-        // Generate currency on basic attack
-        SpawnCurrency(m_BaseCurrencyAmount);
+        // Generate currency every other basic attack (double the time required)
+        m_BasicAttackCounter++;
+        if (m_BasicAttackCounter >= 2)
+        {
+            SpawnCurrency(m_BaseCurrencyAmount);
+            m_BasicAttackCounter = 0;
+        }
     }
 
     protected override void CastAbility()

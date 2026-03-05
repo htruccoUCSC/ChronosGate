@@ -206,7 +206,7 @@ public class ShopManager : MonoBehaviour
         isShopOpen = false;
         UpdateShopUIState();
         HideConsumableTooltip();
-
+        ResetRerollCost();
         // Hide shop controls when moving to combat.
         if (toggleButton != null)
         {

@@ -7,13 +7,14 @@ public class FirePriestess : BaseUnit
     [SerializeField] private CurrencyPickup m_CurrencyPickupPrefab;
     [SerializeField] private float m_CurrencyPerActiveFireBuff = 5f;
     [SerializeField] private float m_CurrencySpawnRadius = 0.4f;
-    [SerializeField] private float m_FireBuffDuration = 999f; // Lasts for the rest of the round
 
     private BoardManager m_BoardManager;
+    private Buffs m_BuffSystem;
 
     private void Awake()
     {
         m_BoardManager = FindFirstObjectByType<BoardManager>();
+        m_BuffSystem = FindFirstObjectByType<Buffs>();
     }
 
     protected override void ScanTargeting()
@@ -47,20 +48,20 @@ public class FirePriestess : BaseUnit
 
     protected override void CastAbility()
     {
-        // Count towers with active fire buff
-        int towersWithFire = CountTowersWithFireBuff();
+        // Count total fire stacks on all enemies
+        int totalFireStacks = CountTotalEnemyFireStacks();
 
-        if (towersWithFire > 0)
+        if (totalFireStacks > 0)
         {
-            // Generate currency based on fire buffed towers
-            int currencyAmount = Mathf.Max(1, Mathf.RoundToInt(towersWithFire * m_CurrencyPerActiveFireBuff + myData.GetModifiedAbilityPower()));
+            // Generate currency based on fire stacks
+            int currencyAmount = Mathf.Max(1, Mathf.RoundToInt(totalFireStacks * m_CurrencyPerActiveFireBuff + myData.GetModifiedAbilityPower()));
             SpawnCurrency(currencyAmount);
 
-            Debug.Log($"Fire Priestess generated {currencyAmount} flux from {towersWithFire} fire-buffed towers");
+            Debug.Log($"Fire Priestess generated {currencyAmount} flux from {totalFireStacks} fire stacks on enemies");
         }
         else
         {
-            Debug.Log("Fire Priestess: No towers with active fire buff");
+            Debug.Log("Fire Priestess: No fire stacks on enemies");
         }
     }
 
@@ -71,6 +72,7 @@ public class FirePriestess : BaseUnit
     {
         List<BaseUnit> result = new List<BaseUnit>();
 
+        // Get boardmanager reference if we don't have it already
         if (m_BoardManager == null)
         {
             m_BoardManager = FindFirstObjectByType<BoardManager>();
@@ -86,6 +88,7 @@ public class FirePriestess : BaseUnit
         int gridW = m_BoardManager.unitGrid.GetLength(0);
         int gridH = m_BoardManager.unitGrid.GetLength(1);
 
+        // Get our cell position
         Vector3Int myCell = m_BoardManager.GameTilemap.WorldToCell(transform.position);
 
         // 4 adjacent tiles (up, down, left, right)
@@ -102,6 +105,7 @@ public class FirePriestess : BaseUnit
             int checkX = myCell.x + offset.x;
             int checkY = myCell.y + offset.y;
 
+            // Use the ACTUAL array size (prevents IndexOutOfRange)
             if (checkX < 0 || checkX >= gridW || checkY < 0 || checkY >= gridH)
                 continue;
 
@@ -117,7 +121,7 @@ public class FirePriestess : BaseUnit
 
     /// <summary>
     /// Applies a fire buff to a friendly tower for the rest of the round.
-    /// Uses the buff system to apply fire damage multiplier.
+    /// Uses the buff system to apply fire enhancement via ApplyFire callback.
     /// </summary>
     private void ApplyFireBuff(BaseUnit targetTower)
     {
@@ -126,70 +130,58 @@ public class FirePriestess : BaseUnit
             return;
         }
 
-        // Find the Buffs system
-        Buffs buffSystem = FindFirstObjectByType<Buffs>();
-        if (buffSystem == null)
+        // Find the Buffs system if we don't have it
+        if (m_BuffSystem == null)
         {
-            Debug.LogWarning("Fire Priestess: Buffs system not found");
-            return;
+            m_BuffSystem = FindFirstObjectByType<Buffs>();
+            if (m_BuffSystem == null)
+            {
+                Debug.LogWarning("Fire Priestess: Buffs system not found");
+                return;
+            }
         }
 
-        // Apply fire buff: increase attack damage for the rest of the round
-        // Using attack damage multiplier to represent fire enhancement
-        float fireBonus = 0.25f; // +25% attack damage while fire is active
-        int duration = Mathf.CeilToInt(m_FireBuffDuration);
-        
-        buffSystem.AddTempBuff(
-            targetTower,
-            attackSpeedMult: 0f,
-            attackSpeedFlat: 0f,
-            attackDamageFlat: 0f,
-            attackDamageMult: fireBonus,
-            abilityPowerFlat: 0f,
-            abilityPowerMult: 0f,
-            duration: duration,
-            OnHit: null,
-            onHitModifier: 0f,
-            OnKill: null,
-            onKillModifier: 0f
-        );
+        // Apply fire buff to the tower using round buff with ApplyFire callback
+        m_BuffSystem.AddRoundBuff(targetTower, 0, 0, 0, 0, 0, 0, targetTower.ApplyFire, 1f, null, 0f);
 
         Debug.Log($"Fire Priestess gave fire buff to {targetTower.name}");
     }
 
     /// <summary>
-    /// Counts how many friendly towers currently have the fire buff active.
+    /// Counts the total number of fire stacks across all enemies on the board.
     /// </summary>
-    private int CountTowersWithFireBuff()
+    private int CountTotalEnemyFireStacks()
     {
-        if (m_BoardManager == null)
+        int totalStacks = 0;
+
+        LayerMask mask = LayerMask.GetMask("Enemies");
+        Camera cam = Camera.main;
+
+        if (cam == null) return 0;
+
+        Vector2 bottomLeft = cam.ViewportToWorldPoint(new Vector2(0, 0));
+        Vector2 topRight = cam.ViewportToWorldPoint(new Vector2(1, 1));
+
+        Vector2 center = (bottomLeft + topRight) / 2f;
+        Vector2 size = topRight - bottomLeft;
+
+        Collider2D[] hits = Physics2D.OverlapBoxAll(center, size, 0f, mask);
+
+        foreach (Collider2D hit in hits)
         {
-            m_BoardManager = FindFirstObjectByType<BoardManager>();
-            if (m_BoardManager == null)
+            if (hit == null) continue;
+
+            BaseEnemy enemy = hit.GetComponentInParent<BaseEnemy>();
+            if (enemy == null) continue;
+
+            // Check if enemy has fire debuff
+            if (enemy.Debuffs.TryGetValue(BaseEnemy.DebuffType.Burn, out Debuff burnDebuff))
             {
-                return 0;
+                totalStacks += Mathf.RoundToInt(burnDebuff.amountOfStacks);
             }
         }
 
-        int count = 0;
-
-        if (m_BoardManager.unitList != null)
-        {
-            foreach (BaseUnit unit in m_BoardManager.unitList)
-            {
-                if (unit == null || unit == this)
-                    continue;
-
-                // Count towers that have active buffs (simplified: count any tower with active buffs)
-                // In a more refined version, we could tag buffs with a specific identifier
-                if (unit.activeBuffs != null && unit.activeBuffs.Count > 0)
-                {
-                    count++;
-                }
-            }
-        }
-
-        return count;
+        return totalStacks;
     }
 
     private void SpawnCurrency(int amount)
