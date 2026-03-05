@@ -9,6 +9,7 @@ public class TowerSlot : MonoBehaviour
     [SerializeField] private TextMeshProUGUI eraText;
     [SerializeField] private TextMeshProUGUI towerNameText;
     [SerializeField] private Image iconImage;
+    [SerializeField] private Image backgroundImage;
     [SerializeField] private TextMeshProUGUI costText;
     [SerializeField] private TextMeshProUGUI descriptionText;
     [SerializeField] private Button button;
@@ -16,7 +17,6 @@ public class TowerSlot : MonoBehaviour
 
     private UnitDefinition unitDefinition;
     private InventoryUI inventoryUI;
-    private TowerTooltipTrigger tooltipTrigger;
 
     private void Awake()
     {
@@ -28,14 +28,6 @@ public class TowerSlot : MonoBehaviour
         }
         
         button.onClick.AddListener(OnSlotClicked);
-        
-        // Ensure TowerTooltipTrigger exists on this slot
-        tooltipTrigger = GetComponent<TowerTooltipTrigger>();
-        if (tooltipTrigger == null)
-        {
-            tooltipTrigger = gameObject.AddComponent<TowerTooltipTrigger>();
-            Debug.Log($"Added TowerTooltipTrigger to {gameObject.name}");
-        }
     }
 
     public void Initialize(InventoryUI inventory)
@@ -58,10 +50,10 @@ public class TowerSlot : MonoBehaviour
             button.interactable = true;
             active = true;
 
-            // Set the unit definition on the tooltip trigger
-            if (tooltipTrigger != null)
+            // Set faction color on background image
+            if (backgroundImage != null)
             {
-                tooltipTrigger.SetUnitDefinition(data);
+                backgroundImage.color = GetFactionColor(data.Faction);
             }
 
             Debug.Log($"Tower slot setup complete for: {data.Name}");
@@ -84,6 +76,11 @@ public class TowerSlot : MonoBehaviour
         descriptionText.text = "";
         button.interactable = false;
         active = false;
+        
+        if (backgroundImage != null)
+        {
+            backgroundImage.color = Color.white;
+        }
     }
 
     private void OnSlotClicked()
@@ -129,6 +126,29 @@ public class TowerSlot : MonoBehaviour
             Debug.Log("Inventory is full.");
             // Refund currency if inventory is full
             currencyManager.AddCurrency(unitDefinition.Cost);
+        }
+    }
+
+    private Color GetFactionColor(string faction)
+    {
+        switch (faction)
+        {
+            case "Prehistoric":
+                return new Color(0.6f, 0.4f, 0.2f); // Brown
+            case "Fantasy":
+                return new Color(0.5f, 0.3f, 0.7f); // Purple
+            case "Medieval":
+                return new Color(0.7f, 0.7f, 0.7f); // Gray
+            case "Mystic":
+                return new Color(0.2f, 0.6f, 0.8f); // Light Blue
+            case "Modern":
+                return new Color(0.3f, 0.3f, 0.3f); // Dark Gray
+            case "Future":
+                return new Color(0.0f, 0.8f, 0.4f); // Green
+            case "Cosmic":
+                return new Color(0.5f, 0.0f, 0.8f); // Deep Purple
+            default:
+                return Color.white;
         }
     }
 }

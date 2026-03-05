@@ -186,6 +186,7 @@ public abstract class BaseUnit : MonoBehaviour
     public virtual void Initialize(UnitInstance instance)
     {
         EnsureHitTint();
+        EnsureHoverDetection();
         myData = instance;
         attackTimer = 1f / myData.GetModifiedAttackSpeed();
 
@@ -216,6 +217,12 @@ public abstract class BaseUnit : MonoBehaviour
     {
         if (GetComponent<HitTint>() != null) return;
         gameObject.AddComponent<HitTint>();
+    }
+
+    private void EnsureHoverDetection()
+    {
+        if (GetComponent<UnitHoverDetection>() != null) return;
+        gameObject.AddComponent<UnitHoverDetection>();
     }
     // scales the unit to fit nicely in a tile based on its sprite size
     private void NormalizeSpriteSize()
@@ -612,7 +619,7 @@ protected void SpawnSniperProjectile(GameObject prefab, float damage, bool isAOE
     }
 
 public void ApplySlow(float stacks)
-    {
+{
         if (enemyHit == null) return;
         float amount = Mathf.Max(0f, stacks);
         if (amount <= 0f) return;
