@@ -5,23 +5,32 @@ using System.Collections.Generic;
 
     public class LaserTrooper:BaseUnit
     {
+        private void SpawnStraightLaser(float damage, float scaleMultiplier = 1f)
+        {
+            if (currentTarget == null) return;
+
+            GameObject projectilePrefab = LoadProjectilePrefab();
+            if (projectilePrefab == null) return;
+
+            GameObject proj = InstantiateAndSetupProjectile(projectilePrefab);
+            if (proj == null) return;
+
+            Projectile p = proj.GetComponentInChildren<Projectile>();
+            if (p == null) return;
+
+            // Force straight horizontal travel so laser does not arc like a catapult shot.
+            p.Setup(damage, Vector2.right, 0f, transform.position, false, this);
+            p.passThroughEnemies = true;
+
+            if (scaleMultiplier != 1f)
+            {
+                p.transform.localScale *= scaleMultiplier;
+            }
+        }
 
         protected override void PerformBasicAttack()
             {
-                if (currentTarget == null) return;
-                    SpawnProjectile(LoadProjectilePrefab(), myData.GetModifiedDamage(), false);
-                if (spawnedProjectiles != null && spawnedProjectiles.Count > 0)
-                    {
-                        GameObject last = spawnedProjectiles[spawnedProjectiles.Count - 1];
-                        if (last != null)
-                        {
-                            Projectile p = last.GetComponentInChildren<Projectile>();
-                            if (p != null)
-                            {
-                                p.passThroughEnemies = true;
-                            }
-                        }
-                    }  
+                SpawnStraightLaser(myData.GetModifiedDamage());
 
             }
 
@@ -29,23 +38,9 @@ using System.Collections.Generic;
             {
                 Debug.Log("Laser Trooper uses ability");
 
-                if (currentTarget == null) return;
-                //Ability is a stronger projectile AD + AP
-                SpawnProjectile(LoadProjectilePrefab(), myData.GetModifiedDamage() + myData.GetModifiedAbilityPower(), false);
-                //Scale projectile size with ability power for fun!
-                if (spawnedProjectiles != null && spawnedProjectiles.Count > 0)
-                    {
-                        GameObject last = spawnedProjectiles[spawnedProjectiles.Count - 1];
-                        if (last != null)
-                        {
-                            Projectile p = last.GetComponentInChildren<Projectile>();
-                            if (p != null)
-                            {
-                                p.transform.localScale *= 1f + (myData.GetModifiedAbilityPower() / 100f); // Scale size by ability power
-                                p.passThroughEnemies = true;
-                            }
-                        }
-                    }            
+                // Ability is a stronger straight projectile, scaled by ability power.
+                float abilityScale = 1f + (myData.GetModifiedAbilityPower() / 100f);
+                SpawnStraightLaser(myData.GetModifiedDamage() + myData.GetModifiedAbilityPower(), abilityScale);
             }
    
     }
