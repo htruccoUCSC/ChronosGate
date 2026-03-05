@@ -12,15 +12,30 @@ public class Orc : BaseUnit
     [SerializeField] private float m_buffDuration = 5f;
 
     private float m_AbilityProjectileScaleMultiplier = 5f;
+    private Buffs m_BuffSystem;
+
+    private void Awake()
+    {
+        m_BuffSystem = FindFirstObjectByType<Buffs>();
+    }
 
     protected override void CastAbility()
     {
         // Add attack speed buff on ability cast
-        Buff attackSpeedBuff = new Buff {
-            AttackSpeedMult = 1.5f, // +50% attack speed
-            duration = m_buffDuration
-        };
-        AddTempBuff(attackSpeedBuff);
+        if (m_BuffSystem == null)
+        {
+            m_BuffSystem = FindFirstObjectByType<Buffs>();
+        }
+
+        if (m_BuffSystem == null)
+        {
+            Debug.LogWarning("Orc ability skipped: Buffs system not found.");
+            return;
+        }
+
+        float speedMult = 0.25f; // +25% attack speed (additive)
+        int duration = Mathf.CeilToInt(m_buffDuration);
+        m_BuffSystem.AddTempBuff(this, speedMult, 0f, 0f, 0f, 0f, 0f, duration, null, 0f, null, 0f);
         Debug.Log("Orc uses ability and gains attack speed buff");
         myData.CurrentMana = 0f;
     }
