@@ -188,6 +188,7 @@ public abstract class BaseUnit : MonoBehaviour
     {
         EnsureHitTint();
         EnsureHoverDetection();
+        EnsureTileSizedCollider();
         myData = instance;
         m_IsDefeated = false;
         SetCollidersEnabled(true);
@@ -214,6 +215,7 @@ public abstract class BaseUnit : MonoBehaviour
     }
 
         NormalizeSpriteSize();
+        ResizeRootColliderToTile();
     }
 
     private void EnsureHitTint()
@@ -226,6 +228,57 @@ public abstract class BaseUnit : MonoBehaviour
     {
         if (GetComponent<UnitHoverDetection>() != null) return;
         gameObject.AddComponent<UnitHoverDetection>();
+    }
+
+    private void EnsureTileSizedCollider()
+    {
+        if (GetComponent<Collider2D>() != null) return;
+        gameObject.AddComponent<BoxCollider2D>();
+    }
+
+    private void ResizeRootColliderToTile()
+    {
+        Collider2D rootCollider = GetComponent<Collider2D>();
+        if (rootCollider == null)
+        {
+            return;
+        }
+
+        BoardManager board = FindFirstObjectByType<BoardManager>();
+        if (board == null || board.GameTilemap == null)
+        {
+            return;
+        }
+
+        Vector3 cellSize = board.GameTilemap.cellSize;
+        float targetWidthWorld = Mathf.Abs(cellSize.x);
+        float targetHeightWorld = Mathf.Abs(cellSize.y);
+
+        Vector3 lossyScale = transform.lossyScale;
+        float safeScaleX = Mathf.Max(0.0001f, Mathf.Abs(lossyScale.x));
+        float safeScaleY = Mathf.Max(0.0001f, Mathf.Abs(lossyScale.y));
+
+        if (rootCollider is BoxCollider2D box)
+        {
+            box.size = new Vector2(targetWidthWorld / safeScaleX, targetHeightWorld / safeScaleY);
+            box.offset = Vector2.zero;
+            return;
+        }
+
+        if (rootCollider is CircleCollider2D circle)
+        {
+            float radiusWorld = Mathf.Min(targetWidthWorld, targetHeightWorld) * 0.5f;
+            float scale = Mathf.Max(safeScaleX, safeScaleY);
+            circle.radius = radiusWorld / scale;
+            circle.offset = Vector2.zero;
+            return;
+        }
+
+        if (rootCollider is CapsuleCollider2D capsule)
+        {
+            capsule.size = new Vector2(targetWidthWorld / safeScaleX, targetHeightWorld / safeScaleY);
+            capsule.offset = Vector2.zero;
+        }
     }
     // scales the unit to fit nicely in a tile based on its sprite size
     private void NormalizeSpriteSize()
@@ -630,6 +683,7 @@ protected void SpawnSniperProjectile(GameObject prefab, float damage, bool isAOE
         myData.CurrentHP = myData.MaxHP;
         m_IsDefeated = false;
         currentTarget = null;
+        ResizeRootColliderToTile();
         SetCollidersEnabled(true);
 
         HitTint hitTint = GetComponent<HitTint>();
