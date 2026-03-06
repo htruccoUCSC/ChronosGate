@@ -196,7 +196,15 @@ public class ItemInventorySlotDrag : MonoBehaviour, IBeginDragHandler, IDragHand
 
         m_InventoryUI.SetPreviewItem(null);
 
-        if (eventData.pointerCurrentRaycast.gameObject != null) return;
+        GameObject hoveredObject = eventData.pointerCurrentRaycast.gameObject;
+        if (hoveredObject != null)
+        {
+            ItemInventorySlotDrag hoveredSlot = hoveredObject.GetComponentInParent<ItemInventorySlotDrag>();
+            if (hoveredSlot != null)
+            {
+                return;
+            }
+        }
 
         m_InventoryUI.TryUseItemFromSlot(m_Index);
     }
