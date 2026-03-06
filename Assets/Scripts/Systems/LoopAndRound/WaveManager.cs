@@ -314,10 +314,25 @@ public class WaveManager : MonoBehaviour
 
     private bool IsSpawnableCell(Vector3Int cell)
     {
-        if (boardManager != null)
-            return boardManager.IsWalkable(cell);
+        if (tilemap == null || !tilemap.HasTile(cell))
+        {
+            return false;
+        }
 
-        return tilemap.HasTile(cell);
+        // Spawn/lose-line lane checks should ignore tower occupancy.
+        // If we use BoardManager.IsWalkable here, a tower in the front lane can block all enemy spawns.
+        if (boardManager != null)
+        {
+            if (cell.x < 0 || cell.x >= boardManager.Width || cell.y < 0 || cell.y >= boardManager.Height)
+            {
+                return false;
+            }
+
+            return cell.y != 0 && cell.y != boardManager.Height - 1;
+        }
+
+        BoundsInt bounds = tilemap.cellBounds;
+        return cell.y > bounds.yMin && cell.y < bounds.yMax - 1;
     }
 
     // --- registration for BaseEnemy (new) ---

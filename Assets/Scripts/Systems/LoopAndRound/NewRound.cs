@@ -6,17 +6,23 @@ public class NewRound : MonoBehaviour
    public BoardManager board;
    public CurrencyManager currency;
     public TileMapManager tileMapManager;
-
-
-
-        public void startNewRound()
+    public void startNewRound()
     {
         RemoveAllBuffs();
-        currency.newRound();
+        if (currency != null)
+        {
+            currency.newRound();
+        }
         BaseUnitNewRoundCalls();
     }
+
     public void RemoveAllBuffs()
     {
+        if (board == null || board.unitGrid == null || buffs == null)
+        {
+            return;
+        }
+
         int sizeX = board.unitGrid.GetLength(0);
         int sizeY = board.unitGrid.GetLength(1);
 

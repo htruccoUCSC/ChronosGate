@@ -30,7 +30,7 @@
       "AbilityManaCost": 30,
       "StartingMana": 0,
       "AttackType": "Projectile",
-      "LaunchAngle": 60,
+      "LaunchAngle": 0,
       "Faction": "Cosmic",
       "PrefabPath": "Prefabs/Units/martian_01"
     },

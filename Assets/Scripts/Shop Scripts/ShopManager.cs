@@ -34,11 +34,20 @@ public class ShopManager : MonoBehaviour
     
     [Header("Progression Settings")]
     [SerializeField] private bool useProgressionFiltering = true;
+
+    [Header("Next Round Confirmation")]
+    [SerializeField] private float noTowerConfirmWindowSeconds = 2f;
+    [SerializeField] private string noTowerConfirmWarning = "No towers placed. Click Next Round again to confirm.";
     
     private bool isShopOpen = false;
     private int rerollCost = 1;
     private CurrencyManager currencyManager;
     private UnitUnlockManager unlockManager;
+    private BoardManager boardManager;
+    private bool awaitingNoTowerConfirmation;
+    private float noTowerConfirmExpiresAt;
+    private TextMeshProUGUI nextRoundButtonLabel;
+    private string cachedNextRoundLabelText;
     
     private void Start()
     {
@@ -53,6 +62,7 @@ public class ShopManager : MonoBehaviour
         }
         
         unlockManager = UnitUnlockManager.Instance;
+        boardManager = FindFirstObjectByType<BoardManager>();
         if (unlockManager == null && useProgressionFiltering)
         {
             Debug.LogWarning("[ShopManager] UnitUnlockManager not found! Progression filtering will be disabled.");
@@ -62,6 +72,7 @@ public class ShopManager : MonoBehaviour
         toggleButton.onClick.AddListener(ToggleShop);
         nextRoundButton.onClick.AddListener(OnNextRoundButtonClicked);
         rerollButton.onClick.AddListener(OnRerollButtonClicked);
+        CacheNextRoundButtonLabel();
 
         CacheToggleButtonLabel();
         
@@ -115,6 +126,14 @@ public class ShopManager : MonoBehaviour
         // Wait for progression system to initialize before populating (WebGL compatibility)
         StartCoroutine(WaitAndPopulateShop());
     }
+
+    private void Update()
+    {
+        if (awaitingNoTowerConfirmation && Time.unscaledTime > noTowerConfirmExpiresAt)
+        {
+            ClearNoTowerConfirmationState();
+        }
+    }
     
     /// <summary>
     /// Waits for UnitUnlockManager to finish initializing, then populates shop.
@@ -138,6 +157,7 @@ public class ShopManager : MonoBehaviour
     
     public void ToggleShop()
     {
+        ClearNoTowerConfirmationState();
         isShopOpen = !isShopOpen;
         UpdateShopUIState();
 
@@ -150,6 +170,7 @@ public class ShopManager : MonoBehaviour
     // method for gameloopmanger to open a new shop at the start of each round - also rerolls the shop to show new options
     public void OpenShop()
     {
+        ClearNoTowerConfirmationState();
         isShopOpen = true;
         UpdateShopUIState();
 
@@ -203,6 +224,21 @@ public class ShopManager : MonoBehaviour
     }
     private void OnNextRoundButtonClicked()
     {
+        if (awaitingNoTowerConfirmation && Time.unscaledTime > noTowerConfirmExpiresAt)
+        {
+            ClearNoTowerConfirmationState();
+        }
+
+        if (!HasAnyPlacedTower())
+        {
+            if (!awaitingNoTowerConfirmation)
+            {
+                BeginNoTowerConfirmationState();
+                return;
+            }
+        }
+
+        ClearNoTowerConfirmationState();
         isShopOpen = false;
         UpdateShopUIState();
         HideConsumableTooltip();
@@ -222,6 +258,70 @@ public class ShopManager : MonoBehaviour
         if (GameLoopManager.Instance != null)
         {
             GameLoopManager.Instance.OnNextRoundPressed();
+        }
+    }
+
+    private bool HasAnyPlacedTower()
+    {
+        if (boardManager == null)
+        {
+            boardManager = FindFirstObjectByType<BoardManager>();
+            if (boardManager == null || boardManager.unitGrid == null)
+            {
+                return true;
+            }
+        }
+
+        int sizeX = boardManager.unitGrid.GetLength(0);
+        int sizeY = boardManager.unitGrid.GetLength(1);
+        for (int x = 0; x < sizeX; x++)
+        {
+            for (int y = 0; y < sizeY; y++)
+            {
+                if (boardManager.unitGrid[x, y] != null)
+                {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    private void CacheNextRoundButtonLabel()
+    {
+        if (nextRoundButton == null)
+        {
+            return;
+        }
+
+        nextRoundButtonLabel = nextRoundButton.GetComponentInChildren<TextMeshProUGUI>(true);
+        if (nextRoundButtonLabel != null)
+        {
+            cachedNextRoundLabelText = nextRoundButtonLabel.text;
+        }
+    }
+
+    private void BeginNoTowerConfirmationState()
+    {
+        awaitingNoTowerConfirmation = true;
+        noTowerConfirmExpiresAt = Time.unscaledTime + Mathf.Max(0.25f, noTowerConfirmWindowSeconds);
+        Debug.LogWarning(noTowerConfirmWarning);
+
+        if (nextRoundButtonLabel != null)
+        {
+            nextRoundButtonLabel.text = "Confirm: No Towers Placed";
+        }
+    }
+
+    private void ClearNoTowerConfirmationState()
+    {
+        awaitingNoTowerConfirmation = false;
+        noTowerConfirmExpiresAt = 0f;
+
+        if (nextRoundButtonLabel != null && !string.IsNullOrEmpty(cachedNextRoundLabelText))
+        {
+            nextRoundButtonLabel.text = cachedNextRoundLabelText;
         }
     }
     

@@ -1,5 +1,11 @@
 using UnityEngine;
 
+public enum ItemEffectType
+{
+    AreaDamage,
+    None
+}
+
 [CreateAssetMenu(fileName = "ItemDefinition", menuName = "ChronosGate/Items/Item Definition")]
 public class ItemDefinition : ScriptableObject
 {
@@ -9,6 +15,8 @@ public class ItemDefinition : ScriptableObject
     [SerializeField] private string m_PrefabPath;
 
     [Header("Item Stats")]
+    [SerializeField] private ItemEffectType m_EffectType = ItemEffectType.AreaDamage;
+    [SerializeField] private int m_AreaSizeInTiles = 3;
     [SerializeField] private int m_DamageValue;
     [SerializeField] private int m_cost;
     // using same icon caching logic as UnitDefinition 
@@ -16,6 +24,8 @@ public class ItemDefinition : ScriptableObject
 
     public string DisplayName => m_DisplayName;
     public string Description => m_Description;
+    public ItemEffectType EffectType => m_EffectType;
+    public int AreaSizeInTiles => m_AreaSizeInTiles > 0 ? m_AreaSizeInTiles : 3;
     public int DamageValue => m_DamageValue;
     public string PrefabPath => m_PrefabPath;
     public int Cost => m_cost;

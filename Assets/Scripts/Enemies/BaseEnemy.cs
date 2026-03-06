@@ -43,6 +43,7 @@ public class BaseEnemy : MonoBehaviour
 
     protected Rigidbody2D rb;
     protected Collider2D enemyCollider;
+    private BoardManager m_Board;
     public enum DebuffType
 {
     Poison,
@@ -74,6 +75,7 @@ private const float DEBUFF_TICK_RATE = 1f;
         {
             baseSprite = cachedRenderer.sprite;
         }
+        m_Board = FindFirstObjectByType<BoardManager>();
     }
 
     protected virtual void Start()
@@ -263,6 +265,7 @@ private const float DEBUFF_TICK_RATE = 1f;
         BaseUnit troop = other.GetComponentInParent<BaseUnit>();
         if (troop == null) return;
         if (troop.IsDead) return;
+        if (!IsSameLane(troop.transform.position)) return;
 
         // start attacking only if not already attacking someone
         if (!isAttackingTroop)
@@ -284,6 +287,18 @@ private const float DEBUFF_TICK_RATE = 1f;
             isAttackingTroop = false;
             damageCarry = 0f;
         }
+    }
+
+    private bool IsSameLane(Vector3 troopWorldPos)
+    {
+        if (m_Board == null || m_Board.GameTilemap == null)
+        {
+            return Mathf.Abs(transform.position.y - troopWorldPos.y) < 0.05f;
+        }
+
+        Vector3Int enemyCell = m_Board.GameTilemap.WorldToCell(transform.position);
+        Vector3Int troopCell = m_Board.GameTilemap.WorldToCell(troopWorldPos);
+        return enemyCell.y == troopCell.y;
     }
 
     protected virtual void OnDestroy()
