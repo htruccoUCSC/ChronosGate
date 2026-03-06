@@ -165,7 +165,14 @@ public class AugmentSelectionUI : MonoBehaviour
             toggleButton.interactable = true;
         }
         
-        Time.timeScale = 0f; // Pause the game
+        if (GameSpeedButton.Instance != null)
+        {
+            GameSpeedButton.Instance.SetPaused(true);
+        }
+        else
+        {
+            Time.timeScale = 0f;
+        }
         
         // Update reroll button state
         if (currencyManager != null)
@@ -303,7 +310,14 @@ public class AugmentSelectionUI : MonoBehaviour
     {
         augmentSelectionPanel.SetActive(false);
         isPanelOpen = false;
-        Time.timeScale = 1f; // Resume game
+        if (GameSpeedButton.Instance != null)
+        {
+            GameSpeedButton.Instance.SetPaused(false);
+        }
+        else
+        {
+            Time.timeScale = 1f;
+        }
         
         // Keep toggle button visible when panel is manually closed
         if (toggleButton != null)

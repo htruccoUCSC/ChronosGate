@@ -65,6 +65,11 @@ public class GameLoopManager : MonoBehaviour
         {
             newRound = FindFirstObjectByType<NewRound>();
         }
+        if (FindFirstObjectByType<GameSpeedButton>() == null)
+        {
+            GameObject speedButtonObject = new GameObject("GameSpeedButtonController");
+            speedButtonObject.AddComponent<GameSpeedButton>();
+        }
 
         // Subscribe to augment selection
         if (augmentSelectionUI != null)
@@ -156,6 +161,12 @@ public class GameLoopManager : MonoBehaviour
     {
         CurrentState = GameState.Combat;
         Debug.Log($"=== COMBAT PHASE - Wave {waveManager.currentWave} (Cycle: {currentWaveInCycle + 1}/{wavesPerAugmentCycle}) ===");
+
+        if (GameSpeedButton.Instance != null)
+        {
+            GameSpeedButton.Instance.SetPaused(false);
+            GameSpeedButton.Instance.ResetToDefaultSpeed();
+        }
         
         if (waveManager != null)
         {
