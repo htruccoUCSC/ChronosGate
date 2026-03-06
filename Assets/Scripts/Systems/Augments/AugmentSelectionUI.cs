@@ -336,6 +336,11 @@ public class AugmentSelectionUI : MonoBehaviour
         
         // Add to augment inventory so it shows in the main screen inventory
         augmentManager.AcquireAugment(selectedAugment);
+
+        if (selectedAugment.ApplyImmediatelyOnAcquire)
+        {
+            selectedAugment.Apply?.Invoke();
+        }
         
         // Hide the panel first
         HideAugmentSelection();
