@@ -17,6 +17,7 @@ public abstract class BaseUnit : MonoBehaviour
     protected Sprite _projectileSprite;
     protected Vector3 _projectileScale = Vector3.one;
     private MeleeAttackBehavior m_MeleeAttackBehavior;
+    private bool m_IsDefeated;
 
 
 
@@ -188,6 +189,8 @@ public abstract class BaseUnit : MonoBehaviour
         EnsureHitTint();
         EnsureHoverDetection();
         myData = instance;
+        m_IsDefeated = false;
+        SetCollidersEnabled(true);
         attackTimer = 1f / myData.GetModifiedAttackSpeed();
 
         // getting projectile sprite and scale from the Projectile child
@@ -274,7 +277,7 @@ public abstract class BaseUnit : MonoBehaviour
             return;
         }
 
-        if (myData == null) return;
+        if (myData == null || IsDead) return;
 
         ScanTargeting();
 
@@ -397,7 +400,7 @@ public abstract class BaseUnit : MonoBehaviour
     //TakeDamage function to be called by enemy
     protected virtual void TakeDamage(int amount, Transform attacker = null)
     {
-        if (myData == null) return;
+        if (myData == null || m_IsDefeated) return;
         if (amount <= 0) return;
 
         HitTint hitTint = GetComponent<HitTint>();
@@ -405,8 +408,25 @@ public abstract class BaseUnit : MonoBehaviour
         myData.CurrentHP -= amount;
         if (myData.CurrentHP <= 0)
         {
-            Debug.Log($"{gameObject.name} has been defeated!");
-            Destroy(gameObject);
+            HandleDefeat();
+        }
+    }
+
+    protected virtual void HandleDefeat()
+    {
+        m_IsDefeated = true;
+        myData.CurrentHP = 0f;
+        currentTarget = null;
+        SetCollidersEnabled(false);
+        Debug.Log($"{gameObject.name} has been defeated!");
+    }
+
+    private void SetCollidersEnabled(bool isEnabled)
+    {
+        Collider2D[] allColliders = GetComponentsInChildren<Collider2D>(true);
+        for (int i = 0; i < allColliders.Length; i++)
+        {
+            allColliders[i].enabled = isEnabled;
         }
     }
 
@@ -604,9 +624,19 @@ protected void SpawnSniperProjectile(GameObject prefab, float damage, bool isAOE
     {
         myData.CurrentMana=myData.StartingMana;
     }
-        public void ResetHealth()
+    public void ResetHealth()
     {
-        myData.CurrentMana=myData.StartingMana;
+        if (myData == null) return;
+        myData.CurrentHP = myData.MaxHP;
+        m_IsDefeated = false;
+        currentTarget = null;
+        SetCollidersEnabled(true);
+
+        HitTint hitTint = GetComponent<HitTint>();
+        if (hitTint != null)
+        {
+            hitTint.ResetTint();
+        }
     }
     //TODO REMOVE THIS TO NEW FILE
     public void LuckyShotPerformAutoAttack()
@@ -678,7 +708,7 @@ public void ApplyAmp()
         get
         {
             if (myData == null) return false;
-            return myData.CurrentHP <= 0;
+            return m_IsDefeated || myData.CurrentHP <= 0;
         }
     }
 

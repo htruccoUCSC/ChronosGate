@@ -61,6 +61,10 @@ public class GameLoopManager : MonoBehaviour
         {
             waveManager = FindFirstObjectByType<WaveManager>();
         }
+        if (newRound == null)
+        {
+            newRound = FindFirstObjectByType<NewRound>();
+        }
 
         // Subscribe to augment selection
         if (augmentSelectionUI != null)
@@ -175,6 +179,11 @@ public class GameLoopManager : MonoBehaviour
 
         Debug.Log("Wave cleared!");
 
+        if (newRound != null)
+        {
+            newRound.startNewRound();
+        }
+
         // Increment AFTER completing the wave
         currentWaveInCycle++;
         Debug.Log($"Waves completed in cycle: {currentWaveInCycle}/{wavesPerAugmentCycle}");
@@ -193,8 +202,7 @@ public class GameLoopManager : MonoBehaviour
             // Continue to next shop phase. Wave done
             Debug.Log($"Moving to next shopping phase... (Next: Wave {currentWaveInCycle + 1}/{wavesPerAugmentCycle})");
             yield return new WaitForSeconds(1f); // Brief pause
-            newRound.startNewRound();
-           waveManager.expandBoard();
+            waveManager.expandBoard();
             StartShoppingPhase();
         }
     }
