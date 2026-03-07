@@ -138,12 +138,17 @@ public class InventoryUI : MonoBehaviour
 }
 
 // Drag and Drop behavior for inventory slots
-public class InventorySlotDrag : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHandler, IDropHandler, IPointerEnterHandler, IPointerExitHandler
+public class InventorySlotDrag : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHandler, IDropHandler
 {
     private InventoryUI m_InventoryUI;
     private int m_Index;
     private GameObject m_DragObject;
-    private CanvasGroup m_CanvasGroup; // Used to let raycasts pass through the icon
+    private CanvasGroup m_CanvasGroup;
+    private UnitRangePreview m_RangePreview;
+    private BaseUnit m_PreviewProvider;
+    private UnitDefinition m_DragUnit;
+    private BoardManager m_Board;
+    private static readonly Dictionary<string, BaseUnit> s_PreviewProviders = new Dictionary<string, BaseUnit>();
 
     public void Initialize(InventoryUI inventoryUI, int index)
     {
@@ -151,24 +156,19 @@ public class InventorySlotDrag : MonoBehaviour, IBeginDragHandler, IDragHandler,
         m_Index = index;
     }
 
-    public void OnPointerEnter(PointerEventData eventData)
-    {
-        var unit = m_InventoryUI.GetUnit(m_Index);
-        if (unit != null && TowerTooltipUI.Instance != null)
-        {
-            TowerTooltipUI.Instance.ShowTooltip(unit);
-        }
-    }
-
-    public void OnPointerExit(PointerEventData eventData)
-    {
-        // Tooltip persists - do NOT hide it
-    }
-
     public void OnBeginDrag(PointerEventData eventData)
     {
         var unit = m_InventoryUI.GetUnit(m_Index);
         if (unit == null) return;
+
+        m_DragUnit = unit;
+        m_Board = m_InventoryUI.unitSpawner != null ? m_InventoryUI.unitSpawner.board : null;
+        if (m_Board != null)
+        {
+            m_RangePreview = UnitRangePreview.GetOrCreate(m_Board);
+            m_PreviewProvider = GetPreviewProvider(unit);
+            UpdateRangePreview(eventData);
+        }
 
         // Create Drag Visual
         var canvas = m_InventoryUI.GetComponentInParent<Canvas>();
@@ -191,13 +191,24 @@ public class InventorySlotDrag : MonoBehaviour, IBeginDragHandler, IDragHandler,
     public void OnDrag(PointerEventData eventData)
     {
         if (m_DragObject != null) UpdatePosition(eventData);
+        UpdateRangePreview(eventData);
     }
 
     public void OnEndDrag(PointerEventData eventData)
     {
         if (m_DragObject != null) Destroy(m_DragObject);
 
-        if (eventData.pointerCurrentRaycast.gameObject != null) return;
+        ClearRangePreview();
+
+        GameObject hoveredObject = eventData.pointerCurrentRaycast.gameObject;
+        if (hoveredObject != null)
+        {
+            bool isUiTarget = hoveredObject.GetComponent<RectTransform>() != null;
+            if (isUiTarget)
+            {
+                return;
+            }
+        }
 
         // Get the Definition from the slot
         UnitDefinition defToSpawn = m_InventoryUI.GetUnit(m_Index);
@@ -228,5 +239,73 @@ public class InventorySlotDrag : MonoBehaviour, IBeginDragHandler, IDragHandler,
     private void UpdatePosition(PointerEventData eventData)
     {
         m_DragObject.transform.position = eventData.position;
+    }
+
+    private void UpdateRangePreview(PointerEventData eventData)
+    {
+        if (m_RangePreview == null || m_Board == null || m_DragUnit == null)
+        {
+            return;
+        }
+
+        if (Camera.main == null || m_Board.GameTilemap == null)
+        {
+            m_RangePreview.ClearPreview();
+            return;
+        }
+
+        Vector3 worldPos = Camera.main.ScreenToWorldPoint(eventData.position);
+        worldPos.z = 0f;
+        Vector3Int cellPos = m_Board.GameTilemap.WorldToCell(worldPos);
+
+        if (!m_Board.GameTilemap.HasTile(cellPos))
+        {
+            m_RangePreview.ClearPreview();
+            return;
+        }
+
+        if (m_PreviewProvider == null)
+        {
+            m_PreviewProvider = GetPreviewProvider(m_DragUnit);
+            if (m_PreviewProvider == null)
+            {
+                m_RangePreview.ClearPreview();
+                return;
+            }
+        }
+
+        m_RangePreview.ShowPreview(m_PreviewProvider, cellPos, m_DragUnit);
+    }
+
+    private void ClearRangePreview()
+    {
+        if (m_RangePreview != null)
+        {
+            m_RangePreview.ClearPreview();
+        }
+
+        m_PreviewProvider = null;
+        m_RangePreview = null;
+        m_Board = null;
+        m_DragUnit = null;
+    }
+
+    private static BaseUnit GetPreviewProvider(UnitDefinition def)
+    {
+        if (def == null || string.IsNullOrWhiteSpace(def.PrefabPath)) return null;
+
+        if (s_PreviewProviders.TryGetValue(def.PrefabPath, out BaseUnit cached) && cached != null)
+        {
+            return cached;
+        }
+
+        GameObject prefab = Resources.Load<GameObject>(def.PrefabPath);
+        if (prefab == null) return null;
+
+        BaseUnit unit = prefab.GetComponent<BaseUnit>();
+        if (unit == null) return null;
+
+        s_PreviewProviders[def.PrefabPath] = unit;
+        return unit;
     }
 }

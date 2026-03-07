@@ -44,34 +44,30 @@ public class ItemSpawner : MonoBehaviour
         Vector3 rawWorldPos = Camera.main.ScreenToWorldPoint(Mouse.current.position.ReadValue());
         rawWorldPos.z = 0;
         Vector3Int cellPos = m_Board.GameTilemap.WorldToCell(rawWorldPos);
+        Vector3 snapPos = m_Board.GameTilemap.GetCellCenterWorld(cellPos);
 
-        if (m_Board.IsWalkable(cellPos))
+        GameObject prefab = Resources.Load<GameObject>(item.PrefabPath);
+        if (prefab == null)
         {
-            Vector3 snapPos = m_Board.GameTilemap.GetCellCenterWorld(cellPos);
-
-            GameObject prefab = Resources.Load<GameObject>(item.PrefabPath);
-            if (prefab == null)
-            {
-                Debug.LogError($"[ItemSpawner] Could not load prefab at path '{item.PrefabPath}'.");
-                return false;
-            }
-
-            GameObject placedItem = Instantiate(prefab, snapPos, Quaternion.identity);
-            placedItem.transform.SetParent(m_Board.transform);
-            placedItem.transform.localScale = Vector3.one * m_ItemScale;
-
-            StartCoroutine(DelayedItemEffect(item, snapPos, placedItem));
-
-            return true;
+            Debug.LogError($"[ItemSpawner] Could not load prefab at path '{item.PrefabPath}'.");
+            return false;
         }
 
-        return false;
+        GameObject placedItem = Instantiate(prefab, snapPos, Quaternion.identity);
+        placedItem.transform.SetParent(m_Board.transform);
+        placedItem.transform.localScale = Vector3.one * m_ItemScale;
+
+        StartCoroutine(DelayedItemEffect(item, snapPos, placedItem));
+
+        return true;
     }
 
     public void SetPreviewItem(ItemDefinition item)
     {
         m_PreviewItem = item;
-        m_IsPreviewActive = item != null && item.DamageValue > 0;
+        m_IsPreviewActive = item != null
+            && item.EffectType == ItemEffectType.AreaDamage
+            && item.DamageValue > 0;
 
         if (!m_IsPreviewActive)
         {
@@ -81,7 +77,7 @@ public class ItemSpawner : MonoBehaviour
 
     private void UpdatePreview()
     {
-        if (!m_IsPreviewActive)
+        if (!m_IsPreviewActive || m_PreviewItem == null)
         {
             ClearPreview();
             return;
@@ -114,9 +110,10 @@ public class ItemSpawner : MonoBehaviour
         ClearPreview();
         EnsurePreviewTile();
 
-        for (int y = -1; y <= 1; y++)
+        int radius = GetPreviewRadiusInTiles(m_PreviewItem);
+        for (int y = -radius; y <= radius; y++)
         {
-            for (int x = -1; x <= 1; x++)
+            for (int x = -radius; x <= radius; x++)
             {
                 Vector3Int previewCell = new Vector3Int(cellPos.x + x, cellPos.y + y, 0);
                 if (!m_Board.GameTilemap.HasTile(previewCell)) continue;
@@ -134,9 +131,10 @@ public class ItemSpawner : MonoBehaviour
     {
         if (!m_HasPreview || m_PreviewTilemap == null) return;
 
-        for (int y = -1; y <= 1; y++)
+        int radius = m_PreviewItem != null ? GetPreviewRadiusInTiles(m_PreviewItem) : 1;
+        for (int y = -radius; y <= radius; y++)
         {
-            for (int x = -1; x <= 1; x++)
+            for (int x = -radius; x <= radius; x++)
             {
                 Vector3Int previewCell = new Vector3Int(m_LastCenterCell.x + x, m_LastCenterCell.y + y, 0);
                 m_PreviewTilemap.SetTile(previewCell, null);
@@ -160,9 +158,26 @@ public class ItemSpawner : MonoBehaviour
 
     private void ApplyItemEffect(ItemDefinition item, Vector3 worldCenter)
     {
+        if (item == null) return;
+
+        switch (item.EffectType)
+        {
+            case ItemEffectType.AreaDamage:
+                ApplyAreaDamage(item, worldCenter);
+                break;
+            case ItemEffectType.None:
+            default:
+                break;
+        }
+    }
+
+    private void ApplyAreaDamage(ItemDefinition item, Vector3 worldCenter)
+    {
+        if (item.DamageValue <= 0) return;
 
         Vector3 cellSize = m_Board.GameTilemap.cellSize;
-        Vector2 boxSize = new Vector2(cellSize.x * 3f, cellSize.y * 3f);
+        int areaSize = Mathf.Max(1, item.AreaSizeInTiles);
+        Vector2 boxSize = new Vector2(cellSize.x * areaSize, cellSize.y * areaSize);
 
         int maskValue = m_TargetMask.value;
         Collider2D[] hits = maskValue != 0
@@ -188,6 +203,12 @@ public class ItemSpawner : MonoBehaviour
 
             hits[i].gameObject.SendMessage("TakeDamage", item.DamageValue, SendMessageOptions.DontRequireReceiver);
         }
+    }
+
+    private int GetPreviewRadiusInTiles(ItemDefinition item)
+    {
+        int areaSize = item != null ? Mathf.Max(1, item.AreaSizeInTiles) : 3;
+        return Mathf.FloorToInt((areaSize - 1) * 0.5f);
     }
 
     private IEnumerator DelayedItemEffect(ItemDefinition item, Vector3 worldCenter, GameObject placedItem)

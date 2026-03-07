@@ -97,6 +97,11 @@ public class ProgressionGameLoopManager : GameLoopManager
         }
 
         Debug.Log("Wave cleared!");
+
+        if (newRound != null)
+        {
+            newRound.startNewRound();
+        }
         
         // Check for unit unlock BEFORE incrementing wave
         int completedWaveNumber = waveManager.currentWave;
@@ -132,7 +137,6 @@ public class ProgressionGameLoopManager : GameLoopManager
         {
             Debug.Log($"Moving to next shopping phase... (Next: Wave {currentWaveInCycle + 1}/{wavesPerAugmentCycle})");
             yield return new WaitForSeconds(1f);
-            newRound.startNewRound();
             StartShoppingPhase();
         }
     }

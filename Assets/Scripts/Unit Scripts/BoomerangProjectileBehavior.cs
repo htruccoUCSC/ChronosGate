@@ -16,6 +16,22 @@ public class BoomerangProjectileBehavior : MonoBehaviour
     private float m_ReturnStartAngle;
     private float m_ReturnTotalAngle;
 
+    [Header("Ellipse Flight")]
+    [SerializeField] private bool m_UseEllipseFlight = true;
+    [SerializeField] private float m_EllipseMinorAxisRatio = 0.6f;
+    [SerializeField] private float m_MinEllipseMajor = 0.2f;
+    [SerializeField] private float m_MinEllipseDuration = 0.2f;
+
+    private Vector2 m_EllipseCenter;
+    private Vector2 m_EllipseAxisX;
+    private Vector2 m_EllipseAxisY;
+    private float m_EllipseMajor;
+    private float m_EllipseMinor;
+    private float m_EllipseDuration;
+    private float m_EllipseElapsed;
+    private float m_EllipseAngleStart;
+    private float m_EllipseAngleDelta;
+
     private const float RETURN_LOOP_DEGREES = 320f;
 
     private readonly HashSet<int> m_OutboundHits = new HashSet<int>();
@@ -32,15 +48,32 @@ public class BoomerangProjectileBehavior : MonoBehaviour
         m_IsReturning = false;
         m_OutboundHits.Clear();
         m_ReturnHits.Clear();
+
+        if (m_UseEllipseFlight)
+        {
+            SetupEllipseFlight();
+        }
     }
 
     void Update()
     {
         if (m_Projectile == null || m_Projectile.Body == null) return;
 
+        if (m_UseEllipseFlight)
+        {
+            UpdateEllipseFlight();
+            return;
+        }
+
         if (m_IsReturning)
         {
+            if (TryCatchAtReturnTarget())
+            {
+                return;
+            }
+
             UpdateReturnArc();
+            TryCatchAtReturnTarget();
             return;
         }
 
@@ -114,6 +147,80 @@ public class BoomerangProjectileBehavior : MonoBehaviour
         m_Projectile.Body.linearVelocity = Vector2.zero;
     }
 
+    private void SetupEllipseFlight()
+    {
+        Vector2 returnPos = GetReturnPoint();
+        Vector2 targetPos = m_IntendedTarget != null ? (Vector2)m_IntendedTarget.position : returnPos + Vector2.right;
+        Vector2 toTarget = targetPos - returnPos;
+        float distance = toTarget.magnitude;
+
+        if (distance <= 0.001f)
+        {
+            toTarget = Vector2.right;
+            distance = 1f;
+            targetPos = returnPos + toTarget;
+        }
+
+        m_EllipseAxisX = toTarget / distance;
+        m_EllipseAxisY = new Vector2(-m_EllipseAxisX.y, m_EllipseAxisX.x);
+
+        if (m_Projectile != null && m_Projectile.Body != null)
+        {
+            Vector2 velocity = m_Projectile.Body.linearVelocity;
+            if (velocity.sqrMagnitude > 0.0001f)
+            {
+                if (Vector2.Dot(-m_EllipseAxisY, velocity.normalized) < 0f)
+                {
+                    m_EllipseAxisY = -m_EllipseAxisY;
+                }
+            }
+        }
+
+        m_EllipseMajor = Mathf.Max(m_MinEllipseMajor, distance * 0.5f);
+        float ratio = Mathf.Clamp01(m_EllipseMinorAxisRatio);
+        m_EllipseMinor = Mathf.Max(0.01f, m_EllipseMajor * Mathf.Max(0.05f, ratio));
+        m_EllipseCenter = returnPos + m_EllipseAxisX * (distance * 0.5f);
+
+        float speed = m_Projectile != null ? Mathf.Max(0.1f, m_Projectile.speed) : 1f;
+        float circumference = Mathf.PI * (3f * (m_EllipseMajor + m_EllipseMinor) - Mathf.Sqrt((3f * m_EllipseMajor + m_EllipseMinor) * (m_EllipseMajor + 3f * m_EllipseMinor)));
+        m_EllipseDuration = Mathf.Max(m_MinEllipseDuration, circumference / speed);
+        m_EllipseElapsed = 0f;
+        m_EllipseAngleStart = Mathf.PI;
+        m_EllipseAngleDelta = Mathf.PI * 2f;
+
+        if (m_Projectile != null && m_Projectile.Body != null)
+        {
+            m_Projectile.DisableApexRetarget();
+            m_Projectile.Body.bodyType = RigidbodyType2D.Kinematic;
+            m_Projectile.Body.gravityScale = 0f;
+            m_Projectile.Body.linearVelocity = Vector2.zero;
+        }
+
+        transform.position = EvaluateEllipse(m_EllipseAngleStart);
+    }
+
+    private void UpdateEllipseFlight()
+    {
+        m_EllipseElapsed += Time.deltaTime;
+        float t = m_EllipseDuration <= 0f ? 1f : Mathf.Clamp01(m_EllipseElapsed / m_EllipseDuration);
+        float angle = m_EllipseAngleStart + (m_EllipseAngleDelta * t);
+
+        transform.position = EvaluateEllipse(angle);
+        m_IsReturning = t >= 0.5f;
+
+        if (t >= 1f)
+        {
+            Destroy(gameObject);
+        }
+    }
+
+    private Vector2 EvaluateEllipse(float angle)
+    {
+        float cos = Mathf.Cos(angle);
+        float sin = Mathf.Sin(angle);
+        return m_EllipseCenter + (m_EllipseAxisX * (m_EllipseMajor * cos)) + (m_EllipseAxisY * (m_EllipseMinor * sin));
+    }
+
     private void UpdateReturnArc()
     {
         Vector2 returnCenter = GetReturnPoint();
@@ -141,5 +248,23 @@ public class BoomerangProjectileBehavior : MonoBehaviour
         }
 
         return m_FallbackReturnPoint;
+    }
+
+    private bool TryCatchAtReturnTarget()
+    {
+        if (!m_IsReturning)
+        {
+            return false;
+        }
+
+        Vector2 returnCenter = GetReturnPoint();
+        float catchDistanceSqr = m_CatchRadius * m_CatchRadius;
+        if (((Vector2)transform.position - returnCenter).sqrMagnitude <= catchDistanceSqr)
+        {
+            Destroy(gameObject);
+            return true;
+        }
+
+        return false;
     }
 }

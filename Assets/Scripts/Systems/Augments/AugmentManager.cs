@@ -14,7 +14,6 @@ public class AugmentManager : MonoBehaviour
     public void AcquireAugment(Augment newAugment)
     {
         augmentInventory.Add(newAugment);
-        FindFirstObjectByType<AugmentInventoryUI>()?.RefreshAugmentDisplay();
     }
 
     // NEW: Get inventory for UI display
@@ -27,7 +26,13 @@ public class AugmentManager : MonoBehaviour
     {
         for (int i = 0; i < augmentList.activeAugments.Count; i++)
         {
-            augmentList.activeAugments[i].Apply();
+            Augment augment = augmentList.activeAugments[i];
+            if (augment == null || !augment.ApplyOnRoundStart)
+            {
+                continue;
+            }
+
+            augment.Apply?.Invoke();
         }
     }
     public void AddActiveAugment(Augment newAugment)

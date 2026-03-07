@@ -1,27 +1,34 @@
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
+using UnityEngine.InputSystem;
 
 public class TowerTooltipUI : MonoBehaviour
 {
     [Header("UI References")]
-    [SerializeField] private GameObject tooltipPanel;
+    [SerializeField] private RectTransform tooltipPanel;
     [SerializeField] private Image towerIconImage;
     [SerializeField] private TextMeshProUGUI healthText;
     [SerializeField] private TextMeshProUGUI damageText;
     [SerializeField] private TextMeshProUGUI attackSpeedText;
     [SerializeField] private TextMeshProUGUI abilityPowerText;
-    [SerializeField] private TextMeshProUGUI manaPerShotText;
+    [SerializeField] private TextMeshProUGUI currentManaText;
     [SerializeField] private TextMeshProUGUI manaCostText;
     [SerializeField] private TextMeshProUGUI towerNameText;
     [SerializeField] private TextMeshProUGUI factionText;
+    [SerializeField] private TextMeshProUGUI levelText;
 
-    private UnitDefinition currentDisplayedUnit;
+    [Header("Tooltip Settings")]
+    [SerializeField] private float offsetFromCursor = 20f;
+    [SerializeField] private float screenEdgeBuffer = 10f;
+
+    private UnitInstance currentDisplayedUnit;
+    private Canvas canvas;
     
     // Static instance for easy access from other scripts
     public static TowerTooltipUI Instance { get; private set; }
 
-    private void Start()
+    private void Awake()
     {
         // Register as singleton
         if (Instance == null)
@@ -34,11 +41,20 @@ public class TowerTooltipUI : MonoBehaviour
             Destroy(gameObject);
             return;
         }
-        
+
+        canvas = GetComponentInParent<Canvas>();
+        if (canvas == null)
+        {
+            Debug.LogError("[TowerTooltipUI] No Canvas found in parent hierarchy!");
+        }
+    }
+
+    private void Start()
+    {
         // Ensure the tooltip starts hidden
         if (tooltipPanel != null)
         {
-            tooltipPanel.SetActive(false);
+            tooltipPanel.gameObject.SetActive(false);
         }
         else
         {
@@ -47,6 +63,19 @@ public class TowerTooltipUI : MonoBehaviour
 
         // Verify all required UI elements are assigned
         ValidateUIReferences();
+        DisableTooltipRaycasts();
+    }
+
+    private void Update()
+    {
+        if (tooltipPanel != null && tooltipPanel.gameObject.activeSelf)
+        {
+            UpdateTooltipPosition();
+            if (currentDisplayedUnit != null)
+            {
+                UpdateTooltipDisplay();
+            }
+        }
     }
 
     private void ValidateUIReferences()
@@ -61,39 +90,56 @@ public class TowerTooltipUI : MonoBehaviour
             Debug.LogError("[TowerTooltipUI] attackSpeedText NOT assigned!");
         if (abilityPowerText == null)
             Debug.LogError("[TowerTooltipUI] abilityPowerText NOT assigned!");
-        if (manaPerShotText == null)
-            Debug.LogError("[TowerTooltipUI] manaPerShotText NOT assigned!");
+        if (currentManaText == null)
+            Debug.LogError("[TowerTooltipUI] currentManaText NOT assigned!");
         if (manaCostText == null)
             Debug.LogError("[TowerTooltipUI] manaCostText NOT assigned!");
         if (towerNameText == null)
             Debug.LogError("[TowerTooltipUI] towerNameText NOT assigned!");
         if (factionText == null)
             Debug.LogError("[TowerTooltipUI] factionText NOT assigned!");
+        if (levelText == null)
+            Debug.LogWarning("[TowerTooltipUI] levelText NOT assigned! Level will append to faction text.");
+    }
+
+    private void DisableTooltipRaycasts()
+    {
+        if (tooltipPanel == null)
+        {
+            return;
+        }
+
+        CanvasGroup group = tooltipPanel.GetComponent<CanvasGroup>();
+        if (group == null)
+        {
+            group = tooltipPanel.gameObject.AddComponent<CanvasGroup>();
+        }
+
+        group.interactable = false;
+        group.blocksRaycasts = false;
     }
 
     /// <summary>
     /// Displays the tooltip with the given tower's information
     /// </summary>
-    public void ShowTooltip(UnitDefinition unitDef)
+    public void ShowTooltip(UnitInstance unitInstance)
     {
-        if (unitDef == null)
+        if (unitInstance == null)
         {
-            Debug.LogWarning("[TowerTooltipUI] Attempted to show tooltip with null UnitDefinition!");
+            Debug.LogWarning("[TowerTooltipUI] Attempted to show tooltip with null UnitInstance!");
             return;
         }
 
-        // Only update if it's a different tower or first time
-        if (currentDisplayedUnit != unitDef)
-        {
-            currentDisplayedUnit = unitDef;
-            UpdateTooltipDisplay();
-        }
+        currentDisplayedUnit = unitInstance;
+        UpdateTooltipDisplay();
 
         // Ensure panel is visible
-        if (tooltipPanel != null && !tooltipPanel.activeSelf)
+        if (tooltipPanel != null && !tooltipPanel.gameObject.activeSelf)
         {
-            tooltipPanel.SetActive(true);
+            tooltipPanel.gameObject.SetActive(true);
         }
+
+        UpdateTooltipPosition();
     }
 
     /// <summary>
@@ -103,7 +149,7 @@ public class TowerTooltipUI : MonoBehaviour
     {
         if (tooltipPanel != null)
         {
-            tooltipPanel.SetActive(false);
+            tooltipPanel.gameObject.SetActive(false);
         }
         currentDisplayedUnit = null;
     }
@@ -121,16 +167,27 @@ public class TowerTooltipUI : MonoBehaviour
             towerNameText.text = currentDisplayedUnit.Name;
         }
 
-        // Update faction
+        int level = Mathf.Max(1, currentDisplayedUnit.Level);
+
+        // Update faction and level
         if (factionText != null)
         {
             factionText.text = currentDisplayedUnit.Faction;
         }
 
-        // Update tower icon
-        if (towerIconImage != null)
+        if (levelText != null)
         {
-            towerIconImage.sprite = currentDisplayedUnit.Icon;
+            levelText.text = $"LVL: {level}";
+        }
+        else if (factionText != null)
+        {
+            factionText.text = $"{currentDisplayedUnit.Faction}  LVL: {level}";
+        }
+
+        // Update tower icon
+        if (towerIconImage != null && currentDisplayedUnit.BaseDef != null)
+        {
+            towerIconImage.sprite = currentDisplayedUnit.BaseDef.Icon;
             if (towerIconImage.sprite == null)
             {
                 Debug.LogWarning($"[TowerTooltipUI] No icon found for tower: {currentDisplayedUnit.Name}");
@@ -142,42 +199,91 @@ public class TowerTooltipUI : MonoBehaviour
             }
         }
 
-        // Update stats with abbreviated labels
+        // Update stats
         if (healthText != null)
         {
-            healthText.text = $"HP: {currentDisplayedUnit.Health}";
+            healthText.text = $"{currentDisplayedUnit.CurrentHP:F0}";
         }
 
         if (damageText != null)
         {
-            damageText.text = $"DMG: {currentDisplayedUnit.AttackDamage:F1}";
+            damageText.text = $"{currentDisplayedUnit.GetModifiedDamage():F1}";
         }
 
         if (attackSpeedText != null)
         {
-            attackSpeedText.text = $"AS: {currentDisplayedUnit.AttackSpeed:F2}";
+            attackSpeedText.text = $"{currentDisplayedUnit.GetModifiedAttackSpeed():F2}";
         }
 
         if (abilityPowerText != null)
         {
-            abilityPowerText.text = $"AP: {currentDisplayedUnit.AbilityPower:F1}";
+            abilityPowerText.text = $"{currentDisplayedUnit.GetModifiedAbilityPower():F1}";
         }
 
-        if (manaPerShotText != null)
+        if (currentManaText != null)
         {
-            manaPerShotText.text = $"Mana/Shot: {currentDisplayedUnit.ManaPerShot:F1}";
+            currentManaText.text = $"{currentDisplayedUnit.CurrentMana:F0}";
         }
 
-        if (manaCostText != null)
+        if (manaCostText != null && currentDisplayedUnit.BaseDef != null)
         {
-            manaCostText.text = $"Ability Cost: {currentDisplayedUnit.AbilityManaCost:F1}";
+            manaCostText.text = $"{currentDisplayedUnit.BaseDef.AbilityManaCost:F0}";
         }
+    }
+
+    /// <summary>
+    /// Updates the tooltip's position to follow the cursor, adjusting for screen edges
+    /// </summary>
+    private void UpdateTooltipPosition()
+    {
+        if (tooltipPanel == null || canvas == null) return;
+
+        // Use new Input System to get mouse position
+        if (Mouse.current == null) return;
+
+        Vector2 mousePosition = Mouse.current.position.ReadValue();
+
+        Vector2 localPoint;
+        RectTransformUtility.ScreenPointToLocalPointInRectangle(
+            canvas.transform as RectTransform,
+            mousePosition,
+            canvas.renderMode == RenderMode.ScreenSpaceOverlay ? null : canvas.worldCamera,
+            out localPoint
+        );
+
+        Vector2 tooltipSize = tooltipPanel.sizeDelta;
+        Vector2 canvasSize = (canvas.transform as RectTransform).sizeDelta;
+
+        float halfScreenWidth = canvasSize.x / 2f;
+        bool showOnRight = localPoint.x < 0;
+
+        Vector2 tooltipPosition = localPoint;
+
+        if (showOnRight)
+        {
+            tooltipPosition.x += offsetFromCursor;
+            tooltipPosition.x = Mathf.Min(tooltipPosition.x, halfScreenWidth - tooltipSize.x / 2f - screenEdgeBuffer);
+        }
+        else
+        {
+            tooltipPosition.x -= offsetFromCursor;
+            tooltipPosition.x = Mathf.Max(tooltipPosition.x, -halfScreenWidth + tooltipSize.x / 2f + screenEdgeBuffer);
+        }
+
+        float halfScreenHeight = canvasSize.y / 2f;
+        tooltipPosition.y = Mathf.Clamp(
+            tooltipPosition.y,
+            -halfScreenHeight + tooltipSize.y / 2f + screenEdgeBuffer,
+            halfScreenHeight - tooltipSize.y / 2f - screenEdgeBuffer
+        );
+
+        tooltipPanel.localPosition = tooltipPosition;
     }
 
     /// <summary>
     /// Gets the currently displayed unit (useful for checking if a new tooltip should be shown)
     /// </summary>
-    public UnitDefinition GetCurrentDisplayedUnit()
+    public UnitInstance GetCurrentDisplayedUnit()
     {
         return currentDisplayedUnit;
     }
@@ -187,6 +293,6 @@ public class TowerTooltipUI : MonoBehaviour
     /// </summary>
     public bool IsTooltipVisible()
     {
-        return tooltipPanel != null && tooltipPanel.activeSelf;
+        return tooltipPanel != null && tooltipPanel.gameObject.activeSelf;
     }
 }

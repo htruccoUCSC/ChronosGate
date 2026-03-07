@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.Tilemaps;
 using System.Collections.Generic;
 public abstract class BaseUnit : MonoBehaviour
 {
@@ -16,16 +17,185 @@ public abstract class BaseUnit : MonoBehaviour
     protected Sprite _projectileSprite;
     protected Vector3 _projectileScale = Vector3.one;
     private MeleeAttackBehavior m_MeleeAttackBehavior;
+    private bool m_IsDefeated;
 
 
 
     // how much of the tile we want the unit to fill
     private const float TILE_FILL_RATIO = 1.0f;
 
+    [Header("Range Preview")]
+    [SerializeField] private RangePreviewMode m_RangePreviewMode = RangePreviewMode.SameLaneForward;
+
+    public enum RangePreviewMode
+    {
+        SameLaneForward,
+        AllLanesForward,
+        AdjacentCardinal,
+        AdjacentRight,
+        AdjacentUpDown,
+        AdjacentLeftRight
+    }
+
+    protected virtual RangePreviewMode GetRangePreviewMode()
+    {
+        return m_RangePreviewMode;
+    }
+
+    public void CollectRangePreviewCells(BoardManager board, Vector3Int originCell, UnitDefinition defOverride, List<Vector3Int> results)
+    {
+        if (results == null) return;
+        results.Clear();
+
+        if (board == null || board.GameTilemap == null)
+        {
+            return;
+        }
+
+        RangePreviewMode previewMode = GetRangePreviewMode();
+        if (previewMode == RangePreviewMode.AdjacentCardinal
+            || previewMode == RangePreviewMode.AdjacentRight
+            || previewMode == RangePreviewMode.AdjacentUpDown
+            || previewMode == RangePreviewMode.AdjacentLeftRight)
+        {
+            AddAdjacentPreviewCells(board, originCell, previewMode, results);
+            return;
+        }
+
+        UnitDefinition def = defOverride;
+        if (def == null && myData != null)
+        {
+            def = myData.BaseDef;
+        }
+
+        if (def == null)
+        {
+            return;
+        }
+
+        int forwardCells = GetRangePreviewForwardCells(board.GameTilemap, def.Range);
+        if (forwardCells <= 0)
+        {
+            return;
+        }
+
+        int minRow = 1;
+        int maxRow = board.Height - 2;
+
+        if (previewMode == RangePreviewMode.AllLanesForward)
+        {
+            for (int y = minRow; y <= maxRow; y++)
+            {
+                AddForwardCells(board.GameTilemap, originCell.x, y, forwardCells, results);
+            }
+
+            return;
+        }
+
+        int originRow = originCell.y;
+        if (originRow < minRow || originRow > maxRow)
+        {
+            return;
+        }
+
+        AddForwardCells(board.GameTilemap, originCell.x, originRow, forwardCells, results);
+    }
+
+    private void AddAdjacentPreviewCells(BoardManager board, Vector3Int originCell, RangePreviewMode mode, List<Vector3Int> results)
+    {
+        if (board == null || board.GameTilemap == null) return;
+
+        int minRow = 1;
+        int maxRow = board.Height - 2;
+
+        if (originCell.y < minRow || originCell.y > maxRow)
+        {
+            return;
+        }
+
+        if (mode == RangePreviewMode.AdjacentCardinal)
+        {
+            AddAdjacentCell(board, originCell.x + 1, originCell.y, results);
+            AddAdjacentCell(board, originCell.x - 1, originCell.y, results);
+            AddAdjacentCell(board, originCell.x, originCell.y + 1, results);
+            AddAdjacentCell(board, originCell.x, originCell.y - 1, results);
+            return;
+        }
+
+        if (mode == RangePreviewMode.AdjacentRight)
+        {
+            AddAdjacentCell(board, originCell.x + 1, originCell.y, results);
+            return;
+        }
+
+        if (mode == RangePreviewMode.AdjacentUpDown)
+        {
+            AddAdjacentCell(board, originCell.x, originCell.y + 1, results);
+            AddAdjacentCell(board, originCell.x, originCell.y - 1, results);
+            return;
+        }
+
+        if (mode == RangePreviewMode.AdjacentLeftRight)
+        {
+            AddAdjacentCell(board, originCell.x + 1, originCell.y, results);
+            AddAdjacentCell(board, originCell.x - 1, originCell.y, results);
+        }
+    }
+
+    private void AddAdjacentCell(BoardManager board, int x, int y, List<Vector3Int> results)
+    {
+        int minRow = 1;
+        int maxRow = board.Height - 2;
+        if (y < minRow || y > maxRow)
+        {
+            return;
+        }
+
+        Vector3Int cell = new Vector3Int(x, y, 0);
+        if (board.GameTilemap != null && board.GameTilemap.HasTile(cell))
+        {
+            results.Add(cell);
+        }
+    }
+
+    private void AddForwardCells(Tilemap tilemap, int originX, int row, int forwardCells, List<Vector3Int> results)
+    {
+        for (int x = 1; x <= forwardCells; x++)
+        {
+            Vector3Int cell = new Vector3Int(originX + x, row, 0);
+            if (tilemap.HasTile(cell))
+            {
+                results.Add(cell);
+            }
+        }
+    }
+
+    protected virtual int GetRangePreviewForwardCells(Tilemap tilemap, float range)
+    {
+        if (tilemap == null) return 0;
+
+        float cellSize = Mathf.Abs(tilemap.cellSize.x);
+        if (cellSize <= 0.0001f)
+        {
+            return 0;
+        }
+
+        int cells = Mathf.FloorToInt(range / cellSize + 0.0001f);
+        return Mathf.Max(0, cells);
+    }
+
     public virtual void Initialize(UnitInstance instance)
     {
         EnsureHitTint();
+        EnsureHoverDetection();
+        EnsureTileSizedCollider();
         myData = instance;
+        if (myData != null)
+        {
+            myData.Level = Mathf.Max(1, myData.Level);
+        }
+        m_IsDefeated = false;
+        SetCollidersEnabled(true);
         attackTimer = 1f / myData.GetModifiedAttackSpeed();
 
         // getting projectile sprite and scale from the Projectile child
@@ -49,12 +219,70 @@ public abstract class BaseUnit : MonoBehaviour
     }
 
         NormalizeSpriteSize();
+        ResizeRootColliderToTile();
     }
 
     private void EnsureHitTint()
     {
         if (GetComponent<HitTint>() != null) return;
         gameObject.AddComponent<HitTint>();
+    }
+
+    private void EnsureHoverDetection()
+    {
+        if (GetComponent<UnitHoverDetection>() != null) return;
+        gameObject.AddComponent<UnitHoverDetection>();
+    }
+
+    private void EnsureTileSizedCollider()
+    {
+        if (GetComponent<Collider2D>() != null) return;
+        gameObject.AddComponent<BoxCollider2D>();
+    }
+
+    private void ResizeRootColliderToTile()
+    {
+        Collider2D rootCollider = GetComponent<Collider2D>();
+        if (rootCollider == null)
+        {
+            return;
+        }
+
+        BoardManager board = FindFirstObjectByType<BoardManager>();
+        if (board == null || board.GameTilemap == null)
+        {
+            return;
+        }
+
+        Vector3 cellSize = board.GameTilemap.cellSize;
+        float targetWidthWorld = Mathf.Abs(cellSize.x);
+        float targetHeightWorld = Mathf.Abs(cellSize.y);
+
+        Vector3 lossyScale = transform.lossyScale;
+        float safeScaleX = Mathf.Max(0.0001f, Mathf.Abs(lossyScale.x));
+        float safeScaleY = Mathf.Max(0.0001f, Mathf.Abs(lossyScale.y));
+
+        if (rootCollider is BoxCollider2D box)
+        {
+            box.size = new Vector2(targetWidthWorld / safeScaleX, targetHeightWorld / safeScaleY);
+            box.offset = Vector2.zero;
+            return;
+        }
+
+        if (rootCollider is CircleCollider2D circle)
+        {
+            float radiusWorld = Mathf.Min(targetWidthWorld, targetHeightWorld) * 0.5f;
+            float scale = Mathf.Max(safeScaleX, safeScaleY);
+            circle.radius = radiusWorld / scale;
+            circle.offset = Vector2.zero;
+            return;
+        }
+
+        if (rootCollider is CapsuleCollider2D capsule)
+        {
+            capsule.size = new Vector2(targetWidthWorld / safeScaleX, targetHeightWorld / safeScaleY);
+            capsule.offset = Vector2.zero;
+        }
     }
     // scales the unit to fit nicely in a tile based on its sprite size
     private void NormalizeSpriteSize()
@@ -106,7 +334,7 @@ public abstract class BaseUnit : MonoBehaviour
             return;
         }
 
-        if (myData == null) return;
+        if (myData == null || IsDead) return;
 
         ScanTargeting();
 
@@ -229,7 +457,7 @@ public abstract class BaseUnit : MonoBehaviour
     //TakeDamage function to be called by enemy
     protected virtual void TakeDamage(int amount, Transform attacker = null)
     {
-        if (myData == null) return;
+        if (myData == null || m_IsDefeated) return;
         if (amount <= 0) return;
 
         HitTint hitTint = GetComponent<HitTint>();
@@ -237,8 +465,26 @@ public abstract class BaseUnit : MonoBehaviour
         myData.CurrentHP -= amount;
         if (myData.CurrentHP <= 0)
         {
-            Debug.Log($"{gameObject.name} has been defeated!");
-            Destroy(gameObject);
+            HandleDefeat();
+        }
+    }
+
+    protected virtual void HandleDefeat()
+    {
+        m_IsDefeated = true;
+        myData.CurrentHP = 0f;
+        currentTarget = null;
+        SetCollidersEnabled(false);
+        Debug.Log($"{gameObject.name} has been defeated!");
+    }
+
+    private void SetCollidersEnabled(bool isEnabled)
+    {
+        Collider2D[] allColliders = GetComponentsInChildren<Collider2D>(true);
+        for (int i = 0; i < allColliders.Length; i++)
+        {
+            RemoveAllBuffs();
+            allColliders[i].enabled = isEnabled;
         }
     }
 
@@ -365,6 +611,24 @@ protected void SpawnSniperProjectile(GameObject prefab, float damage, bool isAOE
     {
         roundBuffs.Remove(buff);
     }
+
+    public void RemoveAllBuffs()
+    {
+        if (activeBuffs.Count == 0 && roundBuffs.Count == 0)
+        {
+            return;
+        }
+
+        Buffs buffs = FindFirstObjectByType<Buffs>();
+        if (buffs != null && myData != null)
+        {
+            buffs.RemoveAllBuffs(this);
+            return;
+        }
+
+        activeBuffs.Clear();
+        roundBuffs.Clear();
+    }
     // solves standard projectile motion equation for Velocity
     protected float CalculateBallisticSpeed(float distance, float angleDeg, float gravity)
     {
@@ -436,9 +700,62 @@ protected void SpawnSniperProjectile(GameObject prefab, float damage, bool isAOE
     {
         myData.CurrentMana=myData.StartingMana;
     }
-        public void ResetHealth()
+    public void ResetHealth()
     {
-        myData.CurrentMana=myData.StartingMana;
+        if (myData == null) return;
+        myData.CurrentHP = myData.MaxHP;
+        m_IsDefeated = false;
+        currentTarget = null;
+        ResizeRootColliderToTile();
+        SetCollidersEnabled(true);
+
+        HitTint hitTint = GetComponent<HitTint>();
+        if (hitTint != null)
+        {
+            hitTint.ResetTint();
+        }
+    }
+    public bool TryApplyMergeUpgrade(UnitDefinition incomingDef)
+    {
+        if (incomingDef == null || myData == null || myData.BaseDef == null)
+        {
+            return false;
+        }
+
+        bool sameId = string.Equals(myData.BaseDef.UnitID, incomingDef.UnitID, System.StringComparison.Ordinal);
+        bool sameDef = myData.BaseDef == incomingDef;
+        if (!sameId && !sameDef)
+        {
+            return false;
+        }
+
+        ApplyMergeUpgrade();
+        return true;
+    }
+
+    private void ApplyMergeUpgrade()
+    {
+        myData.Level += 1;
+        myData.MaxHP += 2f;
+        myData.CurrentHP = Mathf.Min(myData.CurrentHP + 2f, myData.MaxHP);
+        myData.SpeedFlatMod += 0.1f;
+        myData.DamageFlatMod += 2f;
+        myData.AbilityPowerFlatMod += 3f;
+        attackTimer = Mathf.Min(attackTimer, 1f / myData.GetModifiedAttackSpeed());
+
+        Buffs buffs = FindFirstObjectByType<Buffs>();
+        if (buffs != null)
+        {
+            buffs.PlayBuffOverlay(this);
+        }
+    }
+    public int CurrentLevel
+    {
+        get
+        {
+            if (myData == null) return 1;
+            return Mathf.Max(1, myData.Level);
+        }
     }
     //TODO REMOVE THIS TO NEW FILE
     public void LuckyShotPerformAutoAttack()
@@ -451,7 +768,7 @@ protected void SpawnSniperProjectile(GameObject prefab, float damage, bool isAOE
     }
 
 public void ApplySlow(float stacks)
-    {
+{
         if (enemyHit == null) return;
         float amount = Mathf.Max(0f, stacks);
         if (amount <= 0f) return;
@@ -510,7 +827,7 @@ public void ApplyAmp()
         get
         {
             if (myData == null) return false;
-            return myData.CurrentHP <= 0;
+            return m_IsDefeated || myData.CurrentHP <= 0;
         }
     }
 

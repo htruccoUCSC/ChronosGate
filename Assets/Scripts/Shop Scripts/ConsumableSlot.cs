@@ -119,6 +119,8 @@ public class ConsumableSlot : MonoBehaviour, IPointerEnterHandler, IPointerExitH
         if (itemInventoryUI.AddItem(itemDefinition))
         {
             Debug.Log($"Purchased {itemDefinition.DisplayName} for {cost} gold!");
+            itemDefinition = null;
+            ClearSlot();
         }
         else
         {

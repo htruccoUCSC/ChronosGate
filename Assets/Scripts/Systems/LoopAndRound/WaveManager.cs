@@ -9,6 +9,10 @@ public class WaveManager : MonoBehaviour
 
     [Header("References")]
     public GameObject enemyPrefab; //BaseEnemy Default
+     public GameObject enemyRedPrefab; //BaseEnemy Red
+     public GameObject enemyYellowPrefab; //BaseEnemy Yellow
+     public GameObject enemyGreenPrefab; //BaseEnemy Green
+     
     public List<GameObject> enemyPrefabs = new List<GameObject>(); //OPTIONAL RANDOM SPAWN FROM LIST
     public GameObject baseEnemyPrefab; //explicit base enemy prefab 
     public GameObject shadowEnemyPrefab; //explicit shadow enemy prefab
@@ -196,7 +200,8 @@ public class WaveManager : MonoBehaviour
     private void TrySpawnEnemyOnTile()
     {
         // safety checks
-        if (enemyPrefab == null && (enemyPrefabs == null || enemyPrefabs.Count == 0)
+        if (enemyPrefab == null && enemyRedPrefab == null && enemyYellowPrefab == null && enemyGreenPrefab == null
+            && (enemyPrefabs == null || enemyPrefabs.Count == 0)
             && baseEnemyPrefab == null && shadowEnemyPrefab == null)
         {
             Debug.LogError("WaveManager: no enemy prefab assigned.");
@@ -252,14 +257,39 @@ public class WaveManager : MonoBehaviour
         Vector3Int spawnCell = new Vector3Int(spawnX, chosenY, 0);
         Vector3 spawnWorld = tilemap.GetCellCenterWorld(spawnCell);
 
-        GameObject prefabToSpawn = enemyPrefab;
-        if (baseEnemyPrefab != null && shadowEnemyPrefab != null)
+        List<GameObject> nonShadowPrefabs = new List<GameObject>();
+        if (enemyPrefabs != null && enemyPrefabs.Count > 0)
         {
-            prefabToSpawn = Random.value < shadowSpawnChance ? shadowEnemyPrefab : baseEnemyPrefab;
+            nonShadowPrefabs.AddRange(enemyPrefabs);
         }
-        else if (enemyPrefabs != null && enemyPrefabs.Count > 0)
+        else
         {
-            prefabToSpawn = enemyPrefabs[Random.Range(0, enemyPrefabs.Count)];
+            if (baseEnemyPrefab != null) nonShadowPrefabs.Add(baseEnemyPrefab);
+            if (enemyPrefab != null) nonShadowPrefabs.Add(enemyPrefab);
+            if (enemyRedPrefab != null) nonShadowPrefabs.Add(enemyRedPrefab);
+            if (enemyYellowPrefab != null) nonShadowPrefabs.Add(enemyYellowPrefab);
+            if (enemyGreenPrefab != null) nonShadowPrefabs.Add(enemyGreenPrefab);
+        }
+
+        GameObject prefabToSpawn = null;
+        bool canSpawnShadow = shadowEnemyPrefab != null;
+        if (canSpawnShadow && Random.value < shadowSpawnChance)
+        {
+            prefabToSpawn = shadowEnemyPrefab;
+        }
+        else if (nonShadowPrefabs.Count > 0)
+        {
+            prefabToSpawn = nonShadowPrefabs[Random.Range(0, nonShadowPrefabs.Count)];
+        }
+        else if (canSpawnShadow)
+        {
+            prefabToSpawn = shadowEnemyPrefab;
+        }
+
+        if (prefabToSpawn == null)
+        {
+            Debug.LogError("WaveManager: failed to choose a spawn prefab.");
+            return;
         }
 
         GameObject go = Instantiate(prefabToSpawn, spawnWorld, Quaternion.identity);
@@ -284,10 +314,25 @@ public class WaveManager : MonoBehaviour
 
     private bool IsSpawnableCell(Vector3Int cell)
     {
-        if (boardManager != null)
-            return boardManager.IsWalkable(cell);
+        if (tilemap == null || !tilemap.HasTile(cell))
+        {
+            return false;
+        }
 
-        return tilemap.HasTile(cell);
+        // Spawn/lose-line lane checks should ignore tower occupancy.
+        // If we use BoardManager.IsWalkable here, a tower in the front lane can block all enemy spawns.
+        if (boardManager != null)
+        {
+            if (cell.x < 0 || cell.x >= boardManager.Width || cell.y < 0 || cell.y >= boardManager.Height)
+            {
+                return false;
+            }
+
+            return cell.y != 0 && cell.y != boardManager.Height - 1;
+        }
+
+        BoundsInt bounds = tilemap.cellBounds;
+        return cell.y > bounds.yMin && cell.y < bounds.yMax - 1;
     }
 
     // --- registration for BaseEnemy (new) ---

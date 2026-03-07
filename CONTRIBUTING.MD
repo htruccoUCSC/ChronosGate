@@ -18,6 +18,7 @@ Current flow for adding a unit:
     2. If your unit also needs a custom projectile script add that.
 5. In the unit prefab, add the unit script and set the `SpriteRenderer` sprite.
     1. If you unit uses an animator leave the sprite renderer empty
+6. Set the Range Preview to the Unit's behavior (All lanes, Same Lane, Cardinal Adjacency, etc.)
 
 Notes:
 

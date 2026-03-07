@@ -6,13 +6,24 @@ public class Boomerang : BaseUnit
 {
     [SerializeField] private LayerMask m_TargetMask;
     [SerializeField] private float m_SpreadAngle = 12f;
+    [SerializeField] private int m_ProjectilesPerAttack = 1;
+    [Header("Ability")]
+    [SerializeField] private float m_AbilityBoomerangScale;
+    [SerializeField] private float m_AbilitySlowPercent = 0.3f;
+    [SerializeField] private float m_AbilitySlowDuration = 2f;
 
     private BoardManager m_Board;
 
     protected override void CastAbility()
     {
         Debug.Log("Boomerang uses ability");
-        SpawnArcApexProjectile(myData.GetModifiedDamage() , true);
+        m_AbilityBoomerangScale = myData.GetModifiedAbilityPower()/75 * 0.5f + 1f; // scale based on ability power, minimum 1x
+        Projectile proj = SpawnArcApexProjectile(myData.GetModifiedDamage(), true, 0f, m_AbilityBoomerangScale);
+        if (proj != null)
+        {
+            Debug.Log($"Boomerang ability projectile spawned with scale {m_AbilityBoomerangScale:F2} Slow Enabled");
+            proj.EnableOnHitSlow(m_AbilitySlowPercent, m_AbilitySlowDuration);
+        }
     }
 
     protected override void PerformBasicAttack()
@@ -46,10 +57,9 @@ public class Boomerang : BaseUnit
             if (enemy == null) continue;
 
             Vector2 toEnemy = enemy.transform.position - transform.position;
-
-            // Prefer enemies in front of the unit, but still allow cross-lane targeting.
-            bool isBehind = toEnemy.x < -0.05f;
-            float score = toEnemy.sqrMagnitude + (isBehind ? 1000f : 0f);
+            // Ignore enemies behind this unit.
+            if (toEnemy.x <= 0.05f) continue;
+            float score = toEnemy.sqrMagnitude;
 
             if (score < bestScore)
             {
@@ -70,21 +80,60 @@ public class Boomerang : BaseUnit
     {
         if (currentTarget == null) return;
 
-        SpawnArcApexProjectile(damage, false, -m_SpreadAngle);
-        SpawnArcApexProjectile(damage, false, 0f);
-        SpawnArcApexProjectile(damage, false, m_SpreadAngle);
+
+        //75% chance to shoot 1 projectile, 20% chance to shoot 2 projectiles, 5% chance to shoot 3 projectiles
+        int projectileCount = 1;
+        float rand = Random.value;
+        if (rand < 0.75f)
+        {
+            projectileCount = 1;
+        }
+        else if (rand < 0.95f)
+        {
+            projectileCount = 2;
+        }
+        else
+        {
+            projectileCount = 3;
+        }
+        if (projectileCount == 1)
+        {
+            SpawnArcApexProjectile(damage, false, 0f);
+            return;
+        }
+
+        if (projectileCount == 2)
+        {
+            SpawnArcApexProjectile(damage, false, -m_SpreadAngle * 0.5f);
+            SpawnArcApexProjectile(damage, false, m_SpreadAngle * 0.5f);
+            return;
+        }
+
+        if (projectileCount >= 3)
+        {
+            SpawnArcApexProjectile(damage, false, -m_SpreadAngle);
+            SpawnArcApexProjectile(damage, false, 0f);
+            SpawnArcApexProjectile(damage, false, m_SpreadAngle);
+            return;
+        }
     }
 
-    private void SpawnArcApexProjectile(float damage, bool isAoe, float angleOffset = 0f)
+
+    private Projectile SpawnArcApexProjectile(float damage, bool isAoe, float angleOffset = 0f, float scaleMultiplier = 1f)
     {
         GameObject projectilePrefab = LoadProjectilePrefab();
-        if (currentTarget == null || projectilePrefab == null) return;
+        if (currentTarget == null || projectilePrefab == null) return null;
 
         GameObject proj = InstantiateAndSetupProjectile(projectilePrefab);
-        if (proj == null) return;
+        if (proj == null) return null;
+
+        if (Mathf.Abs(scaleMultiplier - 1f) > 0.001f)
+        {
+            proj.transform.localScale = proj.transform.localScale * Mathf.Max(0.01f, scaleMultiplier);
+        }
 
         Projectile projScript = proj.GetComponentInChildren<Projectile>();
-        if (projScript == null) return;
+        if (projScript == null) return null;
 
         Vector2 diff = currentTarget.position - transform.position;
         float distance = diff.magnitude;
@@ -109,5 +158,6 @@ public class Boomerang : BaseUnit
         }
 
         boomerBehavior.Initialize(projScript, currentTarget, transform);
+        return projScript;
     }
 }

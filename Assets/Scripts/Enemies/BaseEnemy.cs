@@ -43,6 +43,7 @@ public class BaseEnemy : MonoBehaviour
 
     protected Rigidbody2D rb;
     protected Collider2D enemyCollider;
+    private BoardManager m_Board;
     public enum DebuffType
 {
     Poison,
@@ -55,6 +56,15 @@ public class BaseEnemy : MonoBehaviour
     public float DamageAmp=1;
 private float debuffTickTimer = 0f;
 private const float DEBUFF_TICK_RATE = 1f;
+    [Header("Status Overlay Vfx")]
+    [SerializeField] private Sprite m_DebuffOverlaySprite;
+    [SerializeField] private Vector3 m_DebuffOverlayOffset = new Vector3(0f, 0.6f, 0f);
+    [SerializeField] private Vector3 m_DebuffOverlaySpawnOffset = new Vector3(0f, -0.2f, 0f);
+    [SerializeField] private float m_DebuffOverlayFloatDistance = -0.4f;
+    [SerializeField] private float m_DebuffOverlayDuration = 0.6f;
+    [SerializeField] private float m_DebuffOverlaySpawnMoveDuration = 0.12f;
+    [SerializeField] private float m_DebuffOverlayScale = 1f;
+    [SerializeField] private int m_DebuffOverlaySortingOrderOffset = 5;
     // damage accumulator so float DPS works with int HP
     private float damageCarry = 0f;
 
@@ -74,6 +84,7 @@ private const float DEBUFF_TICK_RATE = 1f;
         {
             baseSprite = cachedRenderer.sprite;
         }
+        m_Board = FindFirstObjectByType<BoardManager>();
     }
 
     protected virtual void Start()
@@ -263,6 +274,7 @@ private const float DEBUFF_TICK_RATE = 1f;
         BaseUnit troop = other.GetComponentInParent<BaseUnit>();
         if (troop == null) return;
         if (troop.IsDead) return;
+        if (!IsSameLane(troop.transform.position)) return;
 
         // start attacking only if not already attacking someone
         if (!isAttackingTroop)
@@ -286,6 +298,18 @@ private const float DEBUFF_TICK_RATE = 1f;
         }
     }
 
+    private bool IsSameLane(Vector3 troopWorldPos)
+    {
+        if (m_Board == null || m_Board.GameTilemap == null)
+        {
+            return Mathf.Abs(transform.position.y - troopWorldPos.y) < 0.05f;
+        }
+
+        Vector3Int enemyCell = m_Board.GameTilemap.WorldToCell(transform.position);
+        Vector3Int troopCell = m_Board.GameTilemap.WorldToCell(troopWorldPos);
+        return enemyCell.y == troopCell.y;
+    }
+
     protected virtual void OnDestroy()
     {
         if (WaveManager.Instance != null)
@@ -306,7 +330,29 @@ public void ApplyDebuff(DebuffType type, float stacksToAdd, float duration, Acti
         // Apply new debuff
         Debuffs[type] = new Debuff(stacksToAdd, func, duration);
     }
+
+    SpawnDebuffOverlay();
 }
+
+    private void SpawnDebuffOverlay()
+    {
+        Debug.Log("Spawning debuff overlay");
+        if (m_DebuffOverlaySprite == null)
+        {
+            return;
+        }
+
+        StatusOverlayVfx.Spawn(
+            transform,
+            m_DebuffOverlaySprite,
+            m_DebuffOverlayOffset,
+            m_DebuffOverlaySpawnOffset,
+            m_DebuffOverlayFloatDistance,
+            m_DebuffOverlayDuration,
+            m_DebuffOverlaySpawnMoveDuration,
+            m_DebuffOverlayScale,
+            m_DebuffOverlaySortingOrderOffset);
+    }
 public void activateDebuff()
     {
  foreach (KeyValuePair<DebuffType, Debuff> entry in Debuffs)
