@@ -358,6 +358,7 @@ public class AugmentSelectionUI : MonoBehaviour
         
         // Hide the panel first
         HideAugmentSelection();
+        ResetRerollCost(); // Reset reroll cost for next time
         
         // Hide toggle button when augment is selected
         if (toggleButton != null)

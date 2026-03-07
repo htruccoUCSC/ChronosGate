@@ -781,6 +781,40 @@
       "LaunchAngle": 60,
       "Faction": "Prehistoric",
       "PrefabPath": "Prefabs/Units/firem_01"
+    },
+    {
+      "UnitID": "fairy_01",
+      "Name": "Fairy",
+      "Description": "Mystic generation unit that generates currency for player, heals lowest health tower, and gains flux from overhealing",
+      "Cost": 150,
+      "Health": 4,
+      "Range": 8,
+      "AttackSpeed": 1.2,
+      "AttackDamage": 5,
+      "AbilityPower": 35,
+      "AbilityManaCost": 25,
+      "StartingMana": 0,
+      "AttackType": "Projectile",
+      "LaunchAngle": 45,
+      "Faction": "Fantasy",
+      "PrefabPath": "Prefabs/Units/fairy_01"
+    },
+    {
+      "UnitID": "priestess_01",
+      "Name": "Fire Priestess",
+      "Description": "Mystic generation and support unit that applies fire on hit to enemies, ability generates flux based on active fire stacks on enemies",
+      "Cost": 160,
+      "Health": 5,
+      "Range": 6,
+      "AttackSpeed": 1,
+      "AttackDamage": 12,
+      "AbilityPower": 40,
+      "AbilityManaCost": 28,
+      "StartingMana": 0,
+      "AttackType": "Projectile",
+      "LaunchAngle": 50,
+      "Faction": "Fantasy",
+      "PrefabPath": "Prefabs/Units/priestess_01"
     }
   ]
 }
