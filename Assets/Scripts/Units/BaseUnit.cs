@@ -479,6 +479,7 @@ public abstract class BaseUnit : MonoBehaviour
         Collider2D[] allColliders = GetComponentsInChildren<Collider2D>(true);
         for (int i = 0; i < allColliders.Length; i++)
         {
+            RemoveAllBuffs();
             allColliders[i].enabled = isEnabled;
         }
     }
@@ -605,6 +606,24 @@ protected void SpawnSniperProjectile(GameObject prefab, float damage, bool isAOE
     public void RemoveRoundBuff(Buff buff)
     {
         roundBuffs.Remove(buff);
+    }
+
+    public void RemoveAllBuffs()
+    {
+        if (activeBuffs.Count == 0 && roundBuffs.Count == 0)
+        {
+            return;
+        }
+
+        Buffs buffs = FindFirstObjectByType<Buffs>();
+        if (buffs != null && myData != null)
+        {
+            buffs.RemoveAllBuffs(this);
+            return;
+        }
+
+        activeBuffs.Clear();
+        roundBuffs.Clear();
     }
     // solves standard projectile motion equation for Velocity
     protected float CalculateBallisticSpeed(float distance, float angleDeg, float gravity)

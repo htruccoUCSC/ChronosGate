@@ -402,7 +402,11 @@ public class Projectile : MonoBehaviour
     private void ApplySlowIfConfigured(BaseEnemy enemy)
     {
         if (!_applySlowOnHit || enemy == null) return;
-        enemy.ApplySlow(_slowPercent, _slowDuration);
+        enemy.ApplyDebuff(
+            BaseEnemy.DebuffType.Slow,
+            _slowPercent,
+            _slowDuration,
+            s => enemy.ApplySlow(s, _slowDuration));
     }
 
       private void ApplyAmpIfConfigured(BaseEnemy enemy)

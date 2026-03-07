@@ -28,10 +28,6 @@ public class BuffManager : MonoBehaviour
                 buff.duration -= 1f;
                 if (buff.duration <= 0f)
                 {
-                    if(unit.myData == null)
-                    {
-                        return;
-                    }
                     Debug.Log($"Removing expired buff from {unit.name}");
                     buffs.RemoveTempBuff(unit, buff);
                 }
