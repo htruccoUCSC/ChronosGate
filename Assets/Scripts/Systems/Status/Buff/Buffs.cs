@@ -4,6 +4,15 @@ public class Buffs : MonoBehaviour
 {
     public BoardManager board;
     public ModifyUnitStats math;
+    [Header("Status Overlay Vfx")]
+    [SerializeField] private Sprite m_BuffOverlaySprite;
+    [SerializeField] private Vector3 m_BuffOverlayOffset = new Vector3(0f, 0.6f, 0f);
+    [SerializeField] private Vector3 m_BuffOverlaySpawnOffset = new Vector3(0f, -0.2f, 0f);
+    [SerializeField] private float m_BuffOverlayFloatDistance = 0.4f;
+    [SerializeField] private float m_BuffOverlayDuration = 0.6f;
+    [SerializeField] private float m_BuffOverlaySpawnMoveDuration = 0.12f;
+    [SerializeField] private float m_BuffOverlayScale = 1f;
+    [SerializeField] private int m_BuffOverlaySortingOrderOffset = 5;
 
     public void AddTempBuff(
         BaseUnit unit,
@@ -42,7 +51,9 @@ public class Buffs : MonoBehaviour
         math.AddAbilityPower(unit.myData, abilityPowerFlat);
         math.AddAbilityPowerMult(unit.myData,abilityPowerMult);
         unit.AddTempBuff(buff);
-        Debug.Log($"[Buffs.AddTempBuff] {unit.name} SpeedFlatMod: {unit.myData.SpeedFlatMod}, SpeedMultMod: {unit.myData.SpeedMultMod}");
+        SpawnBuffOverlay(unit);
+        
+        Debug.Log($"[Buffs.AddTempBuff] {unit.name} SpeedFlatMod: {unit.myData.SpeedFlatMod}, SpeedMultMod: {unit.myData.SpeedMultMod} TOTAL: {unit.myData.GetModifiedAttackSpeed()}");
     }
 
     public void AddRoundBuff(
@@ -82,6 +93,7 @@ public class Buffs : MonoBehaviour
         math.AddAbilityPowerMult(unit.myData,abilityPowerMult);
 
         unit.AddRoundBuff(buff);
+        SpawnBuffOverlay(unit);
     }
 
     public void RemoveTempBuff(BaseUnit unit, Buff buff)
@@ -94,7 +106,7 @@ public class Buffs : MonoBehaviour
         math.SubAbilityPowerMult(unit.myData,buff.AbilityPowerMult);
 
         unit.RemoveTempBuff(buff);
-        Debug.Log($"[Buffs.RemoveTempBuff] {unit.name} SpeedFlatMod: {unit.myData.SpeedFlatMod}, SpeedMultMod: {unit.myData.SpeedMultMod}");
+        Debug.Log($"[Buffs.RemoveTempBuff] {unit.name} SpeedFlatMod: {unit.myData.SpeedFlatMod}, SpeedMultMod: {unit.myData.SpeedMultMod} TOTAL: {unit.myData.GetModifiedAttackSpeed()}");
     }
 
     public void RemoveRoundBuff(BaseUnit unit, Buff buff)
@@ -107,5 +119,42 @@ public class Buffs : MonoBehaviour
         math.SubAbilityPowerMult(unit.myData,buff.AbilityPowerMult);
 
         unit.RemoveRoundBuff(buff);
+    }
+
+    public void RemoveAllBuffs(BaseUnit unit)
+    {
+        if (unit == null || unit.myData == null)
+        {
+            return;
+        }
+
+        for (int i = unit.activeBuffs.Count - 1; i >= 0; i--)
+        {
+            RemoveTempBuff(unit, unit.activeBuffs[i]);
+        }
+
+        for (int i = unit.roundBuffs.Count - 1; i >= 0; i--)
+        {
+            RemoveRoundBuff(unit, unit.roundBuffs[i]);
+        }
+    }
+
+    private void SpawnBuffOverlay(BaseUnit unit)
+    {
+        if (unit == null || m_BuffOverlaySprite == null)
+        {
+            return;
+        }
+
+        StatusOverlayVfx.Spawn(
+            unit.transform,
+            m_BuffOverlaySprite,
+            m_BuffOverlayOffset,
+            m_BuffOverlaySpawnOffset,
+            m_BuffOverlayFloatDistance,
+            m_BuffOverlayDuration,
+            m_BuffOverlaySpawnMoveDuration,
+            m_BuffOverlayScale,
+            m_BuffOverlaySortingOrderOffset);
     }
 }
