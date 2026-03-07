@@ -16,6 +16,7 @@ public class TowerTooltipUI : MonoBehaviour
     [SerializeField] private TextMeshProUGUI manaCostText;
     [SerializeField] private TextMeshProUGUI towerNameText;
     [SerializeField] private TextMeshProUGUI factionText;
+    [SerializeField] private TextMeshProUGUI levelText;
 
     [Header("Tooltip Settings")]
     [SerializeField] private float offsetFromCursor = 20f;
@@ -62,6 +63,7 @@ public class TowerTooltipUI : MonoBehaviour
 
         // Verify all required UI elements are assigned
         ValidateUIReferences();
+        DisableTooltipRaycasts();
     }
 
     private void Update()
@@ -96,6 +98,25 @@ public class TowerTooltipUI : MonoBehaviour
             Debug.LogError("[TowerTooltipUI] towerNameText NOT assigned!");
         if (factionText == null)
             Debug.LogError("[TowerTooltipUI] factionText NOT assigned!");
+        if (levelText == null)
+            Debug.LogWarning("[TowerTooltipUI] levelText NOT assigned! Level will append to faction text.");
+    }
+
+    private void DisableTooltipRaycasts()
+    {
+        if (tooltipPanel == null)
+        {
+            return;
+        }
+
+        CanvasGroup group = tooltipPanel.GetComponent<CanvasGroup>();
+        if (group == null)
+        {
+            group = tooltipPanel.gameObject.AddComponent<CanvasGroup>();
+        }
+
+        group.interactable = false;
+        group.blocksRaycasts = false;
     }
 
     /// <summary>
@@ -146,10 +167,21 @@ public class TowerTooltipUI : MonoBehaviour
             towerNameText.text = currentDisplayedUnit.Name;
         }
 
-        // Update faction
+        int level = Mathf.Max(1, currentDisplayedUnit.Level);
+
+        // Update faction and level
         if (factionText != null)
         {
             factionText.text = currentDisplayedUnit.Faction;
+        }
+
+        if (levelText != null)
+        {
+            levelText.text = $"LVL: {level}";
+        }
+        else if (factionText != null)
+        {
+            factionText.text = $"{currentDisplayedUnit.Faction}  LVL: {level}";
         }
 
         // Update tower icon
