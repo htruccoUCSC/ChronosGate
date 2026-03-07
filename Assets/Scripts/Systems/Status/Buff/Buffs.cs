@@ -139,6 +139,11 @@ public class Buffs : MonoBehaviour
         }
     }
 
+    public void PlayBuffOverlay(BaseUnit unit)
+    {
+        SpawnBuffOverlay(unit);
+    }
+
     private void SpawnBuffOverlay(BaseUnit unit)
     {
         if (unit == null || m_BuffOverlaySprite == null)

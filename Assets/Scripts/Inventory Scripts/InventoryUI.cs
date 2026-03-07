@@ -200,7 +200,15 @@ public class InventorySlotDrag : MonoBehaviour, IBeginDragHandler, IDragHandler,
 
         ClearRangePreview();
 
-        if (eventData.pointerCurrentRaycast.gameObject != null) return;
+        GameObject hoveredObject = eventData.pointerCurrentRaycast.gameObject;
+        if (hoveredObject != null)
+        {
+            bool isUiTarget = hoveredObject.GetComponent<RectTransform>() != null;
+            if (isUiTarget)
+            {
+                return;
+            }
+        }
 
         // Get the Definition from the slot
         UnitDefinition defToSpawn = m_InventoryUI.GetUnit(m_Index);

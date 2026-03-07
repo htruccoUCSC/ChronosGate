@@ -49,6 +49,16 @@ public class UnitSpawner : MonoBehaviour
         rawWorldPos.z = 0;
         Vector3Int cellPos = board.GameTilemap.WorldToCell(rawWorldPos);
 
+        if (board.TryGetUnitAtCell(cellPos, out BaseUnit existingUnit))
+        {
+            if (existingUnit != null && existingUnit.TryApplyMergeUpgrade(def))
+            {
+                return true;
+            }
+
+            return false;
+        }
+
         if (!board.IsWalkable(cellPos))
             return false;
 

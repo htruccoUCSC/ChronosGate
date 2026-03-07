@@ -190,6 +190,10 @@ public abstract class BaseUnit : MonoBehaviour
         EnsureHoverDetection();
         EnsureTileSizedCollider();
         myData = instance;
+        if (myData != null)
+        {
+            myData.Level = Mathf.Max(1, myData.Level);
+        }
         m_IsDefeated = false;
         SetCollidersEnabled(true);
         attackTimer = 1f / myData.GetModifiedAttackSpeed();
@@ -709,6 +713,48 @@ protected void SpawnSniperProjectile(GameObject prefab, float damage, bool isAOE
         if (hitTint != null)
         {
             hitTint.ResetTint();
+        }
+    }
+    public bool TryApplyMergeUpgrade(UnitDefinition incomingDef)
+    {
+        if (incomingDef == null || myData == null || myData.BaseDef == null)
+        {
+            return false;
+        }
+
+        bool sameId = string.Equals(myData.BaseDef.UnitID, incomingDef.UnitID, System.StringComparison.Ordinal);
+        bool sameDef = myData.BaseDef == incomingDef;
+        if (!sameId && !sameDef)
+        {
+            return false;
+        }
+
+        ApplyMergeUpgrade();
+        return true;
+    }
+
+    private void ApplyMergeUpgrade()
+    {
+        myData.Level += 1;
+        myData.MaxHP += 2f;
+        myData.CurrentHP = Mathf.Min(myData.CurrentHP + 2f, myData.MaxHP);
+        myData.SpeedFlatMod += 0.1f;
+        myData.DamageFlatMod += 2f;
+        myData.AbilityPowerFlatMod += 3f;
+        attackTimer = Mathf.Min(attackTimer, 1f / myData.GetModifiedAttackSpeed());
+
+        Buffs buffs = FindFirstObjectByType<Buffs>();
+        if (buffs != null)
+        {
+            buffs.PlayBuffOverlay(this);
+        }
+    }
+    public int CurrentLevel
+    {
+        get
+        {
+            if (myData == null) return 1;
+            return Mathf.Max(1, myData.Level);
         }
     }
     //TODO REMOVE THIS TO NEW FILE
