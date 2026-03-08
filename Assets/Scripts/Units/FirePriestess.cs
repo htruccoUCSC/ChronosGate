@@ -33,16 +33,26 @@ public class FirePriestess : BaseUnit
 
     protected override void PerformBasicAttack()
     {
-        // Apply fire buff to adjacent friendly towers
+        // Apply fire buff to adjacent friendly towers that don't already have one
         List<BaseUnit> adjacentTowers = GetAdjacentFriendlyTowers();
         
-        if (adjacentTowers.Count == 0)
+        // Filter out towers that already have the fire buff
+        List<BaseUnit> availableTowers = new List<BaseUnit>();
+        foreach (BaseUnit tower in adjacentTowers)
+        {
+            if (tower.roundBuffs == null || tower.roundBuffs.Count == 0)
+            {
+                availableTowers.Add(tower);
+            }
+        }
+
+        if (availableTowers.Count == 0)
         {
             return;
         }
 
-        // Apply fire to one random adjacent tower
-        BaseUnit targetTower = adjacentTowers[Random.Range(0, adjacentTowers.Count)];
+        // Apply fire to one random available tower
+        BaseUnit targetTower = availableTowers[Random.Range(0, availableTowers.Count)];
         ApplyFireBuff(targetTower);
     }
 
