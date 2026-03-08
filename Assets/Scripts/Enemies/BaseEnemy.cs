@@ -28,6 +28,7 @@ public class BaseEnemy : MonoBehaviour
     [SerializeField] protected float moveSpeed = 0.5f; // how fast it moves left
     protected float m_SlowMultiplier = 1f;
     protected float m_SlowTimeRemaining;
+    protected float m_StunTimeRemaining;
 
     [Header("Health")]
     [SerializeField] protected int maxHealth = 50;
@@ -102,6 +103,12 @@ private const float DEBUFF_TICK_RATE = 1f;
 
     protected virtual void FixedUpdate()
     {
+        // don't move while stunned
+        if (m_StunTimeRemaining > 0f)
+        {
+            return;
+        }
+
         // move only when not attacking a troop
         if (!isAttackingTroop)
         {
@@ -150,6 +157,15 @@ private const float DEBUFF_TICK_RATE = 1f;
         debuffTickTimer -= DEBUFF_TICK_RATE; // keeps it stable
         activateDebuff();
     }
+        // stun timer
+        if (m_StunTimeRemaining > 0f)
+        {
+            m_StunTimeRemaining -= Time.deltaTime;
+            if (m_StunTimeRemaining <= 0f)
+            {
+                m_StunTimeRemaining = 0f;
+            }
+        }
         // slow timer
         if (m_SlowTimeRemaining > 0f)
         {
@@ -169,11 +185,10 @@ private const float DEBUFF_TICK_RATE = 1f;
                 contactTroop = null;
                 isAttackingTroop = false;
             }
-            else
+            else if (m_StunTimeRemaining <= 0f)
             {
                 // damage per second, frame-rate independent
                 float dmgThisFrame = damagePerSecond * Time.deltaTime;
-
 
                 ApplyContinuousDamageAsInt(dmgThisFrame);
             }
@@ -257,6 +272,11 @@ private const float DEBUFF_TICK_RATE = 1f;
         m_SlowMultiplier = Mathf.Min(m_SlowMultiplier, newMultiplier);
         m_SlowTimeRemaining = Mathf.Max(m_SlowTimeRemaining, duration);
     }
+    public virtual void ApplyStun(float duration)
+    {
+        if (duration <= 0f) return;
+        m_StunTimeRemaining = Mathf.Max(m_StunTimeRemaining, duration);
+    }
 
     protected virtual void Die()
     {
@@ -273,6 +293,7 @@ private const float DEBUFF_TICK_RATE = 1f;
         // ONLY troops (BaseUnit). This ignores projectiles/tilemap/etc.
         BaseUnit troop = other.GetComponentInParent<BaseUnit>();
         if (troop == null) return;
+        if (!troop.CanBeTargetedByEnemies) return;
         if (troop.IsDead) return;
         if (!IsSameLane(troop.transform.position)) return;
 

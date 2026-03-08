@@ -42,6 +42,16 @@ public abstract class BaseUnit : MonoBehaviour
         return m_RangePreviewMode;
     }
 
+    protected virtual float GetAdditionalAttackDelay()
+    {
+        return 0f;
+    }
+
+    public virtual bool CanBeTargetedByEnemies
+    {
+        get { return true; }
+    }
+
     public void CollectRangePreviewCells(BoardManager board, Vector3Int originCell, UnitDefinition defOverride, List<Vector3Int> results)
     {
         if (results == null) return;
@@ -350,13 +360,12 @@ public abstract class BaseUnit : MonoBehaviour
             {
                 //RecentlyHit(null);
                 // cast ability if mana is full, otherwise do basic attack
-                
 
-                    PerformBasicAttack();
+                PerformBasicAttack();
 
-                    myData.CurrentMana += manaPerShot;
-                
-                attackTimer = 1f / myData.GetModifiedAttackSpeed();
+                myData.CurrentMana += manaPerShot;
+
+                attackTimer = (1f / myData.GetModifiedAttackSpeed()) + GetAdditionalAttackDelay();
             }
         }
     }
@@ -476,6 +485,8 @@ public abstract class BaseUnit : MonoBehaviour
         currentTarget = null;
         SetCollidersEnabled(false);
         Debug.Log($"{gameObject.name} has been defeated!");
+
+        Destroy(gameObject);
     }
 
     private void SetCollidersEnabled(bool isEnabled)
