@@ -21,11 +21,11 @@ for (int x = 0; x < tileMapManager.Width; x++)
       if (unit == null) continue;
       if (unit.myData.Faction == "Future")
       {
-         buffs.AddRoundBuff(unit, attackSpeedMult: 0f, attackSpeedFlat: 0f, attackDamageFlat: 0f, attackDamageMult: 0f, abilityPowerFlat: 50f, abilityPowerMult: buffAmount, OnHit: null, onHitModifier: 0f, OnKill: null, onKillModifier: 0f);
+         buffs.AddRoundBuff(unit, attackSpeedMult: 0f, attackSpeedFlat: 0f, attackDamageFlat: 0f, attackDamageMult: 0f, abilityPowerFlat: 50f, abilityPowerMult: buffAmount, rangeBuff: 0f, OnHit: null, onHitModifier: 0f, OnKill: null, onKillModifier: 0f);
       }
       else
       {
-         buffs.AddRoundBuff(unit, attackSpeedMult: 0f, attackSpeedFlat: 0f, attackDamageFlat: 0f, attackDamageMult: 0f, abilityPowerFlat: 0f, abilityPowerMult: buffAmount, OnHit: null, onHitModifier: 0f, OnKill: null, onKillModifier: 0f);
+         buffs.AddRoundBuff(unit, attackSpeedMult: 0f, attackSpeedFlat: 0f, attackDamageFlat: 0f, attackDamageMult: 0f, abilityPowerFlat: 0f, abilityPowerMult: buffAmount, rangeBuff: 0f, OnHit: null, onHitModifier: 0f, OnKill: null, onKillModifier: 0f);
       }
    }
 }

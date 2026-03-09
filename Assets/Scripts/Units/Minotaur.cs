@@ -24,7 +24,7 @@ public class Minotaur : BaseUnit
         Debug.Log("Minotaur performs basic attack");
         Transform hitTarget = currentTarget;
         float basicAttackKnockbackDistance = 0.75f;
-        bool didHit = TryPerformMeleeAttack(myData.GetModifiedDamage(), myData.BaseDef.Range);
+        bool didHit = TryPerformMeleeAttack(myData.GetModifiedDamage(), myData.GetModifiedRange());
         if (didHit)
         {
             ApplyBasicAttackKnockback(hitTarget, basicAttackKnockbackDistance);

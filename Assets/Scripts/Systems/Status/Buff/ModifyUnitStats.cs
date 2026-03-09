@@ -71,5 +71,15 @@ public BoardManager board;
         u.AbilityPowerMult+= amount;
 
     }
+      public void AddRange(UnitInstance u,float amount)
+    {
+        u.RangeFlatMod+= amount;
+
+    }
+      public void SubRange(UnitInstance u,float amount)
+    {
+        u.RangeFlatMod-= amount;
+
+    }
 }
     
