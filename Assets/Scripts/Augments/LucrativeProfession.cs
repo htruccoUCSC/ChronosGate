@@ -27,6 +27,7 @@ public class LucrativeProfession : MonoBehaviour
                 attackSpeedMult: 0f, attackSpeedFlat: 0f,
                 attackDamageFlat: 0f, attackDamageMult: 0f,
                 abilityPowerFlat: 0f, abilityPowerMult: 0f,
+                rangeBuff: 0f,
                 OnHit: null, onHitModifier: 0f,
                 OnKill: _ => LucrativeProfessionFunction(), onKillModifier: 0f
             );

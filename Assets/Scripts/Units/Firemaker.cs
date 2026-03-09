@@ -154,7 +154,7 @@ public class Firemaker : BaseUnit
         }
 
         // Apply fire buff to the unit using round buff with ApplyFire callback
-        m_BuffSystem.AddRoundBuff(targetUnit, 0, 0, 0, 0, 0, 0, targetUnit.ApplyFire, 1f, null, 0f);
+        m_BuffSystem.AddRoundBuff(targetUnit, 0, 0, 0, 0, 0, 0, 0f, targetUnit.ApplyFire, 1f, null, 0f);
 
         Debug.Log($"Firemaker gave fire buff to {targetUnit.name}");
     }
@@ -181,7 +181,7 @@ public class Firemaker : BaseUnit
         }
 
         // Apply fire stack buff to enable multiple fire applications on next attack
-        m_BuffSystem.AddRoundBuff(targetUnit, 0, 0, 0, 0, 0, 0, targetUnit.ApplyFire, stackAmount, null, 0f);
+        m_BuffSystem.AddRoundBuff(targetUnit, 0, 0, 0, 0, 0, 0, 0f, targetUnit.ApplyFire, stackAmount, null, 0f);
 
         Debug.Log($"Firemaker gave {stackAmount} fire stacks to {targetUnit.name}");
     }

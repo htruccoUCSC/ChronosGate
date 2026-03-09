@@ -152,7 +152,7 @@ public class FirePriestess : BaseUnit
         }
 
         // Apply fire buff to the tower using round buff with ApplyFire callback
-        m_BuffSystem.AddRoundBuff(targetTower, 0, 0, 0, 0, 0, 0, targetTower.ApplyFire, 1f, null, 0f);
+        m_BuffSystem.AddRoundBuff(targetTower, 0, 0, 0, 0, 0, 0, 0f, targetTower.ApplyFire, 1f, null, 0f);
 
         Debug.Log($"Fire Priestess gave fire buff to {targetTower.name}");
     }

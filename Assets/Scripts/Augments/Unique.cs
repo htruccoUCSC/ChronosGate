@@ -60,6 +60,7 @@ public void UniqueCall()
                 attackDamageMult: 0f,
                 abilityPowerFlat: 50f,
                 abilityPowerMult: 0f,
+                rangeBuff: 0f,
                 OnHit: null,
                 onHitModifier: 0f,
                 OnKill: null,

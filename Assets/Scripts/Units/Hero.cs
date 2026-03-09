@@ -92,7 +92,7 @@ public class Hero : BaseUnit
         {
             if (buffSystem != null)
             {
-                // Use the Buffs system: AddTempBuff(unit, attackSpeedMult, attackSpeedFlat, attackDamageFlat, attackDamageMult, abilityPowerFlat, abilityPowerMult, duration, OnHit, onHitModifier, OnKill, onKillModifier)
+                // Use the Buffs system: AddTempBuff(unit, attackSpeedMult, attackSpeedFlat, attackDamageFlat, attackDamageMult, abilityPowerFlat, abilityPowerMult, rangeBuff, duration, OnHit, onHitModifier, OnKill, onKillModifier)
                 buffSystem.AddTempBuff(
                     unit, 
                     abilityAttackSpeedBoost, // 20% attack speed multiplier
@@ -101,6 +101,7 @@ public class Hero : BaseUnit
                     0f, // no attack damage multiplier
                     0f, // no flat ability power
                     0f, // no ability power multiplier
+                    0f, // no range buff
                     Mathf.CeilToInt(abilityBuffDuration), // duration in seconds
                     null, // no OnHit action
                     0f, // no OnHit modifier

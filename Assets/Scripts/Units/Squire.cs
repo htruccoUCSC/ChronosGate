@@ -29,7 +29,7 @@ public class SquireUnit : BaseUnit
         //apply buff to all adjacent towers
         foreach (BaseUnit tower in adjacentTowers)
         {
-            m_BuffSystem.AddTempBuff(tower, 0f, m_BasicAttackBuffAmount, 0f, 0f, 0f, 0f, Mathf.CeilToInt(m_BasicAttackBuffDuration), null, 0f, null, 0f);
+            m_BuffSystem.AddTempBuff(tower, 0f, m_BasicAttackBuffAmount, 0f, 0f, 0f, 0f, 0f, Mathf.CeilToInt(m_BasicAttackBuffDuration), null, 0f, null, 0f);
             Debug.Log($"Squire buffed {tower.name} for {m_BasicAttackBuffAmount} attack speed for {m_BasicAttackBuffDuration} seconds");
         }
     }
@@ -44,7 +44,7 @@ public class SquireUnit : BaseUnit
         }
         //apply buff to one random adjacent tower
         BaseUnit buffTarget = adjacentTowers[UnityEngine.Random.Range(0, adjacentTowers.Count)];
-        m_BuffSystem.AddTempBuff(buffTarget, 0f, m_BasicAttackBuffAmount, 0f, 0f, 0f, 0f, Mathf.CeilToInt(m_BasicAttackBuffDuration), null, 0f, null, 0f);
+        m_BuffSystem.AddTempBuff(buffTarget, 0f, m_BasicAttackBuffAmount, 0f, 0f, 0f, 0f, 0f, Mathf.CeilToInt(m_BasicAttackBuffDuration), null, 0f, null, 0f);
         Debug.Log($"Squire buffed {buffTarget.name} for {m_BasicAttackBuffAmount} attack speed for {m_BasicAttackBuffDuration} seconds");
     }
 

@@ -61,6 +61,7 @@ public class UnitDefinition : ScriptableObject
     }
 
     [Header("Combat Behavior")]
+    public string AttackType;
     public BasicAttackType AttackFunction;
     public float LaunchAngle;
 

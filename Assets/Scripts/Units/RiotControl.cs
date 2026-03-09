@@ -34,7 +34,7 @@ public class RiotControl : BaseUnit
     protected override void PerformBasicAttack()
     {
         Debug.Log("RiotControl performs basic attack");
-        TryPerformMeleeAttack(myData.GetModifiedDamage(), myData.BaseDef.Range);
+        TryPerformMeleeAttack(myData.GetModifiedDamage(), myData.GetModifiedRange());
     }
     private void ApplyBasicAttackKnockback(Transform target, float knockbackDistance)
     {

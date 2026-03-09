@@ -10,7 +10,7 @@ public class Stickman : BaseUnit
     protected override void CastAbility()
     {
         Debug.Log("Stickman ability");//perform melee attack with increased range and damage, but no knockback
-        TryPerformMeleeAttack(myData.GetModifiedAbilityPower(), myData.BaseDef.Range + 2f);
+        TryPerformMeleeAttack(myData.GetModifiedAbilityPower(), myData.GetModifiedRange() + 2f);
     }
     
     protected override void PerformBasicAttack()
@@ -18,7 +18,7 @@ public class Stickman : BaseUnit
         Debug.Log("Stickman performs basic attack");
         Transform hitTarget = currentTarget;
         float basicAttackKnockbackDistance = 0.75f;
-        bool didHit = TryPerformMeleeAttack(myData.GetModifiedDamage(), myData.BaseDef.Range);
+        bool didHit = TryPerformMeleeAttack(myData.GetModifiedDamage(), myData.GetModifiedRange());
         if (didHit)
         {
             ApplyBasicAttackKnockback(hitTarget, basicAttackKnockbackDistance);

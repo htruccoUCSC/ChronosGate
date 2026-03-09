@@ -17,6 +17,7 @@ public class AugmentSetup : MonoBehaviour
     public LucrativeProfession lucrativeProfession;
     public Clastrophobic clastrophobic;
     public OldSchool oldSchool;
+    public Rally rally;
 
     void Start()
     {
@@ -38,9 +39,10 @@ public class AugmentSetup : MonoBehaviour
         Augment OldSchoolWrapper = new Augment(() => oldSchool.OldSchoolCall(),"OldSchool","Medieval, Prehistoric, and Mystic units gain 30 AP for each surrounding unit of that tyoe");
         Augment LongGameWrapper = new Augment(() => longGame.LongGameCall(),"LongGame","All units gain 0.1x ability power for  round that have passed , Future Units gain a 50 AP");
         Augment WildfireWrapper = new Augment(() => wildFire.WildFireCall(),"Wildfire","All units apply fire onHit");
-         Augment ExposureWrapper = new Augment(() => exposure.ExposureCall(),"Exposure","All units 5% damage amp per shot");
-         Augment LucrativeProfessionWrapper = new Augment(() => lucrativeProfession.LucrativeProfessionCall(),"Lucrative Profession","bounty hunters generate 1 gold for each 5 kills");
-         Augment ClastrophobicWrapper = new Augment(() => clastrophobic.ClastrophobicCall(),"Clastrophobic","All units gain +current round in AS,AD,AP for each empty column");
+        Augment ExposureWrapper = new Augment(() => exposure.ExposureCall(),"Exposure","All units 5% damage amp per shot");
+        Augment LucrativeProfessionWrapper = new Augment(() => lucrativeProfession.LucrativeProfessionCall(),"Lucrative Profession","bounty hunters generate 1 gold for each 5 kills");
+        Augment ClastrophobicWrapper = new Augment(() => clastrophobic.ClastrophobicCall(),"Clastrophobic","All units gain +current round in AS,AD,AP for each empty column");
+        Augment RallyWrapper = new Augment(() => rally.RallyCall(),"Rally","Melee units gain +1 range for each concurrent melee unit infront of them");
 
         augmentManager.AddInactiveAugment(LucrativeProfessionWrapper);
         augmentManager.AddInactiveAugment(ToTheMoonWrapper);
@@ -55,6 +57,7 @@ public class AugmentSetup : MonoBehaviour
         augmentManager.AddInactiveAugment(WildfireWrapper);
         augmentManager.AddInactiveAugment(ExposureWrapper);
         augmentManager.AddInactiveAugment(ClastrophobicWrapper);
+        augmentManager.AddInactiveAugment(RallyWrapper);
         //ACTIVE FOR TESTING ONLY IF STARTED HERE, DELETE LATER
         // augmentManager.AddActiveAugment(testAugmentWrapper);
         // augmentManager.AddActiveAugment(ApeTogetherStrongWrapper);
@@ -64,5 +67,6 @@ public class AugmentSetup : MonoBehaviour
          //augmentManager.AddActiveAugment(OldSchoolWrapper);      
        // augmentManager.AddActiveAugment(LongGameWrapper);
        //augmentManager.AddActiveAugment(LucrativeProfessionWrapper);
+       //augmentManager.AddActiveAugment(RallyWrapper);
     }
 }
