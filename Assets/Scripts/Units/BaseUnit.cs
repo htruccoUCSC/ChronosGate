@@ -20,6 +20,20 @@ public abstract class BaseUnit : MonoBehaviour
     private MeleeAttackBehavior m_MeleeAttackBehavior;
     private bool m_IsDefeated;
 
+    [Header("Melee Stamina")]
+    [SerializeField] private float m_MaxMeleeStamina = 3f;
+    [SerializeField] private float m_MeleeStaminaCostPerSwing = 1f;
+    [SerializeField] private float m_MeleeRechargeDuration = 2.5f;
+    [SerializeField] private Vector3 m_StaminaBarLocalOffset = new Vector3(0f, 0.7f, 0f);
+    [SerializeField] private Vector2 m_StaminaBarSize = new Vector2(0.8f, 0.1f);
+    private float m_CurrentMeleeStamina;
+    private bool m_IsMeleeRecharging;
+    private float m_MeleeRechargeTimer;
+    private GameObject m_StaminaBarRoot;
+    private Transform m_StaminaBarFill;
+    private SpriteRenderer m_StaminaBarFillRenderer;
+    private SpriteRenderer m_StaminaBarBackgroundRenderer;
+
 
 
     // how much of the tile we want the unit to fill
@@ -41,6 +55,16 @@ public abstract class BaseUnit : MonoBehaviour
     protected virtual RangePreviewMode GetRangePreviewMode()
     {
         return m_RangePreviewMode;
+    }
+
+    protected virtual float GetAdditionalAttackDelay()
+    {
+        return 0f;
+    }
+
+    public virtual bool CanBeTargetedByEnemies
+    {
+        get { return true; }
     }
 
     public void CollectRangePreviewCells(BoardManager board, Vector3Int originCell, UnitDefinition defOverride, List<Vector3Int> results)
@@ -197,6 +221,7 @@ public abstract class BaseUnit : MonoBehaviour
         }
         m_IsDefeated = false;
         SetCollidersEnabled(true);
+        ResetMeleeStaminaState();
         attackTimer = 1f / myData.GetModifiedAttackSpeed();
 
         // getting projectile sprite and scale from the Projectile child
@@ -337,6 +362,7 @@ public abstract class BaseUnit : MonoBehaviour
 
         if (myData == null || IsDead) return;
 
+        UpdateMeleeStamina(Time.deltaTime);
         ScanTargeting();
 
         if (myData.CurrentMana >= myData.BaseDef.AbilityManaCost)
@@ -351,14 +377,181 @@ public abstract class BaseUnit : MonoBehaviour
             {
                 //RecentlyHit(null);
                 // cast ability if mana is full, otherwise do basic attack
-                
 
-                    PerformBasicAttack();
+                PerformBasicAttack();
 
-                    myData.CurrentMana += manaPerShot;
-                
-                attackTimer = 1f / myData.GetModifiedAttackSpeed();
+                myData.CurrentMana += manaPerShot;
+
+                attackTimer = (1f / myData.GetModifiedAttackSpeed()) + GetAdditionalAttackDelay();
             }
+        }
+    }
+
+    private void UpdateMeleeStamina(float deltaTime)
+    {
+        if (!UsesMeleeStamina())
+        {
+            return;
+        }
+
+        if (!m_IsMeleeRecharging)
+        {
+            UpdateMeleeStaminaBar();
+            return;
+        }
+
+        if (m_MeleeRechargeDuration <= 0.01f)
+        {
+            m_CurrentMeleeStamina = GetClampedMaxMeleeStamina();
+            m_IsMeleeRecharging = false;
+            m_MeleeRechargeTimer = 0f;
+            UpdateMeleeStaminaBar();
+            return;
+        }
+
+        m_MeleeRechargeTimer += deltaTime;
+        float progress = Mathf.Clamp01(m_MeleeRechargeTimer / m_MeleeRechargeDuration);
+        m_CurrentMeleeStamina = Mathf.Lerp(0f, GetClampedMaxMeleeStamina(), progress);
+
+        if (progress >= 1f)
+        {
+            m_CurrentMeleeStamina = GetClampedMaxMeleeStamina();
+            m_IsMeleeRecharging = false;
+            m_MeleeRechargeTimer = 0f;
+        }
+
+        UpdateMeleeStaminaBar();
+    }
+
+    protected bool UsesMeleeStamina()
+    {
+        bool flaggedAsMelee = myData != null
+            && myData.BaseDef != null
+            && myData.BaseDef.AttackFunction == BasicAttackType.Melee;
+
+        bool hasMeleeBehavior = m_MeleeAttackBehavior != null || GetComponent<MeleeAttackBehavior>() != null;
+
+        return flaggedAsMelee || hasMeleeBehavior;
+    }
+
+    private float GetClampedMaxMeleeStamina()
+    {
+        return Mathf.Max(1f, m_MaxMeleeStamina);
+    }
+
+    protected virtual float GetMeleeStaminaCostPerSwing()
+    {
+        return Mathf.Max(0.01f, m_MeleeStaminaCostPerSwing);
+    }
+
+    protected bool HasEnoughMeleeStaminaForAttack()
+    {
+        return !m_IsMeleeRecharging && m_CurrentMeleeStamina >= GetMeleeStaminaCostPerSwing();
+    }
+
+    protected void ConsumeMeleeStamina(float amount)
+    {
+        if (!UsesMeleeStamina())
+        {
+            return;
+        }
+
+        m_CurrentMeleeStamina = Mathf.Max(0f, m_CurrentMeleeStamina - Mathf.Max(0f, amount));
+        if (m_CurrentMeleeStamina <= 0.001f)
+        {
+            m_CurrentMeleeStamina = 0f;
+            m_IsMeleeRecharging = true;
+            m_MeleeRechargeTimer = 0f;
+            Debug.Log($"{gameObject.name} melee stamina hit zero.");
+        }
+
+        UpdateMeleeStaminaBar();
+    }
+
+    private void ResetMeleeStaminaState()
+    {
+        m_CurrentMeleeStamina = GetClampedMaxMeleeStamina();
+        m_IsMeleeRecharging = false;
+        m_MeleeRechargeTimer = 0f;
+        EnsureMeleeStaminaBar();
+        UpdateMeleeStaminaBar();
+    }
+
+    private void EnsureMeleeStaminaBar()
+    {
+        if (m_StaminaBarRoot != null)
+        {
+            if (m_StaminaBarFill != null)
+            {
+                return;
+            }
+
+            Object.Destroy(m_StaminaBarRoot);
+            m_StaminaBarRoot = null;
+            m_StaminaBarFill = null;
+            m_StaminaBarFillRenderer = null;
+            m_StaminaBarBackgroundRenderer = null;
+        }
+
+        m_StaminaBarRoot = new GameObject("MeleeStaminaBar");
+        m_StaminaBarRoot.transform.SetParent(transform, false);
+        m_StaminaBarRoot.transform.localPosition = m_StaminaBarLocalOffset;
+
+        GameObject bg = new GameObject("BG");
+        bg.transform.SetParent(m_StaminaBarRoot.transform, false);
+        m_StaminaBarBackgroundRenderer = bg.AddComponent<SpriteRenderer>();
+        m_StaminaBarBackgroundRenderer.sprite = CreateBarSprite();
+        m_StaminaBarBackgroundRenderer.color = new Color(0f, 0f, 0f, 0.65f);
+        m_StaminaBarBackgroundRenderer.sortingOrder = 150;
+        bg.transform.localScale = new Vector3(m_StaminaBarSize.x, m_StaminaBarSize.y, 1f);
+
+        GameObject fill = new GameObject("Fill");
+        fill.transform.SetParent(m_StaminaBarRoot.transform, false);
+        m_StaminaBarFill = fill.transform;
+        m_StaminaBarFillRenderer = fill.AddComponent<SpriteRenderer>();
+        m_StaminaBarFillRenderer.sprite = CreateBarSprite();
+        m_StaminaBarFillRenderer.color = new Color(0.2f, 0.85f, 0.3f, 0.95f);
+        m_StaminaBarFillRenderer.sortingOrder = 151;
+    }
+
+    private Sprite CreateBarSprite()
+    {
+        return Sprite.Create(Texture2D.whiteTexture, new Rect(0f, 0f, 1f, 1f), new Vector2(0.5f, 0.5f), 1f);
+    }
+
+    private void UpdateMeleeStaminaBar()
+    {
+        if (!UsesMeleeStamina())
+        {
+            if (m_StaminaBarRoot != null)
+            {
+                m_StaminaBarRoot.SetActive(false);
+            }
+
+            return;
+        }
+
+        EnsureMeleeStaminaBar();
+
+        if (m_StaminaBarRoot == null || m_StaminaBarFill == null)
+        {
+            return;
+        }
+
+        m_StaminaBarRoot.SetActive(true);
+        m_StaminaBarRoot.transform.localPosition = m_StaminaBarLocalOffset;
+
+        float maxStamina = GetClampedMaxMeleeStamina();
+        float normalized = Mathf.Clamp01(m_CurrentMeleeStamina / maxStamina);
+        float fillWidth = Mathf.Max(0.001f, m_StaminaBarSize.x * normalized);
+        m_StaminaBarFill.localScale = new Vector3(fillWidth, m_StaminaBarSize.y, 1f);
+        m_StaminaBarFill.localPosition = new Vector3((-m_StaminaBarSize.x * 0.5f) + (fillWidth * 0.5f), 0f, 0f);
+
+        if (m_StaminaBarFillRenderer != null)
+        {
+            m_StaminaBarFillRenderer.color = m_IsMeleeRecharging
+                ? new Color(0.95f, 0.7f, 0.15f, 0.95f)
+                : new Color(0.2f, 0.85f, 0.3f, 0.95f);
         }
     }
 
@@ -401,7 +594,7 @@ public abstract class BaseUnit : MonoBehaviour
                     m_MeleeAttackBehavior = GetComponent<MeleeAttackBehavior>();
                 }
 
-                if (m_MeleeAttackBehavior != null)
+                if (m_MeleeAttackBehavior != null && HasEnoughMeleeStaminaForAttack())
                 {
                     TryPerformMeleeAttack(damage);
                 }
@@ -446,10 +639,13 @@ public abstract class BaseUnit : MonoBehaviour
             return false;
         }
 
+        float range = myData.BaseDef.Range;
+
         bool didHit = m_MeleeAttackBehavior.TryPerformAttack(transform, currentTarget, meleerange, damage);
 
         if (didHit)
         {
+            ConsumeMeleeStamina(GetMeleeStaminaCostPerSwing());
             OnHit();
         }
 
@@ -477,7 +673,17 @@ public abstract class BaseUnit : MonoBehaviour
         myData.CurrentHP = 0f;
         currentTarget = null;
         SetCollidersEnabled(false);
+        if (m_StaminaBarRoot != null)
+        {
+            Destroy(m_StaminaBarRoot);
+            m_StaminaBarRoot = null;
+            m_StaminaBarFill = null;
+            m_StaminaBarFillRenderer = null;
+            m_StaminaBarBackgroundRenderer = null;
+        }
         Debug.Log($"{gameObject.name} has been defeated!");
+
+        Destroy(gameObject);
     }
 
     private void SetCollidersEnabled(bool isEnabled)
@@ -710,6 +916,7 @@ protected void SpawnSniperProjectile(GameObject prefab, float damage, bool isAOE
         currentTarget = null;
         ResizeRootColliderToTile();
         SetCollidersEnabled(true);
+        ResetMeleeStaminaState();
 
         HitTint hitTint = GetComponent<HitTint>();
         if (hitTint != null)
