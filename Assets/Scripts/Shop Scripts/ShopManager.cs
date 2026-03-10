@@ -69,15 +69,46 @@ public class ShopManager : MonoBehaviour
             useProgressionFiltering = false;
         }
         
-        toggleButton.onClick.AddListener(ToggleShop);
-        nextRoundButton.onClick.AddListener(OnNextRoundButtonClicked);
-        rerollButton.onClick.AddListener(OnRerollButtonClicked);
+        if (toggleButton != null)
+        {
+            toggleButton.onClick.AddListener(ToggleShop);
+        }
+        else
+        {
+            Debug.LogWarning("[ShopManager] Toggle button reference is missing.");
+        }
+
+        if (nextRoundButton != null)
+        {
+            nextRoundButton.onClick.AddListener(OnNextRoundButtonClicked);
+        }
+        else
+        {
+            Debug.LogWarning("[ShopManager] Next round button reference is missing.");
+        }
+
+        if (rerollButton != null)
+        {
+            rerollButton.onClick.AddListener(OnRerollButtonClicked);
+        }
+        else
+        {
+            Debug.LogWarning("[ShopManager] Reroll button reference is missing.");
+        }
         CacheNextRoundButtonLabel();
 
         CacheToggleButtonLabel();
         
-        shopPanel.SetActive(false);
-        consumableTooltip.SetActive(false);
+        if (shopPanel != null)
+        {
+            shopPanel.SetActive(false);
+        }
+
+        if (consumableTooltip != null)
+        {
+            consumableTooltip.SetActive(false);
+        }
+
         UpdateShopUIState();
         
         // Initialize all consumable slots with reference to this manager
@@ -141,6 +172,23 @@ public class ShopManager : MonoBehaviour
     /// </summary>
     private IEnumerator WaitAndPopulateShop()
     {
+        if (databaseLoader == null)
+        {
+            databaseLoader = FindFirstObjectByType<DatabaseLoader>();
+        }
+
+        if (databaseLoader != null)
+        {
+            while (!databaseLoader.IsLoaded)
+            {
+                yield return null;
+            }
+        }
+        else
+        {
+            Debug.LogWarning("[ShopManager] DatabaseLoader not found. Tower slots may not populate.");
+        }
+
         // Wait for unlock manager to be ready
         if (useProgressionFiltering && unlockManager != null)
         {
@@ -445,6 +493,7 @@ public class ShopManager : MonoBehaviour
         }
 
         var eligibleUnits = new List<UnitDefinition>();
+        var fallbackUnits = new List<UnitDefinition>();
         
         // Get unlocked unit IDs from progression system
         List<string> unlockedUnitIDs = null;
@@ -456,7 +505,7 @@ public class ShopManager : MonoBehaviour
         
         foreach (var unitDef in databaseLoader.UnitLookup.Values)
         {
-            if (!HasValidPrefab(unitDef))
+            if (unitDef == null || string.IsNullOrWhiteSpace(unitDef.UnitID))
             {
                 continue;
             }
@@ -469,8 +518,19 @@ public class ShopManager : MonoBehaviour
                     continue; // Skip locked units
                 }
             }
-            
-            eligibleUnits.Add(unitDef);
+
+            fallbackUnits.Add(unitDef);
+
+            if (HasValidPrefab(unitDef))
+            {
+                eligibleUnits.Add(unitDef);
+            }
+        }
+
+        if (eligibleUnits.Count == 0 && fallbackUnits.Count > 0)
+        {
+            Debug.LogWarning("[ShopManager] No units with valid prefabs found. Falling back to raw unit data from spreadsheet.");
+            eligibleUnits.AddRange(fallbackUnits);
         }
 
         if (eligibleUnits.Count == 0)
@@ -588,5 +648,4 @@ public class ShopManager : MonoBehaviour
         // Proceed with adding unit to inventory
     }
 }
-
 

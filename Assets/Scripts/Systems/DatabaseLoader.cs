@@ -12,6 +12,7 @@ public class DatabaseLoader : MonoBehaviour
 
     // where units definitions are stored after loading
     public Dictionary<string, UnitDefinition> UnitLookup = new Dictionary<string, UnitDefinition>();
+    public bool IsLoaded { get; private set; }
 
     void Awake()
     {
@@ -20,6 +21,7 @@ public class DatabaseLoader : MonoBehaviour
 
     public void LoadData()
     {
+        IsLoaded = false;
         StartCoroutine(LoadDataCoroutine());
     }
 
@@ -35,6 +37,7 @@ public class DatabaseLoader : MonoBehaviour
             if (request.result != UnityWebRequest.Result.Success)
             {
                 Debug.LogError($"Cannot load JSON file at {filePath}: {request.error}");
+                IsLoaded = true;
                 yield break;
             }
 
@@ -52,6 +55,7 @@ public class DatabaseLoader : MonoBehaviour
         }
 #endif
 
+        IsLoaded = true;
         yield return null;
     }
 
