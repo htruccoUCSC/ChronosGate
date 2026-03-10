@@ -10,6 +10,7 @@ public class OrbitalLaser : BaseUnit
     [SerializeField] private Tilemap m_PreviewTilemap;
     [SerializeField] private GameObject m_ProjectilePrefab;
     OrbitalLaserBehavior orbitalLaserBehavior;
+    public float orbitalLaserLifetime = 3;
 
     protected override void CastAbility()
     {
@@ -23,7 +24,7 @@ public class OrbitalLaser : BaseUnit
             behavior.Initialize(
                 nearest[0],
                 myData.GetModifiedAbilityPower()*0.4f,
-                5f, //lifetime
+                orbitalLaserLifetime, //lifetime
                 1f,//movespeed
                 0.5f, //radius
                 m_TargetMask,
