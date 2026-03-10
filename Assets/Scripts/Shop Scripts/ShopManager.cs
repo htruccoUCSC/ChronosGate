@@ -8,13 +8,11 @@ public class ShopManager : MonoBehaviour
 {
     [Header("UI References")]
     [SerializeField] private GameObject shopPanel;
-    [SerializeField] private Button toggleButton;
+    [SerializeField] private Button openShopButton;
+    [SerializeField] private Button closeShopButton;
     [SerializeField] private Button rerollButton;
     [SerializeField] private Button nextRoundButton;
     [SerializeField] private TextMeshProUGUI rerollCostText;
-    [SerializeField] private TextMeshProUGUI toggleButtonLabel;
-    [SerializeField] private string openShopText = "Open Shop";
-    [SerializeField] private string closeShopText = "Close Shop";
     
     [Header("Shop Slots")]
     [SerializeField] private ConsumableSlot[] consumableSlots = new ConsumableSlot[2];
@@ -69,12 +67,11 @@ public class ShopManager : MonoBehaviour
             useProgressionFiltering = false;
         }
         
-        toggleButton.onClick.AddListener(ToggleShop);
+        openShopButton.onClick.AddListener(OnOpenShopButtonClicked);
+        closeShopButton.onClick.AddListener(OnCloseShopButtonClicked);
         nextRoundButton.onClick.AddListener(OnNextRoundButtonClicked);
         rerollButton.onClick.AddListener(OnRerollButtonClicked);
         CacheNextRoundButtonLabel();
-
-        CacheToggleButtonLabel();
         
         shopPanel.SetActive(false);
         consumableTooltip.SetActive(false);
@@ -155,16 +152,19 @@ public class ShopManager : MonoBehaviour
         PopulateTowerSlots();
     }
     
-    public void ToggleShop()
+    private void OnOpenShopButtonClicked()
     {
         ClearNoTowerConfirmationState();
-        isShopOpen = !isShopOpen;
+        isShopOpen = true;
         UpdateShopUIState();
+    }
 
-        if (!isShopOpen)
-        {
-            HideConsumableTooltip();
-        }
+    private void OnCloseShopButtonClicked()
+    {
+        ClearNoTowerConfirmationState();
+        isShopOpen = false;
+        UpdateShopUIState();
+        HideConsumableTooltip();
     }
 
     // method for gameloopmanger to open a new shop at the start of each round - also rerolls the shop to show new options
@@ -186,13 +186,18 @@ public class ShopManager : MonoBehaviour
             shopPanel.SetActive(isShopOpen);
         }
 
-        if (toggleButton != null)
+        // Show Open button when shop is closed, Close button when shop is open
+        if (openShopButton != null)
         {
-            toggleButton.gameObject.SetActive(true);
-            toggleButton.interactable = true;
+            openShopButton.gameObject.SetActive(!isShopOpen);
+            openShopButton.interactable = !isShopOpen;
         }
 
-        UpdateToggleButtonLabel();
+        if (closeShopButton != null)
+        {
+            closeShopButton.gameObject.SetActive(isShopOpen);
+            closeShopButton.interactable = isShopOpen;
+        }
 
         if (nextRoundButton != null)
         {
@@ -203,25 +208,7 @@ public class ShopManager : MonoBehaviour
         }
     }
     
-    private void CacheToggleButtonLabel()
-    {
-        if (toggleButtonLabel != null || toggleButton == null)
-        {
-            return;
-        }
 
-        toggleButtonLabel = toggleButton.GetComponentInChildren<TextMeshProUGUI>(true);
-    }
-
-    private void UpdateToggleButtonLabel()
-    {
-        if (toggleButtonLabel == null)
-        {
-            return;
-        }
-
-        toggleButtonLabel.text = isShopOpen ? closeShopText : openShopText;
-    }
     private void OnNextRoundButtonClicked()
     {
         if (awaitingNoTowerConfirmation && Time.unscaledTime > noTowerConfirmExpiresAt)
@@ -244,9 +231,14 @@ public class ShopManager : MonoBehaviour
         HideConsumableTooltip();
         ResetRerollCost();
         // Hide shop controls when moving to combat.
-        if (toggleButton != null)
+        if (openShopButton != null)
         {
-            toggleButton.gameObject.SetActive(false);
+            openShopButton.gameObject.SetActive(false);
+        }
+
+        if (closeShopButton != null)
+        {
+            closeShopButton.gameObject.SetActive(false);
         }
 
         if (nextRoundButton != null)
