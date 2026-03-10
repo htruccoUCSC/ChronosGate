@@ -165,6 +165,9 @@ public class ItemSpawner : MonoBehaviour
             case ItemEffectType.AreaDamage:
                 ApplyAreaDamage(item, worldCenter);
                 break;
+            case ItemEffectType.TowerLevelUp:
+                ApplyTowerLevelUp(item, worldCenter);
+                break;
             case ItemEffectType.None:
             default:
                 break;
@@ -209,6 +212,46 @@ public class ItemSpawner : MonoBehaviour
     {
         int areaSize = item != null ? Mathf.Max(1, item.AreaSizeInTiles) : 3;
         return Mathf.FloorToInt((areaSize - 1) * 0.5f);
+    }
+
+    private void ApplyTowerLevelUp(ItemDefinition item, Vector3 worldCenter)
+    {
+        // Find all nearby units (towers)
+        BaseUnit[] allUnits = FindObjectsByType<BaseUnit>(FindObjectsSortMode.None);
+        
+        if (allUnits == null || allUnits.Length == 0)
+        {
+            Debug.LogWarning("No towers found to level up.");
+            return;
+        }
+
+        // Find the closest tower to the item placement location
+        BaseUnit closestTower = null;
+        float closestDistance = Mathf.Infinity;
+
+        foreach (BaseUnit unit in allUnits)
+        {
+            if (unit == null || unit.myData == null) continue;
+
+            float distance = Vector3.Distance(unit.transform.position, worldCenter);
+            if (distance < closestDistance)
+            {
+                closestDistance = distance;
+                closestTower = unit;
+            }
+        }
+
+        // Apply merge upgrade (level up) to the closest tower
+        if (closestTower != null)
+        {
+            // Create a duplicate unit definition to trigger the merge upgrade
+            closestTower.TryApplyMergeUpgrade(closestTower.myData.BaseDef);
+            Debug.Log($"Leveled up tower: {closestTower.myData.Name} to level {closestTower.myData.Level}");
+        }
+        else
+        {
+            Debug.LogWarning("Could not find a tower to level up.");
+        }
     }
 
     private IEnumerator DelayedItemEffect(ItemDefinition item, Vector3 worldCenter, GameObject placedItem)

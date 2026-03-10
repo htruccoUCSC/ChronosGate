@@ -57,6 +57,7 @@ public class Clastrophobic : MonoBehaviour
                     attackSpeedMult: 0f, attackSpeedFlat: buffAmount,
                     attackDamageFlat: buffAmount, attackDamageMult: 0f,
                     abilityPowerFlat: buffAmount, abilityPowerMult: 0f,
+                    rangeBuff: 0f,
                     OnHit: null, onHitModifier: 0f,
                     OnKill: null, onKillModifier: 0f
                 );

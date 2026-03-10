@@ -17,7 +17,7 @@ for (int x = 0; x < board.unitGrid.GetLength(0); x++)
         BaseUnit unit = board.unitGrid[x, y];
         if (unit == null) continue;
 
-        buffs.AddRoundBuff(unit,0,0,0,0,0,0,unit.ApplyAmp, 0.05f, null, 0f);
+        buffs.AddRoundBuff(unit,0,0,0,0,0,0,0f,unit.ApplyAmp, 0.05f, null, 0f);
 
     }
 

@@ -23,3 +23,13 @@ Current flow for adding a unit:
 Notes:
 
 - Keep prefab naming aligned with the unit ID in `units.json`.
+
+
+Current flow for adding a Augment.
+
+Make a monoscript in the Augments folder
+Write the script (Use similar logic augments as a template)
+Add to the augment script to the augmnet in the hierarchy
+Add your augment to AugmentSetup.cs
+add references in augmentSetup in Unity
+For testing you can make active for ease of access

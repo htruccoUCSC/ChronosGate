@@ -5,6 +5,7 @@ public abstract class BaseUnit : MonoBehaviour
 {
     // our units unique data instance
     public UnitInstance myData;
+    public string AttackType => myData != null ? myData.AttackType : null;
     public float attackTimer;
     protected Transform currentTarget;
      public BaseEnemy enemyHit;
@@ -561,7 +562,9 @@ public abstract class BaseUnit : MonoBehaviour
         int layerMask = LayerMask.GetMask("Enemies");
 
         Vector2 direction = Vector2.right;
-        float range = myData.BaseDef.Range;
+        float range = myData.BaseDef.AttackFunction == BasicAttackType.Melee
+            ? myData.GetModifiedRange()
+            : myData.BaseDef.Range;
 
         RaycastHit2D hit = Physics2D.Raycast(transform.position, direction, range, layerMask);
 
@@ -616,7 +619,7 @@ public abstract class BaseUnit : MonoBehaviour
             return false;
         }
 
-        return TryPerformMeleeAttack(damage, myData.BaseDef.Range);
+        return TryPerformMeleeAttack(damage, myData.GetModifiedRange());
     }
 
     protected bool TryPerformMeleeAttack(float damage,float meleerange)

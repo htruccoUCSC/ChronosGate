@@ -31,7 +31,7 @@ public class StimUnit : BaseUnit
             int dur = Mathf.CeilToInt(m_buffDuration);
             if (m_BuffSystem != null)
             {
-                m_BuffSystem.AddTempBuff(tower, mult, 0f, 0f, 0f, 0f, 0f, dur, null, 0f, null, 0f);
+                m_BuffSystem.AddTempBuff(tower, mult, 0f, 0f, 0f, 0f, 0f, 0f, dur, null, 0f, null, 0f);
             }
             else
             {
@@ -57,7 +57,7 @@ public class StimUnit : BaseUnit
         int basicDur = Mathf.CeilToInt(m_buffDuration);
         if (m_BuffSystem != null)
         {
-            m_BuffSystem.AddTempBuff(buffTarget, basicMult, 0f, 0f, 0f, 0f, 0f, basicDur, null, 0f, null, 0f);
+            m_BuffSystem.AddTempBuff(buffTarget, basicMult, 0f, 0f, 0f, 0f, 0f, 0f, basicDur, null, 0f, null, 0f);
              Debug.Log($"{buffTarget.name} receives Stim's attack buff for {m_buffDuration} seconds");
         }
         else
