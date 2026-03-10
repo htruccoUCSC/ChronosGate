@@ -43,6 +43,7 @@ public class FaceHuggerNest : BaseUnit
                 isCharged = true;
                 currentCharge = chargeTime;
                 CastAbility();
+                NotifyAbilityUsed();
             }
         }
     }
