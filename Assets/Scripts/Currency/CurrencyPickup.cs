@@ -9,9 +9,20 @@ public class CurrencyPickup : MonoBehaviour, IPointerClickHandler
 
     [SerializeField] private int amount = 1;
 
+    private void Awake()
+    {
+        EnsureNonBlockingColliders();
+    }
+
+    private void OnEnable()
+    {
+        EnsureNonBlockingColliders();
+    }
+
     public void Configure(int newAmount)
     {
         amount = newAmount;
+        EnsureNonBlockingColliders();
         gameObject.SetActive(true);
     }
 
@@ -29,5 +40,17 @@ public class CurrencyPickup : MonoBehaviour, IPointerClickHandler
     {
         Collected?.Invoke(amount);
         Destroy(gameObject);
+    }
+
+    private void EnsureNonBlockingColliders()
+    {
+        Collider2D[] pickupColliders = GetComponentsInChildren<Collider2D>(true);
+        for (int i = 0; i < pickupColliders.Length; i++)
+        {
+            if (pickupColliders[i] != null)
+            {
+                pickupColliders[i].isTrigger = true;
+            }
+        }
     }
 }

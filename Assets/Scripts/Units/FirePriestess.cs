@@ -4,9 +4,8 @@ using System.Collections.Generic;
 
 public class FirePriestess : BaseUnit
 {
-    [SerializeField] private CurrencyPickup m_CurrencyPickupPrefab;
+    // [SerializeField] private CurrencyPickup m_CurrencyPickupPrefab;
     [SerializeField] private float m_CurrencyPerActiveFireBuff = 5f;
-    [SerializeField] private float m_CurrencySpawnRadius = 0.4f;
 
     private BoardManager m_BoardManager;
     private Buffs m_BuffSystem;
@@ -64,7 +63,7 @@ public class FirePriestess : BaseUnit
         if (totalFireStacks > 0)
         {
             // Generate currency based on fire stacks
-            int currencyAmount = Mathf.Max(1, Mathf.RoundToInt(totalFireStacks * m_CurrencyPerActiveFireBuff + myData.GetModifiedAbilityPower()));
+            int currencyAmount = Mathf.Max(1, Mathf.RoundToInt(totalFireStacks * m_CurrencyPerActiveFireBuff + myData.GetModifiedAbilityPower())/50);
             SpawnCurrency(currencyAmount);
 
             Debug.Log($"Fire Priestess generated {currencyAmount} flux from {totalFireStacks} fire stacks on enemies");
@@ -196,15 +195,13 @@ public class FirePriestess : BaseUnit
 
     private void SpawnCurrency(int amount)
     {
-        if (m_CurrencyPickupPrefab == null)
+        if (CurrencyManager.Instance == null)
         {
-            Debug.LogWarning("Fire Priestess has no currency pickup prefab assigned.");
+            Debug.LogWarning("Fire Priestess could not add currency because CurrencyManager is missing.");
             return;
         }
 
-        Vector2 offset = Random.insideUnitCircle * m_CurrencySpawnRadius;
-        CurrencyPickup pickup = Instantiate(m_CurrencyPickupPrefab, transform.position + (Vector3)offset, Quaternion.identity);
-        pickup.Configure(amount);
+        CurrencyManager.Instance.AddCurrency(amount, transform.position);
     }
 }
 
