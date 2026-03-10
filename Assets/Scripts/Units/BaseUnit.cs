@@ -34,6 +34,8 @@ public abstract class BaseUnit : MonoBehaviour
     private SpriteRenderer m_StaminaBarFillRenderer;
     private SpriteRenderer m_StaminaBarBackgroundRenderer;
 
+    public static System.Action<BaseUnit> AbilityUsed;
+
 
 
     // how much of the tile we want the unit to fill
@@ -369,6 +371,7 @@ public abstract class BaseUnit : MonoBehaviour
                 {
                     CastAbility();
                     myData.CurrentMana = 0;
+                    NotifyAbilityUsed();
                 }
         if (currentTarget != null)
         {
@@ -801,6 +804,11 @@ protected void SpawnSniperProjectile(GameObject prefab, float damage, bool isAOE
 
     // ability needs to be implemented by each unit type
     protected abstract void CastAbility();
+
+    protected void NotifyAbilityUsed()
+    {
+        AbilityUsed?.Invoke(this);
+    }
     public void AddTempBuff(Buff buff)
     {
         activeBuffs.Add(buff);
@@ -969,7 +977,7 @@ protected void SpawnSniperProjectile(GameObject prefab, float damage, bool isAOE
     //TODO REMOVE THIS TO NEW FILE
     public void LuckyShotPerformAutoAttack()
     {
-        int randomChance = Random.Range(0, 2);
+        int randomChance = UnityEngine.Random.Range(0, 2);
         if(randomChance == 1){
         Debug.Log("Lucky Shot Activated! Unit performs an immediate basic attack.");
         PerformBasicAttack();

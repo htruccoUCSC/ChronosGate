@@ -17,6 +17,25 @@ public class StimUnit : BaseUnit
         m_BuffSystem = FindFirstObjectByType<Buffs>();
     }
 
+    protected override void ScanTargeting()
+    {
+        List<BaseUnit> rightAdjacent = GetRightAdjacentTowers();
+        if (rightAdjacent.Count > 0)
+        {
+            currentTarget = rightAdjacent[0].transform;
+            return;
+        }
+
+        List<BaseUnit> upDownAdjacent = GetUpDownTowers();
+        if (upDownAdjacent.Count > 0)
+        {
+            currentTarget = upDownAdjacent[0].transform;
+            return;
+        }
+
+        currentTarget = null;
+    }
+
     protected override void CastAbility()
     {
         Debug.Log("Stim uses ability");
