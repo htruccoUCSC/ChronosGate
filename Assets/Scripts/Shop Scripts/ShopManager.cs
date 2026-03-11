@@ -17,6 +17,8 @@ public class ShopManager : MonoBehaviour
     [SerializeField] private string closeShopText = "Close Shop";
     [SerializeField] private string pauseText = "Pause";
     [SerializeField] private string resumeText = "Resume";
+    [SerializeField] private Color openShopButtonColor = new Color(0.2f, 0.8f, 0.2f, 1f);
+    [SerializeField] private Color closeShopButtonColor = new Color(0.85f, 0.25f, 0.25f, 1f);
     
     [Header("Shop Slots")]
     [SerializeField] private ConsumableSlot[] consumableSlots = new ConsumableSlot[2];
@@ -334,12 +336,17 @@ public class ShopManager : MonoBehaviour
 
     private void UpdateToggleButtonLabel()
     {
-        if (toggleButtonLabel == null)
+        bool showingOpenState = !isShopOpen;
+
+        if (toggleButtonLabel != null)
         {
-            return;
+            toggleButtonLabel.text = showingOpenState ? openShopText : closeShopText;
         }
 
-        toggleButtonLabel.text = isShopOpen ? closeShopText : openShopText;
+        if (toggleButton != null && toggleButton.targetGraphic is Graphic graphic)
+        {
+            graphic.color = showingOpenState ? openShopButtonColor : closeShopButtonColor;
+        }
     }
 
     private void UpdatePauseButtonLabel()

@@ -118,6 +118,7 @@ public class GameLoopManager : MonoBehaviour
         if (shopManager != null)
         {
             shopManager.SetGameplayUIVisible(false);
+            shopManager.ResetRerollCost();
         }
         
         if (augmentSelectionUI != null)
