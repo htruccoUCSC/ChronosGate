@@ -236,30 +236,35 @@ public class InventorySlotDrag : MonoBehaviour, IBeginDragHandler, IDragHandler,
         }
     }
 
-    // Screen Space - Camera canvases need mouse screen coordinates converted
-    // into the canvas's local UI space. Needed for Screen Space Camera canvases.
-    // - Bayo Bandele, 08/03/2026
-    // Old version:{ m_DragObject.transform.position = eventData.position;}
     private void UpdatePosition(PointerEventData eventData)
-{
-    if (m_DragObject == null) return;
-
-    Canvas canvas = m_InventoryUI.GetComponentInParent<Canvas>();
-    RectTransform canvasRect = canvas.transform as RectTransform;
-    RectTransform dragRect = m_DragObject.GetComponent<RectTransform>();
-
-    if (canvasRect == null || dragRect == null) return;
-
-    Vector2 localPoint;
-    if (RectTransformUtility.ScreenPointToLocalPointInRectangle(
-        canvasRect,
-        eventData.position,
-        canvas.worldCamera,
-        out localPoint))
     {
-        dragRect.localPosition = localPoint;
+        if (m_DragObject == null) return;
+
+        Canvas canvas = m_InventoryUI.GetComponentInParent<Canvas>();
+        RectTransform dragRect = m_DragObject.GetComponent<RectTransform>();
+
+        if (canvas == null || dragRect == null) return;
+
+        if (canvas.renderMode == RenderMode.ScreenSpaceOverlay)
+        {
+            dragRect.position = eventData.position;
+            return;
+        }
+
+        RectTransform canvasRect = canvas.transform as RectTransform;
+        if (canvasRect == null) return;
+
+        Camera eventCamera = canvas.renderMode == RenderMode.ScreenSpaceOverlay ? null : canvas.worldCamera;
+        Vector2 localPoint;
+        if (RectTransformUtility.ScreenPointToLocalPointInRectangle(
+            canvasRect,
+            eventData.position,
+            eventCamera,
+            out localPoint))
+        {
+            dragRect.localPosition = localPoint;
+        }
     }
-}
 
     private void UpdateRangePreview(PointerEventData eventData)
     {

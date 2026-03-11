@@ -129,7 +129,12 @@ public class GameSpeedButton : MonoBehaviour
         }
 
         bool show = true;
-        if (GameLoopManager.Instance != null)
+        if (GameLoopManagerOld.Instance != null)
+        {
+            show = GameLoopManagerOld.Instance.CurrentState != GameLoopManagerOld.GameState.AugmentSelection
+                && GameLoopManagerOld.Instance.CurrentState != GameLoopManagerOld.GameState.GameOver;
+        }
+        else if (GameLoopManager.Instance != null)
         {
             show = GameLoopManager.Instance.CurrentState != GameLoopManager.GameState.AugmentSelection
                 && GameLoopManager.Instance.CurrentState != GameLoopManager.GameState.GameOver;

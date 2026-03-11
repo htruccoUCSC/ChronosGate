@@ -13,6 +13,7 @@ public class ConsumableSlot : MonoBehaviour, IPointerEnterHandler, IPointerExitH
     
     private ItemDefinition itemDefinition;
     private ShopManager shopManager;
+    private ShopManagerOld shopManagerOld;
     private ItemInventoryUI itemInventoryUI;
     
     private void Awake()
@@ -77,6 +78,14 @@ public class ConsumableSlot : MonoBehaviour, IPointerEnterHandler, IPointerExitH
     public void Initialize(ShopManager manager)
     {
         shopManager = manager;
+        shopManagerOld = null;
+        Debug.Log($"ShopManager initialized for {gameObject.name}");
+    }
+
+    public void Initialize(ShopManagerOld manager)
+    {
+        shopManagerOld = manager;
+        shopManager = null;
         Debug.Log($"ShopManager initialized for {gameObject.name}");
     }
     
@@ -132,6 +141,15 @@ public class ConsumableSlot : MonoBehaviour, IPointerEnterHandler, IPointerExitH
         if (shopManager != null)
         {
             shopManager.ShowConsumableTooltip(itemDefinition.Description);
+            return;
+        }
+
+        if (shopManagerOld != null)
+        {
+            if (shopManagerOld.UsesTooltipOverlay())
+            {
+                shopManagerOld.ShowConsumableTooltip(itemDefinition.Description);
+            }
         }
     }
     
@@ -142,6 +160,15 @@ public class ConsumableSlot : MonoBehaviour, IPointerEnterHandler, IPointerExitH
         if (shopManager != null)
         {
             shopManager.HideConsumableTooltip();
+            return;
+        }
+
+        if (shopManagerOld != null)
+        {
+            if (shopManagerOld.UsesTooltipOverlay())
+            {
+                shopManagerOld.HideConsumableTooltip();
+            }
         }
     }
     
