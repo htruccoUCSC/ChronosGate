@@ -85,16 +85,14 @@ public class ConsumableSlot : MonoBehaviour, IPointerEnterHandler, IPointerExitH
     
     public void OnPointerEnter(PointerEventData eventData)
     {
-        Debug.Log($"Pointer entered {gameObject.name}");
-        
-        if (itemDefinition != null && shopManager != null)
+        if (itemDefinition == null)
         {
-            Debug.Log($"Showing tooltip for: {itemDefinition.DisplayName}");
-            shopManager.ShowConsumableTooltip(itemDefinition.Description);
+            return;
         }
-        else
+
+        if (shopManager != null)
         {
-            Debug.LogWarning($"Cannot show tooltip - itemDefinition: {itemDefinition != null}, shopManager: {shopManager != null}");
+            shopManager.ShowConsumableTooltip(itemDefinition.Description);
         }
     }
     

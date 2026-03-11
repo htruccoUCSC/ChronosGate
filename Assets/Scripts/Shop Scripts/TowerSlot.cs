@@ -2,8 +2,9 @@ using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 using System.Collections.Generic;
+using UnityEngine.EventSystems;
 
-public class TowerSlot : MonoBehaviour
+public class TowerSlot : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
 {
     [Header("UI Components")]
     [SerializeField] private TextMeshProUGUI eraText;
@@ -17,6 +18,7 @@ public class TowerSlot : MonoBehaviour
 
     private UnitDefinition unitDefinition;
     private InventoryUI inventoryUI;
+    private ShopManager shopManager;
 
     private void Awake()
     {
@@ -34,6 +36,10 @@ public class TowerSlot : MonoBehaviour
     public void Initialize(InventoryUI inventory)
     {
         inventoryUI = inventory;
+        if (shopManager == null)
+        {
+            shopManager = FindFirstObjectByType<ShopManager>();
+        }
     }
 
     public void Setup(UnitDefinition data)
@@ -133,6 +139,37 @@ public class TowerSlot : MonoBehaviour
             Debug.Log("Inventory is full.");
             // Refund currency if inventory is full
             currencyManager.AddCurrency(unitDefinition.Cost);
+        }
+    }
+
+    public void OnPointerEnter(PointerEventData eventData)
+    {
+        if (unitDefinition == null)
+        {
+            return;
+        }
+
+        if (shopManager == null)
+        {
+            shopManager = FindFirstObjectByType<ShopManager>();
+        }
+
+        if (shopManager != null)
+        {
+            shopManager.ShowConsumableTooltip(unitDefinition.Description);
+        }
+    }
+
+    public void OnPointerExit(PointerEventData eventData)
+    {
+        if (shopManager == null)
+        {
+            shopManager = FindFirstObjectByType<ShopManager>();
+        }
+
+        if (shopManager != null)
+        {
+            shopManager.HideConsumableTooltip();
         }
     }
 

@@ -53,6 +53,16 @@ public class GameSpeedButton : MonoBehaviour
         RefreshLabel();
     }
 
+    public bool IsPaused()
+    {
+        return m_IsPaused;
+    }
+
+    public void TogglePaused()
+    {
+        SetPaused(!m_IsPaused);
+    }
+
     public void ResetToDefaultSpeed()
     {
         m_CurrentSpeedIndex = Mathf.Clamp(m_DefaultSpeedIndex, 0, m_Speeds.Length - 1);

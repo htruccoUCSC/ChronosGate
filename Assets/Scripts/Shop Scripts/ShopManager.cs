@@ -15,6 +15,8 @@ public class ShopManager : MonoBehaviour
     [SerializeField] private TextMeshProUGUI toggleButtonLabel;
     [SerializeField] private string openShopText = "Open Shop";
     [SerializeField] private string closeShopText = "Close Shop";
+    [SerializeField] private string pauseText = "Pause";
+    [SerializeField] private string resumeText = "Resume";
     
     [Header("Shop Slots")]
     [SerializeField] private ConsumableSlot[] consumableSlots = new ConsumableSlot[2];
@@ -34,20 +36,19 @@ public class ShopManager : MonoBehaviour
     
     [Header("Progression Settings")]
     [SerializeField] private bool useProgressionFiltering = true;
-
-    [Header("Next Round Confirmation")]
-    [SerializeField] private float noTowerConfirmWindowSeconds = 2f;
-    [SerializeField] private string noTowerConfirmWarning = "No towers placed. Click Next Round again to confirm.";
     
+    [Header("Visibility")]
+    [SerializeField] private bool alwaysVisibleDuringGameplay = false;
+    [SerializeField] private bool startOpenWhenGameplayVisible = true;
+
     private bool isShopOpen = false;
     private int rerollCost = 1;
     private CurrencyManager currencyManager;
     private UnitUnlockManager unlockManager;
     private BoardManager boardManager;
-    private bool awaitingNoTowerConfirmation;
-    private float noTowerConfirmExpiresAt;
     private TextMeshProUGUI nextRoundButtonLabel;
     private string cachedNextRoundLabelText;
+    private bool gameplayUIVisible;
     
     private void Start()
     {
@@ -69,6 +70,11 @@ public class ShopManager : MonoBehaviour
             useProgressionFiltering = false;
         }
         
+        if (toggleButton == null)
+        {
+            toggleButton = FindButtonByName("toggleshopbutton");
+        }
+
         if (toggleButton != null)
         {
             toggleButton.onClick.AddListener(ToggleShop);
@@ -80,11 +86,11 @@ public class ShopManager : MonoBehaviour
 
         if (nextRoundButton != null)
         {
-            nextRoundButton.onClick.AddListener(OnNextRoundButtonClicked);
+            nextRoundButton.onClick.AddListener(OnPauseButtonClicked);
         }
         else
         {
-            Debug.LogWarning("[ShopManager] Next round button reference is missing.");
+            Debug.LogWarning("[ShopManager] Pause button reference is missing.");
         }
 
         if (rerollButton != null)
@@ -99,6 +105,8 @@ public class ShopManager : MonoBehaviour
 
         CacheToggleButtonLabel();
         
+        gameplayUIVisible = false;
+        isShopOpen = false;
         if (shopPanel != null)
         {
             shopPanel.SetActive(false);
@@ -160,10 +168,6 @@ public class ShopManager : MonoBehaviour
 
     private void Update()
     {
-        if (awaitingNoTowerConfirmation && Time.unscaledTime > noTowerConfirmExpiresAt)
-        {
-            ClearNoTowerConfirmationState();
-        }
     }
     
     /// <summary>
@@ -205,7 +209,18 @@ public class ShopManager : MonoBehaviour
     
     public void ToggleShop()
     {
-        ClearNoTowerConfirmationState();
+        if (!gameplayUIVisible)
+        {
+            return;
+        }
+
+        if (alwaysVisibleDuringGameplay)
+        {
+            isShopOpen = true;
+            UpdateShopUIState();
+            return;
+        }
+
         isShopOpen = !isShopOpen;
         UpdateShopUIState();
 
@@ -218,7 +233,11 @@ public class ShopManager : MonoBehaviour
     // method for gameloopmanger to open a new shop at the start of each round - also rerolls the shop to show new options
     public void OpenShop()
     {
-        ClearNoTowerConfirmationState();
+        if (!gameplayUIVisible)
+        {
+            return;
+        }
+
         isShopOpen = true;
         UpdateShopUIState();
 
@@ -227,25 +246,57 @@ public class ShopManager : MonoBehaviour
         PopulateTowerSlots();
     }
 
+    public void CloseShopPanel()
+    {
+        isShopOpen = false;
+        HideConsumableTooltip();
+        UpdateShopUIState();
+    }
+
+    public void SetGameplayUIVisible(bool visible)
+    {
+        bool wasGameplayUIVisible = gameplayUIVisible;
+        gameplayUIVisible = visible;
+        if (!visible)
+        {
+            isShopOpen = false;
+            HideConsumableTooltip();
+        }
+        else if (alwaysVisibleDuringGameplay)
+        {
+            isShopOpen = true;
+        }
+        else if (!wasGameplayUIVisible && startOpenWhenGameplayVisible)
+        {
+            isShopOpen = true;
+        }
+
+        UpdateShopUIState();
+        UpdatePauseButtonLabel();
+    }
+
     private void UpdateShopUIState()
     {
+        bool showPersistentShop = gameplayUIVisible && alwaysVisibleDuringGameplay;
+        bool showPanel = gameplayUIVisible && (showPersistentShop || isShopOpen);
+        
         if (shopPanel != null)
         {
-            shopPanel.SetActive(isShopOpen);
+            shopPanel.SetActive(showPanel);
         }
 
         if (toggleButton != null)
         {
-            toggleButton.gameObject.SetActive(true);
-            toggleButton.interactable = true;
+            bool showToggle = gameplayUIVisible && !showPersistentShop;
+            toggleButton.gameObject.SetActive(showToggle);
+            toggleButton.interactable = showToggle;
         }
 
         UpdateToggleButtonLabel();
 
         if (nextRoundButton != null)
         {
-            // Next Round only appears when shop is closed.
-            bool showNextRound = !isShopOpen;
+            bool showNextRound = gameplayUIVisible;
             nextRoundButton.gameObject.SetActive(showNextRound);
             nextRoundButton.interactable = showNextRound;
         }
@@ -261,6 +312,26 @@ public class ShopManager : MonoBehaviour
         toggleButtonLabel = toggleButton.GetComponentInChildren<TextMeshProUGUI>(true);
     }
 
+    private Button FindButtonByName(string targetNameLower)
+    {
+        Button[] buttons = FindObjectsByType<Button>(FindObjectsSortMode.None);
+        foreach (Button candidate in buttons)
+        {
+            if (candidate == null)
+            {
+                continue;
+            }
+
+            string candidateName = candidate.gameObject.name.ToLower();
+            if (candidateName.Contains(targetNameLower))
+            {
+                return candidate;
+            }
+        }
+
+        return null;
+    }
+
     private void UpdateToggleButtonLabel()
     {
         if (toggleButtonLabel == null)
@@ -270,70 +341,26 @@ public class ShopManager : MonoBehaviour
 
         toggleButtonLabel.text = isShopOpen ? closeShopText : openShopText;
     }
-    private void OnNextRoundButtonClicked()
+
+    private void UpdatePauseButtonLabel()
     {
-        if (awaitingNoTowerConfirmation && Time.unscaledTime > noTowerConfirmExpiresAt)
+        if (nextRoundButtonLabel == null)
         {
-            ClearNoTowerConfirmationState();
+            return;
         }
 
-        if (!HasAnyPlacedTower())
-        {
-            if (!awaitingNoTowerConfirmation)
-            {
-                BeginNoTowerConfirmationState();
-                return;
-            }
-        }
-
-        ClearNoTowerConfirmationState();
-        isShopOpen = false;
-        UpdateShopUIState();
-        HideConsumableTooltip();
-        ResetRerollCost();
-        // Hide shop controls when moving to combat.
-        if (toggleButton != null)
-        {
-            toggleButton.gameObject.SetActive(false);
-        }
-
-        if (nextRoundButton != null)
-        {
-            nextRoundButton.gameObject.SetActive(false);
-        }
-
-        // Notify game loop manager
-        if (GameLoopManager.Instance != null)
-        {
-            GameLoopManager.Instance.OnNextRoundPressed();
-        }
+        bool isPaused = GameSpeedButton.Instance != null && GameSpeedButton.Instance.IsPaused();
+        nextRoundButtonLabel.text = isPaused ? resumeText : pauseText;
     }
 
-    private bool HasAnyPlacedTower()
+    private void OnPauseButtonClicked()
     {
-        if (boardManager == null)
+        if (GameSpeedButton.Instance != null)
         {
-            boardManager = FindFirstObjectByType<BoardManager>();
-            if (boardManager == null || boardManager.unitGrid == null)
-            {
-                return true;
-            }
+            GameSpeedButton.Instance.TogglePaused();
         }
 
-        int sizeX = boardManager.unitGrid.GetLength(0);
-        int sizeY = boardManager.unitGrid.GetLength(1);
-        for (int x = 0; x < sizeX; x++)
-        {
-            for (int y = 0; y < sizeY; y++)
-            {
-                if (boardManager.unitGrid[x, y] != null)
-                {
-                    return true;
-                }
-            }
-        }
-
-        return false;
+        UpdatePauseButtonLabel();
     }
 
     private void CacheNextRoundButtonLabel()
@@ -348,29 +375,7 @@ public class ShopManager : MonoBehaviour
         {
             cachedNextRoundLabelText = nextRoundButtonLabel.text;
         }
-    }
-
-    private void BeginNoTowerConfirmationState()
-    {
-        awaitingNoTowerConfirmation = true;
-        noTowerConfirmExpiresAt = Time.unscaledTime + Mathf.Max(0.25f, noTowerConfirmWindowSeconds);
-        Debug.LogWarning(noTowerConfirmWarning);
-
-        if (nextRoundButtonLabel != null)
-        {
-            nextRoundButtonLabel.text = "Confirm: No Towers Placed";
-        }
-    }
-
-    private void ClearNoTowerConfirmationState()
-    {
-        awaitingNoTowerConfirmation = false;
-        noTowerConfirmExpiresAt = 0f;
-
-        if (nextRoundButtonLabel != null && !string.IsNullOrEmpty(cachedNextRoundLabelText))
-        {
-            nextRoundButtonLabel.text = cachedNextRoundLabelText;
-        }
+        UpdatePauseButtonLabel();
     }
     
     private void OnRerollButtonClicked()
@@ -648,4 +653,3 @@ public class ShopManager : MonoBehaviour
         // Proceed with adding unit to inventory
     }
 }
-
