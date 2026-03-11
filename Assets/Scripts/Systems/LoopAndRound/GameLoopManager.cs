@@ -23,7 +23,7 @@ public class GameLoopManager : MonoBehaviour
     [SerializeField] protected int wavesPerAugmentCycle = 3;
     [SerializeField] protected bool autoStartRounds = true;
     [SerializeField] protected float autoStartRoundDelay = 1.5f;
-    [SerializeField] protected bool reopenShopEachRound = false;
+    [SerializeField] protected bool reopenShopEachRound = true;
 
     protected int currentWaveInCycle = 0;
     protected bool isGameActive = false;
@@ -147,6 +147,7 @@ public class GameLoopManager : MonoBehaviour
         if (shopManager != null)
         {
             shopManager.SetGameplayUIVisible(true);
+            shopManager.RefreshShopContents();
             if (shouldOpenShopPanel)
             {
                 shopManager.OpenShop();

@@ -77,7 +77,7 @@ public class AugmentSetup : MonoBehaviour
         augmentManager.AddInactiveAugment(AbilityPowerOnCastWrapper);
         augmentManager.AddInactiveAugment(TimeSpiralWrapper);
         //ACTIVE FOR TESTING ONLY IF STARTED HERE, DELETE LATER
-         augmentManager.AddActiveAugment(TimeSpiralWrapper);
+        // augmentManager.AddActiveAugment(TimeSpiralWrapper);
         // augmentManager.AddActiveAugment(ApeTogetherStrongWrapper);
         // augmentManager.AddActiveAugment(ToTheMoonWrapper);
         // augmentManager.AddActiveAugment(LuckyShotWrapper);  
