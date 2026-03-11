@@ -356,8 +356,8 @@ public abstract class BaseUnit : MonoBehaviour
     // example update loop which will probably be entirely scrapped later
     protected virtual void Update()
     {
-        // dont run any logic if the round isn't active
-        if (GameLoopManager.Instance != null && GameLoopManager.Instance.CurrentState != GameLoopManager.GameState.Combat)
+        // Don't run combat logic unless whichever loop manager is active is in combat.
+        if (!IsCombatActive())
         {
             return;
         }
@@ -388,6 +388,21 @@ public abstract class BaseUnit : MonoBehaviour
                 attackTimer = (1f / myData.GetModifiedAttackSpeed()) + GetAdditionalAttackDelay();
             }
         }
+    }
+
+    private static bool IsCombatActive()
+    {
+        if (GameLoopManagerOld.Instance != null)
+        {
+            return GameLoopManagerOld.Instance.CurrentState == GameLoopManagerOld.GameState.Combat;
+        }
+
+        if (GameLoopManager.Instance != null)
+        {
+            return GameLoopManager.Instance.CurrentState == GameLoopManager.GameState.Combat;
+        }
+
+        return true;
     }
 
     private void UpdateMeleeStamina(float deltaTime)
