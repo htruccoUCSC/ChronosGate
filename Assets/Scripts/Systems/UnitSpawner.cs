@@ -5,13 +5,23 @@ public class UnitSpawner : MonoBehaviour
 {
     public BoardManager board;
 
-    // CHANGED: Now accepts a Definition, creates the Instance internally
     public bool TrySpawnFromInventory(UnitDefinition def)
+    {
+        if (Mouse.current == null)
+        {
+            Debug.LogError($"[UnitSpawner] Mouse.current is null (Input System?). Cannot spawn '{def?.UnitID}'.");
+            return false;
+        }
+
+        return TrySpawnAtScreenPosition(def, Mouse.current.position.ReadValue());
+    }
+
+    public bool TrySpawnAtScreenPosition(UnitDefinition def, Vector2 screenPosition)
     {
         // Defensive guards so we don't crash and we get actionable console errors
         if (def == null)
         {
-            Debug.LogError("[UnitSpawner] TrySpawnFromInventory called with null UnitDefinition.");
+            Debug.LogError("[UnitSpawner] TrySpawnAtScreenPosition called with null UnitDefinition.");
             return false;
         }
 
@@ -33,19 +43,13 @@ public class UnitSpawner : MonoBehaviour
             return false;
         }
 
-        if (Mouse.current == null)
-        {
-            Debug.LogError($"[UnitSpawner] Mouse.current is null (Input System?). Cannot spawn '{def.UnitID}'.");
-            return false;
-        }
-
         if (string.IsNullOrWhiteSpace(def.PrefabPath))
         {
             Debug.LogError($"[UnitSpawner] '{def.UnitID}' has empty PrefabPath. Check units.json/export.");
             return false;
         }
 
-        Vector3 rawWorldPos = Camera.main.ScreenToWorldPoint(Mouse.current.position.ReadValue());
+        Vector3 rawWorldPos = Camera.main.ScreenToWorldPoint(screenPosition);
         rawWorldPos.z = 0;
         Vector3Int cellPos = board.GameTilemap.WorldToCell(rawWorldPos);
 
