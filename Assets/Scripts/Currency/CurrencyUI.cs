@@ -1,11 +1,26 @@
 using UnityEngine;
 using TMPro;
+using UnityEngine.UI;
 
 public class CurrencyUI : MonoBehaviour
 {
+    public static CurrencyUI Instance { get; private set; }
+
     [SerializeField] private TextMeshProUGUI currencyText;
     private CurrencyManager currencyManager;
+    private Canvas m_Canvas;
     
+    private void Awake()
+    {
+        if (Instance != null && Instance != this)
+        {
+            return;
+        }
+
+        Instance = this;
+        m_Canvas = GetComponentInParent<Canvas>();
+    }
+
     private void Start()
     {
         currencyManager = CurrencyManager.Instance;
@@ -30,9 +45,24 @@ public class CurrencyUI : MonoBehaviour
             currencyText.text = $"Gold: {newCurrency}";
         }
     }
+
+    public void PlayCurrencyGainAnimation(Vector3 worldOrigin, int amount)
+    {
+        if (amount <= 0 || currencyText == null || m_Canvas == null)
+        {
+            return;
+        }
+
+        CurrencyFlyVfx.Spawn(m_Canvas, currencyText.rectTransform, worldOrigin, amount);
+    }
     
     private void OnDestroy()
     {
+        if (Instance == this)
+        {
+            Instance = null;
+        }
+
         if (currencyManager != null)
         {
             currencyManager.OnCurrencyChanged -= UpdateCurrencyDisplay;

@@ -4,11 +4,10 @@ using System.Collections.Generic;
 
 public class Fairy : BaseUnit
 {
-    [SerializeField] private CurrencyPickup m_CurrencyPickupPrefab;
-    [SerializeField] private int m_BaseCurrencyAmount = 2;
+    // [SerializeField] private CurrencyPickup m_CurrencyPickupPrefab;
+
     [SerializeField] private float m_HealAmount = 15f;
     [SerializeField] private float m_OverhealCurrencyMultiplier = 1.5f;
-    [SerializeField] private float m_CurrencySpawnRadius = 0.4f;
 
     private BoardManager m_BoardManager;
     private int m_BasicAttackCounter = 0;
@@ -31,12 +30,9 @@ public class Fairy : BaseUnit
     protected override void PerformBasicAttack()
     {
         // Generate currency every other basic attack (double the time required)
-        m_BasicAttackCounter++;
-        if (m_BasicAttackCounter >= 2)
-        {
-            SpawnCurrency(m_BaseCurrencyAmount);
-            m_BasicAttackCounter = 0;
-        }
+
+            SpawnCurrency((int)(myData.GetModifiedDamage() / 50f));
+
     }
 
     protected override void CastAbility()
@@ -72,7 +68,7 @@ public class Fairy : BaseUnit
         }
 
         // Also generate base currency
-        SpawnCurrency(m_BaseCurrencyAmount);
+        SpawnCurrency((int)(myData.GetModifiedDamage() / 50f));
 
         Debug.Log($"Fairy healed {targetUnit.name} for {healAmount}. Overheal: {overhealAmount}");
     }
@@ -120,14 +116,12 @@ public class Fairy : BaseUnit
 
     private void SpawnCurrency(int amount)
     {
-        if (m_CurrencyPickupPrefab == null)
+        if (CurrencyManager.Instance == null)
         {
-            Debug.LogWarning("Fairy has no currency pickup prefab assigned.");
+            Debug.LogWarning("Fairy could not add currency because CurrencyManager is missing.");
             return;
         }
 
-        Vector2 offset = Random.insideUnitCircle * m_CurrencySpawnRadius;
-        CurrencyPickup pickup = Instantiate(m_CurrencyPickupPrefab, transform.position + (Vector3)offset, Quaternion.identity);
-        pickup.Configure(amount);
+        CurrencyManager.Instance.AddCurrency(amount, transform.position);
     }
 }
