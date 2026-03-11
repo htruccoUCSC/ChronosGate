@@ -17,7 +17,61 @@ public class ConsumableSlot : MonoBehaviour, IPointerEnterHandler, IPointerExitH
     
     private void Awake()
     {
-        button.onClick.AddListener(OnSlotClicked);
+        AutoAssignReferences();
+
+        if (button == null)
+        {
+            button = GetComponent<Button>();
+            if (button == null)
+            {
+                button = GetComponentInChildren<Button>(true);
+            }
+        }
+
+        if (button != null)
+        {
+            button.onClick.RemoveListener(OnSlotClicked);
+            button.onClick.AddListener(OnSlotClicked);
+        }
+        else
+        {
+            Debug.LogWarning($"[ConsumableSlot] {gameObject.name} is missing a Button reference.");
+        }
+    }
+
+    private void AutoAssignReferences()
+    {
+        if (nameText == null || costText == null)
+        {
+            TextMeshProUGUI[] texts = GetComponentsInChildren<TextMeshProUGUI>(true);
+            foreach (TextMeshProUGUI text in texts)
+            {
+                string lowerName = text.gameObject.name.ToLower();
+                if (nameText == null && lowerName.Contains("name"))
+                {
+                    nameText = text;
+                    continue;
+                }
+
+                if (costText == null && lowerName.Contains("cost"))
+                {
+                    costText = text;
+                }
+            }
+        }
+
+        if (iconImage == null)
+        {
+            Image[] images = GetComponentsInChildren<Image>(true);
+            foreach (Image image in images)
+            {
+                if (image != null && image.gameObject.name.ToLower().Contains("icon"))
+                {
+                    iconImage = image;
+                    break;
+                }
+            }
+        }
     }
     
     public void Initialize(ShopManager manager)
@@ -34,14 +88,18 @@ public class ConsumableSlot : MonoBehaviour, IPointerEnterHandler, IPointerExitH
     public void Setup(ItemDefinition data)
     {
         itemDefinition = data;
+        AutoAssignReferences();
         
         if (data != null)
         {
-            iconImage.sprite = data.Icon;
-            iconImage.color = Color.white;
-            nameText.text = data.DisplayName;
-            costText.text = $"Cost: {data.Cost}";
-            button.interactable = true;
+            if (iconImage != null)
+            {
+                iconImage.sprite = data.Icon;
+                iconImage.color = iconImage.sprite != null ? Color.white : new Color(1f, 1f, 1f, 0f);
+            }
+            if (nameText != null) nameText.text = data.DisplayName;
+            if (costText != null) costText.text = $"{data.Cost}";
+            if (button != null) button.interactable = true;
             
             Debug.Log($"Consumable slot setup: {data.DisplayName}");
         }
@@ -53,25 +111,27 @@ public class ConsumableSlot : MonoBehaviour, IPointerEnterHandler, IPointerExitH
     
     private void ClearSlot()
     {
-        iconImage.sprite = null;
-        iconImage.color = new Color(1, 1, 1, 0);
-        nameText.text = "Empty";
-        costText.text = "";
-        button.interactable = false;
+        AutoAssignReferences();
+        if (iconImage != null)
+        {
+            iconImage.sprite = null;
+            iconImage.color = new Color(1, 1, 1, 0);
+        }
+        if (nameText != null) nameText.text = "Empty";
+        if (costText != null) costText.text = "";
+        if (button != null) button.interactable = false;
     }
     
     public void OnPointerEnter(PointerEventData eventData)
     {
-        Debug.Log($"Pointer entered {gameObject.name}");
-        
-        if (itemDefinition != null && shopManager != null)
+        if (itemDefinition == null)
         {
-            Debug.Log($"Showing tooltip for: {itemDefinition.DisplayName}");
-            shopManager.ShowConsumableTooltip(itemDefinition.Description);
+            return;
         }
-        else
+
+        if (shopManager != null)
         {
-            Debug.LogWarning($"Cannot show tooltip - itemDefinition: {itemDefinition != null}, shopManager: {shopManager != null}");
+            shopManager.ShowConsumableTooltip(itemDefinition.Description);
         }
     }
     

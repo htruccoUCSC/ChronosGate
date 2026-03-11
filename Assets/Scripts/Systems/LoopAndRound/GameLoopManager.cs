@@ -21,6 +21,9 @@ public class GameLoopManager : MonoBehaviour
 
     [Header("Settings")]
     [SerializeField] protected int wavesPerAugmentCycle = 3;
+    [SerializeField] protected bool autoStartRounds = true;
+    [SerializeField] protected float autoStartRoundDelay = 1.5f;
+    [SerializeField] protected bool reopenShopEachRound = false;
 
     protected int currentWaveInCycle = 0;
     protected bool isGameActive = false;
@@ -111,6 +114,12 @@ public class GameLoopManager : MonoBehaviour
     {
         CurrentState = GameState.AugmentSelection;
         Debug.Log("=== AUGMENT SELECTION PHASE ===");
+
+        if (shopManager != null)
+        {
+            shopManager.SetGameplayUIVisible(false);
+            shopManager.ResetRerollCost();
+        }
         
         if (augmentSelectionUI != null)
         {
@@ -134,13 +143,41 @@ public class GameLoopManager : MonoBehaviour
         CurrentState = GameState.Shopping;
         Debug.Log($"=== SHOPPING PHASE (Wave {currentWaveInCycle + 1}/{wavesPerAugmentCycle}) ===");
         
+        bool shouldOpenShopPanel = !autoStartRounds || reopenShopEachRound;
         if (shopManager != null)
         {
-            shopManager.OpenShop();
+            shopManager.SetGameplayUIVisible(true);
+            if (shouldOpenShopPanel)
+            {
+                shopManager.OpenShop();
+            }
         }
 
-        // Wait for player to press "Next Round" button
+        if (autoStartRounds)
+        {
+            waitingForNextRound = false;
+            StartCoroutine(AutoStartCombatPhase());
+            return;
+        }
+
+        // Wait for player to press "Next Round" button when auto-start is disabled.
         waitingForNextRound = true;
+    }
+
+    private IEnumerator AutoStartCombatPhase()
+    {
+        yield return new WaitForSeconds(Mathf.Max(0f, autoStartRoundDelay));
+        if (CurrentState != GameState.Shopping || !isGameActive)
+        {
+            yield break;
+        }
+
+        if (augmentManager != null)
+        {
+            augmentManager.ApplyAllActiveAugments();
+        }
+
+        StartCombatPhase();
     }
 
     /// <summary>
@@ -161,6 +198,11 @@ public class GameLoopManager : MonoBehaviour
     {
         CurrentState = GameState.Combat;
         Debug.Log($"=== COMBAT PHASE - Wave {waveManager.currentWave} (Cycle: {currentWaveInCycle + 1}/{wavesPerAugmentCycle}) ===");
+
+        if (shopManager != null)
+        {
+            shopManager.SetGameplayUIVisible(true);
+        }
 
         if (GameSpeedButton.Instance != null)
         {
@@ -212,7 +254,7 @@ public class GameLoopManager : MonoBehaviour
 
             // Continue to next shop phase. Wave done
             Debug.Log($"Moving to next shopping phase... (Next: Wave {currentWaveInCycle + 1}/{wavesPerAugmentCycle})");
-            yield return new WaitForSeconds(1f); // Brief pause
+            yield return new WaitForSeconds(Mathf.Max(0f, autoStartRoundDelay));
             waveManager.expandBoard();
             StartShoppingPhase();
         }

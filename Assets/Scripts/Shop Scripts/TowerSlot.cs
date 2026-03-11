@@ -2,8 +2,9 @@ using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 using System.Collections.Generic;
+using UnityEngine.EventSystems;
 
-public class TowerSlot : MonoBehaviour
+public class TowerSlot : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
 {
     [Header("UI Components")]
     [SerializeField] private TextMeshProUGUI eraText;
@@ -17,6 +18,7 @@ public class TowerSlot : MonoBehaviour
 
     private UnitDefinition unitDefinition;
     private InventoryUI inventoryUI;
+    private ShopManager shopManager;
 
     private void Awake()
     {
@@ -27,12 +29,17 @@ public class TowerSlot : MonoBehaviour
             return;
         }
         
+        button.onClick.RemoveListener(OnSlotClicked);
         button.onClick.AddListener(OnSlotClicked);
     }
 
     public void Initialize(InventoryUI inventory)
     {
         inventoryUI = inventory;
+        if (shopManager == null)
+        {
+            shopManager = FindFirstObjectByType<ShopManager>();
+        }
     }
 
     public void Setup(UnitDefinition data)
@@ -41,13 +48,16 @@ public class TowerSlot : MonoBehaviour
 
         if (data != null)
         {
-            eraText.text = data.Faction;
-            towerNameText.text = data.Name;
-            iconImage.sprite = data.Icon;
-            iconImage.color = Color.white;
-            costText.text = $"{data.Cost}";
-            descriptionText.text = data.Description;
-            button.interactable = true;
+            if (eraText != null) eraText.text = data.Faction;
+            if (towerNameText != null) towerNameText.text = data.Name;
+            if (iconImage != null)
+            {
+                iconImage.sprite = data.Icon;
+                iconImage.color = iconImage.sprite != null ? Color.white : new Color(1f, 1f, 1f, 0f);
+            }
+            if (costText != null) costText.text = $"{data.Cost}";
+            if (descriptionText != null) descriptionText.text = "";
+            if (button != null) button.interactable = true;
             active = true;
 
             // Set faction color on background image
@@ -68,13 +78,16 @@ public class TowerSlot : MonoBehaviour
 
     private void ClearSlot()
     {
-        eraText.text = "";
-        towerNameText.text = "Empty";
-        iconImage.sprite = null;
-        iconImage.color = new Color(1, 1, 1, 0);
-        costText.text = "";
-        descriptionText.text = "";
-        button.interactable = false;
+        if (eraText != null) eraText.text = "";
+        if (towerNameText != null) towerNameText.text = "Empty";
+        if (iconImage != null)
+        {
+            iconImage.sprite = null;
+            iconImage.color = new Color(1, 1, 1, 0);
+        }
+        if (costText != null) costText.text = "";
+        if (descriptionText != null) descriptionText.text = "";
+        if (button != null) button.interactable = false;
         active = false;
         
         if (backgroundImage != null)
@@ -126,6 +139,37 @@ public class TowerSlot : MonoBehaviour
             Debug.Log("Inventory is full.");
             // Refund currency if inventory is full
             currencyManager.AddCurrency(unitDefinition.Cost);
+        }
+    }
+
+    public void OnPointerEnter(PointerEventData eventData)
+    {
+        if (unitDefinition == null)
+        {
+            return;
+        }
+
+        if (shopManager == null)
+        {
+            shopManager = FindFirstObjectByType<ShopManager>();
+        }
+
+        if (shopManager != null)
+        {
+            shopManager.ShowConsumableTooltip(unitDefinition.Description);
+        }
+    }
+
+    public void OnPointerExit(PointerEventData eventData)
+    {
+        if (shopManager == null)
+        {
+            shopManager = FindFirstObjectByType<ShopManager>();
+        }
+
+        if (shopManager != null)
+        {
+            shopManager.HideConsumableTooltip();
         }
     }
 
