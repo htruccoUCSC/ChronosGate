@@ -1,63 +1,109 @@
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Tilemaps;
 
 public class Spores : BaseUnit
 {
     [Header("Pop row attack")]
     [SerializeField] private int tilesForward = 4;
-    [SerializeField] private float tileStep = 1f;        // world units per tile
-    [SerializeField] private float popDelay = 0.08f;     // delay between each tile popping (you can change this in inspector as well)
-    [SerializeField] private float popLifetime = 0.35f;  // how long each pop stays
+    [SerializeField] private float tileStep = 1f;
+    [SerializeField] private float popDelay = 0.08f;
+    [SerializeField] private float popLifetime = 0.35f;
 
-    // IMPORTANT: prevent the default BaseUnit arc/basic projectile from firing
+    protected override void ScanTargeting()
+    {
+        currentTarget = transform;
+    }
+
     protected override void PerformBasicAttack()
     {
-        // Spores basic = nothing (all damage comes from ability pop attack)
+        // Spores basic = nothing; all damage comes from its pop ability.
     }
 
     protected override void CastAbility()
     {
         if (myData == null || myData.BaseDef == null) return;
 
-        float dmg = myData.GetModifiedAbilityPower();
-        StartCoroutine(PopTilesForward(dmg));
+        float damage = myData.GetModifiedAbilityPower();
+        StartCoroutine(PopTilesForward(damage));
     }
 
-    private IEnumerator PopTilesForward(float dmg)
+    private IEnumerator PopTilesForward(float damage)
     {
-        GameObject projPrefab = LoadProjectilePrefab();
-        if (projPrefab == null) yield break;
+        GameObject projectilePrefab = LoadProjectilePrefab();
+        if (projectilePrefab == null) yield break;
 
-        // pop 1..tilesForward in front
         for (int i = 1; i <= tilesForward; i++)
         {
-            Vector3 pos = transform.position + Vector3.right * (tileStep * i);
+            Vector3 worldPosition = transform.position + Vector3.right * (tileStep * i);
+            GameObject projectileRoot = Instantiate(projectilePrefab, worldPosition, Quaternion.identity);
 
-            // Spawn the projectile prefab at the tile position
-            GameObject projRoot = Instantiate(projPrefab, pos, Quaternion.identity);
-
-            // Find the Projectile component (root or child)
-            Projectile p = projRoot.GetComponentInChildren<Projectile>();
-            if (p != null)
+            Projectile projectile = projectileRoot.GetComponentInChildren<Projectile>();
+            if (projectile != null)
             {
-                p.speed = 0f;
-                p.lifetime = popLifetime;
+                projectile.speed = 0f;
+                projectile.lifetime = popLifetime;
 
-                // Ensure trigger collisions happen
-                Collider2D col = p.GetComponent<Collider2D>();
-                if (col == null) col = p.GetComponentInChildren<Collider2D>();
-                if (col != null) col.isTrigger = true;
+                Collider2D projectileCollider = projectile.GetComponent<Collider2D>();
+                if (projectileCollider == null)
+                {
+                    projectileCollider = projectile.GetComponentInChildren<Collider2D>();
+                }
 
-                p.SetIgnoreRowCheck(true);
+                if (projectileCollider != null)
+                {
+                    projectileCollider.isTrigger = true;
+                }
 
-                p.Setup(dmg, Vector2.right, 0f, pos, true, this);
+                projectile.SetIgnoreRowCheck(true);
+                projectile.Setup(damage, Vector2.right, 0f, worldPosition, true, this);
             }
 
-            // Cleanup in case lifetime isn’t respected for some reason
-            Destroy(projRoot, popLifetime + 0.05f);
+            // Stationary pop hitboxes can spawn already overlapping enemies, so deal damage immediately.
+            ApplyPopDamageAtPosition(worldPosition, damage);
+
+            Destroy(projectileRoot, popLifetime + 0.05f);
 
             if (i < tilesForward)
+            {
                 yield return new WaitForSeconds(popDelay);
+            }
+        }
+    }
+
+    private void ApplyPopDamageAtPosition(Vector3 worldPosition, float damage)
+    {
+        int dealt = Mathf.Max(1, Mathf.RoundToInt(damage));
+        Collider2D[] hits = Physics2D.OverlapCircleAll(worldPosition, 0.45f, LayerMask.GetMask("Enemies"));
+        HashSet<int> seenTargets = new HashSet<int>();
+        Tilemap tilemap = WaveManager.Instance != null ? WaveManager.Instance.tilemap : null;
+        int popRow = tilemap != null ? tilemap.WorldToCell(worldPosition).y : 0;
+
+        for (int i = 0; i < hits.Length; i++)
+        {
+            Collider2D hit = hits[i];
+            if (hit == null) continue;
+
+            BaseEnemy enemy = hit.GetComponentInParent<BaseEnemy>();
+            if (enemy != null)
+            {
+                if (tilemap != null && tilemap.WorldToCell(enemy.transform.position).y != popRow) continue;
+                if (!seenTargets.Add(enemy.GetInstanceID())) continue;
+
+                OnHit();
+                int finalDamage = Mathf.RoundToInt(dealt * enemy.DamageAmp);
+                enemy.TakeDamage(this, finalDamage);
+                continue;
+            }
+
+            TargetDummyTest dummy = hit.GetComponentInParent<TargetDummyTest>();
+            if (dummy == null) continue;
+            if (tilemap != null && tilemap.WorldToCell(dummy.transform.position).y != popRow) continue;
+            if (!seenTargets.Add(dummy.GetInstanceID())) continue;
+
+            OnHit();
+            dummy.TakeDamage(dealt, this);
         }
     }
 }

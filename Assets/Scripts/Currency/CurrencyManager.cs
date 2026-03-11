@@ -43,6 +43,16 @@ public class CurrencyManager : MonoBehaviour
         OnCurrencyChanged?.Invoke(currency);
     }
 
+    public void AddCurrency(int amount, Vector3 worldOrigin)
+    {
+        AddCurrency(amount);
+
+        if (amount > 0)
+        {
+            CurrencyUI.Instance?.PlayCurrencyGainAnimation(worldOrigin, amount);
+        }
+    }
+
     public bool TrySpendCurrency(int amount)
     {
         if (currency >= amount)

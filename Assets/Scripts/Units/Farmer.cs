@@ -2,11 +2,9 @@ using UnityEngine;
 
 public class Farmer : BaseUnit
 {
-    [SerializeField] private CurrencyPickup m_CurrencyPickupPrefab;
+    // [SerializeField] private CurrencyPickup m_CurrencyPickupPrefab;
     [SerializeField] private int m_BaseCurrencyAmount = 1;
-    [SerializeField] private float m_CurrencySpawnRadius = 0.4f;
     [SerializeField] private ItemDefinition m_OnionItemDefinition;
-    [SerializeField] private int m_pickupSortingOrder = 1000;
 
     protected override void ScanTargeting()
     {
@@ -25,28 +23,14 @@ public class Farmer : BaseUnit
 
     private void SpawnCurrency()
     {
-        if (m_CurrencyPickupPrefab == null)
+        int amount = Mathf.Max(1, Mathf.RoundToInt(m_BaseCurrencyAmount + myData.GetModifiedAbilityPower())/40);
+        if (CurrencyManager.Instance == null)
         {
-            Debug.LogWarning("Farmer has no currency pickup prefab assigned.");
+            Debug.LogWarning("Farmer could not add currency because CurrencyManager is missing.");
             return;
         }
 
-        int amount = Mathf.Max(1, Mathf.RoundToInt(m_BaseCurrencyAmount + myData.GetModifiedAbilityPower()));
-        Vector2 offset = Random.insideUnitCircle * m_CurrencySpawnRadius;
-        CurrencyPickup pickup = Instantiate(m_CurrencyPickupPrefab, transform.position + (Vector3)offset, Quaternion.identity);
-        pickup.Configure(amount);
-
-        // Set sorting order to render on top of all units
-        SpriteRenderer pickupRenderer = pickup.GetComponent<SpriteRenderer>();
-        if (pickupRenderer == null)
-        {
-            pickupRenderer = pickup.GetComponentInChildren<SpriteRenderer>();
-        }
-
-        if (pickupRenderer != null)
-        {
-            pickupRenderer.sortingOrder = m_pickupSortingOrder;
-        }
+        CurrencyManager.Instance.AddCurrency(amount, transform.position);
     }
 
     private void GivePlayerOnionItem()
