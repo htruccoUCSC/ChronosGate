@@ -28,7 +28,8 @@ public class TowerCardJuice : MonoBehaviour, IPointerEnterHandler, IPointerExitH
 
     void Update()
     {
-        transform.localScale = Vector3.Lerp(transform.localScale, targetScale, Time.deltaTime * scaleSpeed);
+        float deltaTime = Time.unscaledDeltaTime;
+        transform.localScale = Vector3.Lerp(transform.localScale, targetScale, deltaTime * scaleSpeed);
 
         if (isHovered)
         {
@@ -40,7 +41,7 @@ public class TowerCardJuice : MonoBehaviour, IPointerEnterHandler, IPointerExitH
         }
 
         Quaternion targetQuaternion = Quaternion.Euler(targetRotation.x, targetRotation.y, 0);
-        transform.localRotation = Quaternion.Slerp(transform.localRotation, targetQuaternion, Time.deltaTime * lerpSpeed);
+        transform.localRotation = Quaternion.Slerp(transform.localRotation, targetQuaternion, deltaTime * lerpSpeed);
     }
 
     private void CalculateTilt()

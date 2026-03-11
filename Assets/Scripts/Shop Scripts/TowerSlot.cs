@@ -56,7 +56,7 @@ public class TowerSlot : MonoBehaviour, IPointerEnterHandler, IPointerExitHandle
                 iconImage.color = iconImage.sprite != null ? Color.white : new Color(1f, 1f, 1f, 0f);
             }
             if (costText != null) costText.text = $"{data.Cost}";
-            if (descriptionText != null) descriptionText.text = data.Description;
+            if (descriptionText != null) descriptionText.text = "";
             if (button != null) button.interactable = true;
             active = true;
 
