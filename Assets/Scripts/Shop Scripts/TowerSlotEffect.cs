@@ -68,7 +68,7 @@ public class TowerCardJuice : MonoBehaviour, IPointerEnterHandler, IPointerExitH
         if (TryGetComponent<Canvas>(out Canvas cv))
         {
             cv.overrideSorting = true;
-            cv.sortingOrder = 100;
+            cv.sortingOrder = 10000;
         }
     }
 
@@ -79,7 +79,7 @@ public class TowerCardJuice : MonoBehaviour, IPointerEnterHandler, IPointerExitH
 
         if (TryGetComponent<Canvas>(out Canvas cv))
         {
-            cv.sortingOrder = 1;
+            cv.sortingOrder = 1010;
         }
     }
 }
