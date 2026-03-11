@@ -25,7 +25,14 @@ public class FaceHuggerNest : BaseUnit
     // This is an alternative method to the implementation in Generator.cs which targets itself constalty and casts using the generic mana system in BaseUnit.cs
     protected override void Update()
     {
-        if (GameLoopManager.Instance != null && GameLoopManager.Instance.CurrentState != GameLoopManager.GameState.Combat)
+        if (GameLoopManagerOld.Instance != null)
+        {
+            if (GameLoopManagerOld.Instance.CurrentState != GameLoopManagerOld.GameState.Combat)
+            {
+                return;
+            }
+        }
+        else if (GameLoopManager.Instance != null && GameLoopManager.Instance.CurrentState != GameLoopManager.GameState.Combat)
         {
             return;
         }

@@ -19,6 +19,7 @@ public class TowerSlot : MonoBehaviour, IPointerEnterHandler, IPointerExitHandle
     private UnitDefinition unitDefinition;
     private InventoryUI inventoryUI;
     private ShopManager shopManager;
+    private ShopManagerOld shopManagerOld;
 
     private void Awake()
     {
@@ -40,6 +41,10 @@ public class TowerSlot : MonoBehaviour, IPointerEnterHandler, IPointerExitHandle
         {
             shopManager = FindFirstObjectByType<ShopManager>();
         }
+        if (shopManagerOld == null)
+        {
+            shopManagerOld = FindFirstObjectByType<ShopManagerOld>();
+        }
     }
 
     public void Setup(UnitDefinition data)
@@ -48,6 +53,8 @@ public class TowerSlot : MonoBehaviour, IPointerEnterHandler, IPointerExitHandle
 
         if (data != null)
         {
+            bool useInlineDescription = shopManagerOld != null && shopManager == null;
+
             if (eraText != null) eraText.text = data.Faction;
             if (towerNameText != null) towerNameText.text = data.Name;
             if (iconImage != null)
@@ -56,7 +63,7 @@ public class TowerSlot : MonoBehaviour, IPointerEnterHandler, IPointerExitHandle
                 iconImage.color = iconImage.sprite != null ? Color.white : new Color(1f, 1f, 1f, 0f);
             }
             if (costText != null) costText.text = $"{data.Cost}";
-            if (descriptionText != null) descriptionText.text = "";
+            if (descriptionText != null) descriptionText.text = useInlineDescription ? data.Description : "";
             if (button != null) button.interactable = true;
             active = true;
 
@@ -153,10 +160,23 @@ public class TowerSlot : MonoBehaviour, IPointerEnterHandler, IPointerExitHandle
         {
             shopManager = FindFirstObjectByType<ShopManager>();
         }
+        if (shopManagerOld == null)
+        {
+            shopManagerOld = FindFirstObjectByType<ShopManagerOld>();
+        }
 
         if (shopManager != null)
         {
             shopManager.ShowConsumableTooltip(unitDefinition.Description);
+            return;
+        }
+
+        if (shopManagerOld != null)
+        {
+            if (shopManagerOld.UsesTooltipOverlay())
+            {
+                shopManagerOld.ShowConsumableTooltip(unitDefinition.Description);
+            }
         }
     }
 
@@ -166,10 +186,23 @@ public class TowerSlot : MonoBehaviour, IPointerEnterHandler, IPointerExitHandle
         {
             shopManager = FindFirstObjectByType<ShopManager>();
         }
+        if (shopManagerOld == null)
+        {
+            shopManagerOld = FindFirstObjectByType<ShopManagerOld>();
+        }
 
         if (shopManager != null)
         {
             shopManager.HideConsumableTooltip();
+            return;
+        }
+
+        if (shopManagerOld != null)
+        {
+            if (shopManagerOld.UsesTooltipOverlay())
+            {
+                shopManagerOld.HideConsumableTooltip();
+            }
         }
     }
 
