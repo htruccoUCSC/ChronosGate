@@ -1,7 +1,10 @@
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
+using System.Collections.Generic;
 using UnityEngine.EventSystems;
+using [BoardNamespace];  // Add the correct namespace for Board
+using [PreviewNamespace];  // Add the correct namespace for IUnitDragPreviewProvider
 
 public class TowerSlot : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IBeginDragHandler, IDragHandler, IEndDragHandler
 {
