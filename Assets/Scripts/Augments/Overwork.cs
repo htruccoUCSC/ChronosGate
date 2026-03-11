@@ -35,7 +35,9 @@ public class Overwork : MonoBehaviour
                     abilityPowerFlat: 0f, abilityPowerMult: 0f,
                     rangeBuff: 0f,
                     OnHit: _ => unit.TakeDamage(1), onHitModifier: 0f,
-                    OnKill: null, onKillModifier: 0f
+                    OnKill: null, onKillModifier: 0f,
+                    calledFromAugment: true,
+                    refreshOnPlacement: true
                 );
             }
         }

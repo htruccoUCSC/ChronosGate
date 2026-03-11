@@ -27,7 +27,7 @@ public void ApeTogetherStrongCall()
             if (unit == null) continue;
             if (unit.myData.Faction == "Prehistoric")
             {
-                buffs.AddRoundBuff(unit, attackSpeedMult: 0f, attackSpeedFlat: 0f, attackDamageFlat: buffAmount, attackDamageMult: 0f, abilityPowerFlat: 0f, abilityPowerMult: 0f, rangeBuff: 0f, OnHit: null, onHitModifier: 0f, OnKill: null, onKillModifier: 0f);
+                buffs.AddRoundBuff(unit, attackSpeedMult: 0f, attackSpeedFlat: 0f, attackDamageFlat: buffAmount, attackDamageMult: 0f, abilityPowerFlat: 0f, abilityPowerMult: 0f, rangeBuff: 0f, OnHit: null, onHitModifier: 0f, OnKill: null, onKillModifier: 0f, calledFromAugment: true, refreshOnPlacement: true);
             }
         }
     }

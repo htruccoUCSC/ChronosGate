@@ -27,7 +27,9 @@ public class Buffs : MonoBehaviour
         Action<float> OnHit,
         float onHitModifier = 0f,
         Action<float> OnKill = null,
-        float onKillModifier = 0f)
+        float onKillModifier = 0f,
+        bool calledFromAugment = false,
+        bool refreshOnPlacement = false)
     {
         Buff buff = new Buff
         {
@@ -43,7 +45,9 @@ public class Buffs : MonoBehaviour
             OnhitModifier = onHitModifier,
             OnKill = OnKill,
             OnKillModifier = onKillModifier,
-            AbilityPowerMult=abilityPowerMult,
+            AbilityPowerMult = abilityPowerMult,
+            CalledFromAugment = calledFromAugment,
+            RefreshOnPlacement = refreshOnPlacement,
         };
 
         math.AddAttackDamage(unit.myData, attackDamageFlat);
@@ -71,7 +75,9 @@ public class Buffs : MonoBehaviour
         Action<float> OnHit,
         float onHitModifier = 0f,
         Action<float> OnKill = null,
-        float onKillModifier = 0f)
+        float onKillModifier = 0f,
+        bool calledFromAugment = false,
+        bool refreshOnPlacement = false)
     {
         Buff buff = new Buff
         {
@@ -87,7 +93,9 @@ public class Buffs : MonoBehaviour
             OnhitModifier = onHitModifier,
             OnKill = OnKill,
             OnKillModifier = onKillModifier,
-            AbilityPowerMult=abilityPowerMult,
+            AbilityPowerMult = abilityPowerMult,
+            CalledFromAugment = calledFromAugment,
+            RefreshOnPlacement = refreshOnPlacement,
         };
 
         math.AddAttackDamage(unit.myData, attackDamageFlat);
@@ -144,6 +152,47 @@ public class Buffs : MonoBehaviour
         for (int i = unit.roundBuffs.Count - 1; i >= 0; i--)
         {
             RemoveRoundBuff(unit, unit.roundBuffs[i]);
+        }
+    }
+
+    public void RemovePlacementRefreshBuffs(BoardManager targetBoard)
+    {
+        if (targetBoard == null || targetBoard.unitGrid == null)
+        {
+            return;
+        }
+
+        int width = targetBoard.unitGrid.GetLength(0);
+        int height = targetBoard.unitGrid.GetLength(1);
+
+        for (int x = 0; x < width; x++)
+        {
+            for (int y = 0; y < height; y++)
+            {
+                BaseUnit unit = targetBoard.unitGrid[x, y];
+                if (unit == null)
+                {
+                    continue;
+                }
+
+                for (int i = unit.activeBuffs.Count - 1; i >= 0; i--)
+                {
+                    Buff buff = unit.activeBuffs[i];
+                    if (buff != null && buff.RefreshOnPlacement)
+                    {
+                        RemoveTempBuff(unit, buff);
+                    }
+                }
+
+                for (int i = unit.roundBuffs.Count - 1; i >= 0; i--)
+                {
+                    Buff buff = unit.roundBuffs[i];
+                    if (buff != null && buff.RefreshOnPlacement)
+                    {
+                        RemoveRoundBuff(unit, buff);
+                    }
+                }
+            }
         }
     }
 

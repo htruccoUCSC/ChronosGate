@@ -31,7 +31,7 @@ public void RallyCall()
                 buffAmount += 1;
             }
 
-            buffs.AddRoundBuff(unit, 0, 0, 0, 0, 0, 0, buffAmount, null, 0f, null, 0f);
+            buffs.AddRoundBuff(unit, 0, 0, 0, 0, 0, 0, buffAmount, null, 0f, null, 0f, calledFromAugment: true, refreshOnPlacement: true);
             Debug.Log("Rally " + unit.myData.Name + " receives " + buffAmount + " range.");
         }
     }

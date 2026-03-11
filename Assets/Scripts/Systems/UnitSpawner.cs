@@ -105,6 +105,12 @@ public class UnitSpawner : MonoBehaviour
         unit.Initialize(newInstance);
         board.RegisterUnit(cellPos, go);
 
+        AugmentManager augmentManager = FindFirstObjectByType<AugmentManager>();
+        if (augmentManager != null)
+        {
+            augmentManager.ReapplyPlacementAugments();
+        }
+
         return true;
     }
 }

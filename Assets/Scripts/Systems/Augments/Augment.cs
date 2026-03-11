@@ -13,7 +13,7 @@ public class Augment
 
     public bool UpdateOnPlacement;
 
-    public Augment(Action apply, string name, string description, bool applyImmediatelyOnAcquire = false, bool applyOnRoundStart = true, bool update = false,Action onAcquire = null)
+    public Augment(Action apply, string name, string description, bool applyImmediatelyOnAcquire = false, bool applyOnRoundStart = true, bool update = true,Action onAcquire = null)
     {
 
         Apply = apply;
