@@ -23,7 +23,7 @@ public class GameLoopManager : MonoBehaviour
     [SerializeField] protected int wavesPerAugmentCycle = 3;
     [SerializeField] protected bool autoStartRounds = true;
     [SerializeField] protected float autoStartRoundDelay = 1.5f;
-    [SerializeField] protected bool reopenShopEachRound = false;
+    [SerializeField] protected bool reopenShopEachRound = true;
 
     protected int currentWaveInCycle = 0;
     protected bool isGameActive = false;
@@ -38,6 +38,8 @@ public class GameLoopManager : MonoBehaviour
     }
 
     public GameState CurrentState { get; private set; } = GameState.AugmentSelection;
+    public int CurrentWaveInCycle => currentWaveInCycle;
+    public int WavesPerAugmentCycle => wavesPerAugmentCycle;
 
     private void Awake()
     {
@@ -72,6 +74,11 @@ public class GameLoopManager : MonoBehaviour
         {
             GameObject speedButtonObject = new GameObject("GameSpeedButtonController");
             speedButtonObject.AddComponent<GameSpeedButton>();
+        }
+        if (FindFirstObjectByType<WaveCycleProgressUI>() == null)
+        {
+            GameObject waveProgressObject = new GameObject("WaveCycleProgressUI");
+            waveProgressObject.AddComponent<WaveCycleProgressUI>();
         }
 
         // Subscribe to augment selection
@@ -147,6 +154,7 @@ public class GameLoopManager : MonoBehaviour
         if (shopManager != null)
         {
             shopManager.SetGameplayUIVisible(true);
+            shopManager.RefreshShopContents();
             if (shouldOpenShopPanel)
             {
                 shopManager.OpenShop();

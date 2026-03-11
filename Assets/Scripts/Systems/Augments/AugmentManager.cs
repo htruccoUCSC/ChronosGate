@@ -35,6 +35,28 @@ public class AugmentManager : MonoBehaviour
             augment.Apply?.Invoke();
         }
     }
+
+    public void ReapplyPlacementAugments()
+    {
+        Buffs buffs = FindFirstObjectByType<Buffs>();
+        BoardManager board = FindFirstObjectByType<BoardManager>();
+
+        if (buffs != null)
+        {
+            buffs.RemovePlacementRefreshBuffs(board);
+        }
+
+        for (int i = 0; i < augmentList.activeAugments.Count; i++)
+        {
+            Augment augment = augmentList.activeAugments[i];
+            if (augment == null || !augment.UpdateOnPlacement)
+            {
+                continue;
+            }
+
+            augment.Apply?.Invoke();
+        }
+    }
     public void AddActiveAugment(Augment newAugment)
     {
         augmentList.activeAugments.Add(newAugment);

@@ -64,7 +64,9 @@ public void UniqueCall()
                 OnHit: null,
                 onHitModifier: 0f,
                 OnKill: null,
-                onKillModifier: 0f);
+                onKillModifier: 0f,
+                calledFromAugment: true,
+                refreshOnPlacement: true);
         }
     }
 }

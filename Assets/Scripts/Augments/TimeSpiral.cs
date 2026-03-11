@@ -80,7 +80,9 @@ public class TimeSpiral : MonoBehaviour
                     abilityPowerFlat: abilityPowerPerTick, abilityPowerMult: 0f,
                     rangeBuff: 0f,
                     OnHit: null, onHitModifier: 0f,
-                    OnKill: null, onKillModifier: 0f
+                    OnKill: null, onKillModifier: 0f,
+                    calledFromAugment: true,
+                    refreshOnPlacement: false
                 );
             }
         }

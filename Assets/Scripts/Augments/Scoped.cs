@@ -53,7 +53,9 @@ public class Scoped : MonoBehaviour
                     abilityPowerFlat: 0f, abilityPowerMult: 0f,
                     rangeBuff: 1f,
                     OnHit: null, onHitModifier: 0f,
-                    OnKill: null, onKillModifier: 0f
+                    OnKill: null, onKillModifier: 0f,
+                    calledFromAugment: true,
+                    refreshOnPlacement: true
                 );
 
                 buffedCount++;

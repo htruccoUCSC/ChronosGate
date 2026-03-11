@@ -74,7 +74,9 @@ public class AbilityPowerOnCast : MonoBehaviour
                     abilityPowerFlat: 1f, abilityPowerMult: 0f,
                     rangeBuff: 0f,
                     OnHit: null, onHitModifier: 0f,
-                    OnKill: null, onKillModifier: 0f
+                    OnKill: null, onKillModifier: 0f,
+                    calledFromAugment: true,
+                    refreshOnPlacement: true
                 );
             }
         }

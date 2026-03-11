@@ -243,7 +243,11 @@ public class ShopManager : MonoBehaviour
         isShopOpen = true;
         UpdateShopUIState();
 
-        // Reroll shop for new round
+        RefreshShopContents();
+    }
+
+    public void RefreshShopContents()
+    {
         PopulateConsumableSlots();
         PopulateTowerSlots();
     }

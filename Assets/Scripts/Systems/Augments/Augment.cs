@@ -11,7 +11,9 @@ public class Augment
     public bool ApplyImmediatelyOnAcquire;
     public bool ApplyOnRoundStart;
 
-    public Augment(Action apply, string name, string description, bool applyImmediatelyOnAcquire = false, bool applyOnRoundStart = true, Action onAcquire = null)
+    public bool UpdateOnPlacement;
+
+    public Augment(Action apply, string name, string description, bool applyImmediatelyOnAcquire = false, bool applyOnRoundStart = true, bool update = true,Action onAcquire = null)
     {
 
         Apply = apply;
@@ -20,5 +22,6 @@ public class Augment
         Description = description;
         ApplyImmediatelyOnAcquire = applyImmediatelyOnAcquire;
         ApplyOnRoundStart = applyOnRoundStart;
+        UpdateOnPlacement=update;
     }
 }

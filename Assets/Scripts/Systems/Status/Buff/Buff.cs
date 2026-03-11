@@ -14,6 +14,8 @@ public class Buff
     public float duration;
     public float OnhitModifier;
     public float OnKillModifier;
+    public bool CalledFromAugment;
+    public bool RefreshOnPlacement;
 
     public Action<float> OnHit;
     public Action<float> OnKill;
@@ -32,7 +34,9 @@ public class Buff
         float AbilityPowerMult = 0,
         float OnhitModifier = 0f,
         float OnKillModifier = 0f,
-        float RangeBuff = 0f)
+        float RangeBuff = 0f,
+        bool CalledFromAugment = false,
+        bool RefreshOnPlacement = false)
     {
         this.AttackSpeedFlat = AttackSpeedFlat;
         this.AttackDamageFlat = AttackDamageFlat;
@@ -46,5 +50,7 @@ public class Buff
         this.OnhitModifier = OnhitModifier;
         this.OnKillModifier = OnKillModifier;
         this.RangeBuff = RangeBuff;
+        this.CalledFromAugment = CalledFromAugment;
+        this.RefreshOnPlacement = RefreshOnPlacement;
     }
 }

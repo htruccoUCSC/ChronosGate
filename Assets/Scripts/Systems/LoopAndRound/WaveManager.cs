@@ -48,6 +48,20 @@ public class WaveManager : MonoBehaviour
 
     private float leftLoseX = 0f; // world X where enemies count as "reached the end"
     private BoardManager boardManager;
+    private int m_CurrentWaveTotalEnemies;
+    private int m_CurrentWaveSpawnedEnemies;
+
+    public int CurrentWaveTotalEnemies => m_CurrentWaveTotalEnemies;
+    public int CurrentWaveSpawnedEnemies => m_CurrentWaveSpawnedEnemies;
+    public int CurrentWaveEnemiesRemaining
+    {
+        get
+        {
+            int spawnedRemaining = Mathf.Max(0, AliveEnemyCount());
+            int pendingSpawns = Mathf.Max(0, m_CurrentWaveTotalEnemies - m_CurrentWaveSpawnedEnemies);
+            return spawnedRemaining + pendingSpawns;
+        }
+    }
 
     void Awake()
     {
@@ -128,6 +142,7 @@ public class WaveManager : MonoBehaviour
         while (!gameOver)
         {
             Debug.Log($"--- WAVE {currentWave} START ---");
+            BeginWaveTracking();
 
             // spawn enemies for this wave
             for (int i = 0; i < enemiesPerWave; i++)
@@ -145,6 +160,7 @@ public class WaveManager : MonoBehaviour
             Debug.Log($"--- WAVE {currentWave} CLEARED ---");
 
             yield return new WaitForSeconds(timeBetweenWaves);
+            EndWaveTracking();
             currentWave++;
             enemiesPerWave += enemiesAddedPerWave;
         }
@@ -168,12 +184,14 @@ public class WaveManager : MonoBehaviour
     {
         waveActive = true;
         Debug.Log($"--- WAVE {currentWave} START ---");
+        BeginWaveTracking();
 
         // spawn enemies for this wave
         for (int i = 0; i < enemiesPerWave; i++)
         {
             if (gameOver)
             {
+                EndWaveTracking();
                 waveActive = false;
                 yield break;
             }
@@ -186,12 +204,14 @@ public class WaveManager : MonoBehaviour
 
         if (gameOver)
         {
+            EndWaveTracking();
             waveActive = false;
             yield break;
         }
 
         Debug.Log($"--- WAVE {currentWave} CLEARED ---");
 
+        EndWaveTracking();
         currentWave++;
         enemiesPerWave += enemiesAddedPerWave;
         waveActive = false;
@@ -293,6 +313,7 @@ public class WaveManager : MonoBehaviour
         }
 
         GameObject go = Instantiate(prefabToSpawn, spawnWorld, Quaternion.identity);
+        m_CurrentWaveSpawnedEnemies++;
 
         // try BaseEnemy first (new system), otherwise fall back to TargetDummyTest (older system)
         BaseEnemy baseEnemy = go.GetComponentInParent<BaseEnemy>();
@@ -398,5 +419,17 @@ public class WaveManager : MonoBehaviour
                 tileMapManager.expansion();
             }
         
+    }
+
+    private void BeginWaveTracking()
+    {
+        m_CurrentWaveTotalEnemies = Mathf.Max(0, enemiesPerWave);
+        m_CurrentWaveSpawnedEnemies = 0;
+    }
+
+    private void EndWaveTracking()
+    {
+        m_CurrentWaveTotalEnemies = 0;
+        m_CurrentWaveSpawnedEnemies = 0;
     }
 }

@@ -137,6 +137,23 @@ public class ItemInventoryUI : MonoBehaviour
         return false;
     }
 
+    public bool TryUseItemFromSlotAtPosition(int index, Vector2 screenPosition)
+    {
+        if (m_ItemSpawner == null) return false;
+
+        ItemDefinition item = GetItem(index);
+        if (item == null) return false;
+
+        if (m_ItemSpawner.TryPlaceAtScreenPosition(item, screenPosition))
+        {
+            SetItem(index, null);
+            m_ItemSpawner.SetPreviewItem(null);
+            return true;
+        }
+
+        return false;
+    }
+
     public void SetPreviewItem(ItemDefinition item)
     {
         if (m_ItemSpawner == null) return;
@@ -199,14 +216,14 @@ public class ItemInventorySlotDrag : MonoBehaviour, IBeginDragHandler, IDragHand
         GameObject hoveredObject = eventData.pointerCurrentRaycast.gameObject;
         if (hoveredObject != null)
         {
-            ItemInventorySlotDrag hoveredSlot = hoveredObject.GetComponentInParent<ItemInventorySlotDrag>();
-            if (hoveredSlot != null)
+            bool isUiTarget = hoveredObject.GetComponent<RectTransform>() != null;
+            if (isUiTarget)
             {
                 return;
             }
         }
 
-        m_InventoryUI.TryUseItemFromSlot(m_Index);
+        m_InventoryUI.TryUseItemFromSlotAtPosition(m_Index, eventData.position);
     }
 
     public void OnDrop(PointerEventData eventData)

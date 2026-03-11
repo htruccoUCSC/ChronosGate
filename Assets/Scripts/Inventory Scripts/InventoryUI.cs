@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -148,7 +147,6 @@ public class InventorySlotDrag : MonoBehaviour, IBeginDragHandler, IDragHandler,
     private BaseUnit m_PreviewProvider;
     private UnitDefinition m_DragUnit;
     private BoardManager m_Board;
-    private static readonly Dictionary<string, BaseUnit> s_PreviewProviders = new Dictionary<string, BaseUnit>();
 
     public void Initialize(InventoryUI inventoryUI, int index)
     {
@@ -166,7 +164,7 @@ public class InventorySlotDrag : MonoBehaviour, IBeginDragHandler, IDragHandler,
         if (m_Board != null)
         {
             m_RangePreview = UnitRangePreview.GetOrCreate(m_Board);
-            m_PreviewProvider = GetPreviewProvider(unit);
+            m_PreviewProvider = UnitDragPreviewUtility.GetPreviewProvider(unit);
             UpdateRangePreview(eventData);
         }
 
@@ -216,7 +214,7 @@ public class InventorySlotDrag : MonoBehaviour, IBeginDragHandler, IDragHandler,
         if (defToSpawn != null)
         {
             // Pass Definition to Spawner
-            bool success = m_InventoryUI.unitSpawner.TrySpawnFromInventory(defToSpawn);
+            bool success = m_InventoryUI.unitSpawner.TrySpawnAtScreenPosition(defToSpawn, eventData.position);
 
             if (success)
             {
@@ -291,7 +289,7 @@ public class InventorySlotDrag : MonoBehaviour, IBeginDragHandler, IDragHandler,
 
         if (m_PreviewProvider == null)
         {
-            m_PreviewProvider = GetPreviewProvider(m_DragUnit);
+            m_PreviewProvider = UnitDragPreviewUtility.GetPreviewProvider(m_DragUnit);
             if (m_PreviewProvider == null)
             {
                 m_RangePreview.ClearPreview();
@@ -313,24 +311,5 @@ public class InventorySlotDrag : MonoBehaviour, IBeginDragHandler, IDragHandler,
         m_RangePreview = null;
         m_Board = null;
         m_DragUnit = null;
-    }
-
-    private static BaseUnit GetPreviewProvider(UnitDefinition def)
-    {
-        if (def == null || string.IsNullOrWhiteSpace(def.PrefabPath)) return null;
-
-        if (s_PreviewProviders.TryGetValue(def.PrefabPath, out BaseUnit cached) && cached != null)
-        {
-            return cached;
-        }
-
-        GameObject prefab = Resources.Load<GameObject>(def.PrefabPath);
-        if (prefab == null) return null;
-
-        BaseUnit unit = prefab.GetComponent<BaseUnit>();
-        if (unit == null) return null;
-
-        s_PreviewProviders[def.PrefabPath] = unit;
-        return unit;
     }
 }

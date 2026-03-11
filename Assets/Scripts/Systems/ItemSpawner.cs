@@ -41,9 +41,19 @@ public class ItemSpawner : MonoBehaviour
 
         if (Camera.main == null || Mouse.current == null) return false;
 
-        Vector3 rawWorldPos = Camera.main.ScreenToWorldPoint(Mouse.current.position.ReadValue());
+        return TryPlaceAtScreenPosition(item, Mouse.current.position.ReadValue());
+    }
+
+    public bool TryPlaceAtScreenPosition(ItemDefinition item, Vector2 screenPosition)
+    {
+        if (item == null) return false;
+        if (m_Board == null || m_Board.GameTilemap == null || Camera.main == null) return false;
+
+        Vector3 rawWorldPos = Camera.main.ScreenToWorldPoint(screenPosition);
         rawWorldPos.z = 0;
         Vector3Int cellPos = m_Board.GameTilemap.WorldToCell(rawWorldPos);
+        if (!m_Board.GameTilemap.HasTile(cellPos)) return false;
+
         Vector3 snapPos = m_Board.GameTilemap.GetCellCenterWorld(cellPos);
 
         GameObject prefab = Resources.Load<GameObject>(item.PrefabPath);
