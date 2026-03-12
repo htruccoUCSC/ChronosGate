@@ -12,7 +12,6 @@ public class Jester : BaseUnit
     
     [SerializeField] private LayerMask m_TargetMask;
     [SerializeField] private Tilemap m_PreviewTilemap;
-    [SerializeField] private float m_ProjectileLaunchAngle = 45f;
 
     private Buffs m_BuffSystem;
 
@@ -170,18 +169,18 @@ public class Jester : BaseUnit
         Projectile p = projRoot.GetComponentInChildren<Projectile>();
         if (p == null) return;
 
-        Vector2 diff = currentTarget.position - transform.position;
-        Vector2 direction = diff.normalized;
+        Vector2 dir = (currentTarget.position - transform.position).normalized;
 
-        // Use 45 degree arc to hit enemies at a distance
-        float gravity = Mathf.Abs(Physics2D.gravity.y * 3f);
-        p.speed = CalculateBallisticSpeed(diff, m_ProjectileLaunchAngle, gravity);
+        p.speed = 18f;
 
         Collider2D col = p.GetComponent<Collider2D>();
         if (col == null) col = p.GetComponentInChildren<Collider2D>();
         if (col != null) col.isTrigger = true;
 
-        // Setup with arc trajectory
-        p.Setup(damage, direction, m_ProjectileLaunchAngle, transform.position, false, this);
+        // Ignore row checks so projectiles go directly to target
+        p.SetIgnoreRowCheck(true);
+
+        // Straight shot (no arc)
+        p.Setup(damage, dir, 0f, transform.position, false, this);
     }
 }

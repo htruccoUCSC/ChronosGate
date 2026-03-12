@@ -7,7 +7,6 @@ public class Tank : BaseUnit
     [Header("Ability Settings")]
     [SerializeField] private int m_ShellsPerAbility = 3;
     [SerializeField] private float m_ShellDelay = 0.2f;
-    [SerializeField] private float m_ShellLaunchAngle = 60f;
     
     [SerializeField] private LayerMask m_TargetMask;
     [SerializeField] private Tilemap m_PreviewTilemap;
@@ -108,18 +107,18 @@ public class Tank : BaseUnit
         Projectile p = projRoot.GetComponentInChildren<Projectile>();
         if (p == null) return;
 
-        Vector2 diff = currentTarget.position - transform.position;
-        Vector2 direction = diff.normalized;
+        Vector2 dir = (currentTarget.position - transform.position).normalized;
 
-        // Use high launch angle (60 degrees) for arcing shells
-        float gravity = Mathf.Abs(Physics2D.gravity.y * 3f);
-        p.speed = CalculateBallisticSpeed(diff, m_ShellLaunchAngle, gravity);
+        p.speed = 15f;
 
         Collider2D col = p.GetComponent<Collider2D>();
         if (col == null) col = p.GetComponentInChildren<Collider2D>();
         if (col != null) col.isTrigger = true;
 
-        // Tank shell with arc trajectory and AOE
-        p.Setup(damage, direction, m_ShellLaunchAngle, transform.position, true, this);
+        // Ignore row checks so projectiles go directly to target
+        p.SetIgnoreRowCheck(true);
+
+        // Tank shell is AOE with straight trajectory
+        p.Setup(damage, dir, 0f, transform.position, true, this);
     }
 }
