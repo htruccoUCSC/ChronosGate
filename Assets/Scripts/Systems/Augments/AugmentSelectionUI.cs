@@ -215,16 +215,33 @@ public class AugmentSelectionUI : MonoBehaviour
         selectedAugments.Clear();
         
         List<Augment> inactiveAugments = augmentManager.augmentList.inactiveAugments;
-        
-        if (inactiveAugments.Count < 3)
+        List<Augment> selectableAugments = new List<Augment>();
+
+        for (int i = 0; i < inactiveAugments.Count; i++)
         {
-            Debug.LogWarning("Not enough augments in inactive list. Need at least 3.");
+            Augment augment = inactiveAugments[i];
+            if (augment == null)
+            {
+                continue;
+            }
+
+            if (!IsAugmentSelectable(augment))
+            {
+                continue;
+            }
+
+            selectableAugments.Add(augment);
+        }
+        
+        if (selectableAugments.Count < 3)
+        {
+            Debug.LogWarning("Not enough selectable augments in inactive list. Need at least 3.");
             return;
         }
 
         // Create a temporary list to track which indices we've used
         List<int> availableIndices = new List<int>();
-        for (int i = 0; i < inactiveAugments.Count; i++)
+        for (int i = 0; i < selectableAugments.Count; i++)
         {
             availableIndices.Add(i);
         }
@@ -233,9 +250,36 @@ public class AugmentSelectionUI : MonoBehaviour
         for (int i = 0; i < 3; i++)
         {
             int randomIndex = UnityEngine.Random.Range(0, availableIndices.Count);
-            selectedAugments.Add(inactiveAugments[availableIndices[randomIndex]]);
+            selectedAugments.Add(selectableAugments[availableIndices[randomIndex]]);
             availableIndices.RemoveAt(randomIndex);
         }
+    }
+
+    private bool IsAugmentSelectable(Augment augment)
+    {
+        if (augment == null)
+        {
+            return false;
+        }
+
+        if (augment.Name != "Renovations")
+        {
+            return true;
+        }
+
+        Renovations renovations = FindFirstObjectByType<Renovations>();
+        if (renovations == null)
+        {
+            return true;
+        }
+
+        bool canApply = renovations.CanApplySafely();
+        if (!canApply)
+        {
+            Debug.Log($"[AugmentSelectionUI] Skipping '{augment.Name}' because it would remove all playable tiles.");
+        }
+
+        return canApply;
     }
 
     /// <summary>
@@ -343,6 +387,12 @@ public class AugmentSelectionUI : MonoBehaviour
 
         Augment selectedAugment = selectedAugments[augmentIndex];
         Debug.Log($"Augment '{selectedAugment.Name}' selected!");
+
+        if (!IsAugmentSelectable(selectedAugment))
+        {
+            Debug.LogWarning($"[AugmentSelectionUI] Prevented selecting '{selectedAugment.Name}' because it would invalidate the board.");
+            return;
+        }
         
         // Move augment from inactive to active
         augmentManager.augmentList.inactiveAugments.Remove(selectedAugment);
