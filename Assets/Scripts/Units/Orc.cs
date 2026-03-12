@@ -35,7 +35,7 @@ public class Orc : BaseUnit
 
         float speedMult = 0.25f; // +25% attack speed (additive)
         int duration = Mathf.CeilToInt(m_buffDuration);
-        m_BuffSystem.AddTempBuff(this, speedMult, 0f, 0f, 0f, 0f, 0f, duration, null, 0f, null, 0f);
+        m_BuffSystem.AddTempBuff(this, speedMult, 0f, 0f, 0f, 0f, 0f, 0f, duration, null, 0f, null, 0f);
         Debug.Log("Orc uses ability and gains attack speed buff");
         myData.CurrentMana = 0f;
     }

@@ -1,5 +1,5 @@
 using UnityEngine;
-using UnityEngine.InputSystem;
+using UnityEngine.UI;
 using UnityEngine.Rendering;
 using UnityEngine.Rendering.Universal;
 using UnityEngine.SceneManagement;
@@ -14,14 +14,13 @@ public class GlobalHighContrastVolumeController : MonoBehaviour
     [Tooltip("The global Volume that holds your grayscale Color Adjustments profile.")]
     [SerializeField] private Volume m_Volume;
 
-    [Header("Toggle")]
-    [Tooltip("Keyboard key used to turn the high-contrast grayscale effect on or off.")]
-    [SerializeField] private Key m_ToggleKey = Key.G;
-
-    [Tooltip("Whether the effect starts enabled the first time the game launches.")]
-    [SerializeField] private bool m_StartEnabled = true;
+    [Tooltip("Optional UI button that toggles the high-contrast grayscale effect.")]
+    [SerializeField] private Button m_ToggleButton;
 
     [Header("Persistence")]
+    [Tooltip("Whether the effect starts enabled the first time the game launches.")]
+    [SerializeField] private bool m_StartEnabled = false;
+
     [Tooltip("If true, the on/off state is saved and restored between play sessions.")]
     [SerializeField] private bool m_SaveToPlayerPrefs = true;
 
@@ -50,6 +49,12 @@ public class GlobalHighContrastVolumeController : MonoBehaviour
         // Uses the Volume on the same GameObject.
         m_Volume = GetComponent<Volume>();
 
+        if (m_ToggleButton != null)
+        {
+            m_ToggleButton.onClick.RemoveListener(OnToggleButtonPressed);
+            m_ToggleButton.onClick.AddListener(OnToggleButtonPressed);
+        }
+
         if (m_SaveToPlayerPrefs && PlayerPrefs.HasKey(k_PrefsKey))
         {
             m_IsEnabled = PlayerPrefs.GetInt(k_PrefsKey, m_StartEnabled ? 1 : 0) == 1;
@@ -71,20 +76,16 @@ public class GlobalHighContrastVolumeController : MonoBehaviour
 
     private void OnDestroy()
     {
+        if (m_ToggleButton != null)
+        {
+            m_ToggleButton.onClick.RemoveListener(OnToggleButtonPressed);
+        }
+
         // Always unsubscribe from scene events when this object goes away.
         if (s_Instance == this)
         {
             SceneManager.sceneLoaded -= OnSceneLoaded;
             s_Instance = null;
-        }
-    }
-
-    private void Update()
-    {
-        // Adds a Keyboard Toggle for Filter
-        if (Keyboard.current != null && Keyboard.current[m_ToggleKey].wasPressedThisFrame)
-        {
-            ToggleEffect();
         }
     }
 
@@ -142,6 +143,11 @@ public class GlobalHighContrastVolumeController : MonoBehaviour
     {
         m_IsEnabled = !m_IsEnabled;
         ApplyState();
+    }
+
+    public void OnToggleButtonPressed()
+    {
+        ToggleEffect();
     }
 
     // Read Only Property.

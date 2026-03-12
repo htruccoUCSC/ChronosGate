@@ -140,6 +140,5 @@ public class TrebuchetUnit : BaseUnit
 
         List<Transform> nearest = GetNearestTargets(1);
         currentTarget = nearest.Count > 0 ? nearest[0] : null;
-        Debug.Log($"[Trebuchet.ScanTargeting] nearest={nearest.Count}, currentTarget={(currentTarget!=null?currentTarget.name:"null")}");
     }
 }

@@ -58,11 +58,21 @@ public class DatabaseLoader : MonoBehaviour
     private void ParseJson(string jsonText)
     {
         UnitDatabase dataBatch = JsonConvert.DeserializeObject<UnitDatabase>(jsonText);
+        if (dataBatch == null || dataBatch.AllUnits == null)
+        {
+            Debug.LogError("[DatabaseLoader] Failed to parse unit database or AllUnits was null.");
+            return;
+        }
 
         UnitLookup.Clear();
 
         foreach (var unit in dataBatch.AllUnits)
         {
+            if (unit == null)
+            {
+                continue;
+            }
+
             // creates unity scriptable object instance
             UnitDefinition unitDef = ScriptableObject.CreateInstance<UnitDefinition>();
 
@@ -93,7 +103,18 @@ public class DatabaseLoader : MonoBehaviour
                 unitDef.AttackFunction = BasicAttackType.None;
             }
 
-            UnitLookup.Add(unitDef.UnitID, unitDef);
+            if (string.IsNullOrWhiteSpace(unitDef.UnitID))
+            {
+                Debug.LogWarning("[DatabaseLoader] Skipped unit with empty UnitID.");
+                continue;
+            }
+
+            if (UnitLookup.ContainsKey(unitDef.UnitID))
+            {
+                Debug.LogWarning($"[DatabaseLoader] Duplicate UnitID '{unitDef.UnitID}' found. Overwriting previous entry.");
+            }
+
+            UnitLookup[unitDef.UnitID] = unitDef;
         }
     }
 }

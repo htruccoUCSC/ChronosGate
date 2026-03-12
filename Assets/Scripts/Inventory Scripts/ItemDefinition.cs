@@ -3,6 +3,7 @@ using UnityEngine;
 public enum ItemEffectType
 {
     AreaDamage,
+    TowerLevelUp,
     None
 }
 

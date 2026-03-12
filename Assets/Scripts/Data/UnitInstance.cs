@@ -19,6 +19,8 @@ public class UnitInstance : ScriptableObject
     public float BaseAbilityPower = 0;
     public float AbilityPowerFlatMod = 0;
     public float AbilityPowerMult=1.0f;
+    public float RangeFlatMod = 0f;
+    public string AttackType;
 
 
     // this is basically a constructor for creating runtime instances
@@ -34,8 +36,12 @@ public class UnitInstance : ScriptableObject
         instance.Level = 1;
         instance.BaseAbilityPower = def.AbilityPower;
         instance.AbilityPowerFlatMod = 0f;
+        instance.RangeFlatMod = 0f;
         instance.MaxHP = def.Health; 
         instance.CurrentHP = instance.MaxHP; 
+        instance.AttackType = string.IsNullOrWhiteSpace(def.AttackType)
+            ? def.AttackFunction.ToString()
+            : def.AttackType;
         return instance;
     }
 
@@ -58,4 +64,5 @@ public class UnitInstance : ScriptableObject
     }
     public float GetModifiedDamage() => Mathf.Max(1f, (BaseDef.AttackDamage + DamageFlatMod) * DamageMultMod);
     public float GetModifiedAbilityPower() => Mathf.Max(0f, (BaseDef.AbilityPower + AbilityPowerFlatMod) * AbilityPowerMult);
+    public float GetModifiedRange() => Mathf.Max(0f, BaseDef.Range + RangeFlatMod);
 }

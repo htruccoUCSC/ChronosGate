@@ -4,9 +4,8 @@ using System.Collections.Generic;
 
 public class FirePriestess : BaseUnit
 {
-    [SerializeField] private CurrencyPickup m_CurrencyPickupPrefab;
+    // [SerializeField] private CurrencyPickup m_CurrencyPickupPrefab;
     [SerializeField] private float m_CurrencyPerActiveFireBuff = 5f;
-    [SerializeField] private float m_CurrencySpawnRadius = 0.4f;
 
     private BoardManager m_BoardManager;
     private Buffs m_BuffSystem;
@@ -33,16 +32,26 @@ public class FirePriestess : BaseUnit
 
     protected override void PerformBasicAttack()
     {
-        // Apply fire buff to adjacent friendly towers
+        // Apply fire buff to adjacent friendly towers that don't already have one
         List<BaseUnit> adjacentTowers = GetAdjacentFriendlyTowers();
         
-        if (adjacentTowers.Count == 0)
+        // Filter out towers that already have the fire buff
+        List<BaseUnit> availableTowers = new List<BaseUnit>();
+        foreach (BaseUnit tower in adjacentTowers)
+        {
+            if (tower.roundBuffs == null || tower.roundBuffs.Count == 0)
+            {
+                availableTowers.Add(tower);
+            }
+        }
+
+        if (availableTowers.Count == 0)
         {
             return;
         }
 
-        // Apply fire to one random adjacent tower
-        BaseUnit targetTower = adjacentTowers[Random.Range(0, adjacentTowers.Count)];
+        // Apply fire to one random available tower
+        BaseUnit targetTower = availableTowers[Random.Range(0, availableTowers.Count)];
         ApplyFireBuff(targetTower);
     }
 
@@ -54,7 +63,7 @@ public class FirePriestess : BaseUnit
         if (totalFireStacks > 0)
         {
             // Generate currency based on fire stacks
-            int currencyAmount = Mathf.Max(1, Mathf.RoundToInt(totalFireStacks * m_CurrencyPerActiveFireBuff + myData.GetModifiedAbilityPower()));
+            int currencyAmount = Mathf.Max(1, Mathf.RoundToInt(totalFireStacks * m_CurrencyPerActiveFireBuff + myData.GetModifiedAbilityPower())/50);
             SpawnCurrency(currencyAmount);
 
             Debug.Log($"Fire Priestess generated {currencyAmount} flux from {totalFireStacks} fire stacks on enemies");
@@ -142,7 +151,7 @@ public class FirePriestess : BaseUnit
         }
 
         // Apply fire buff to the tower using round buff with ApplyFire callback
-        m_BuffSystem.AddRoundBuff(targetTower, 0, 0, 0, 0, 0, 0, targetTower.ApplyFire, 1f, null, 0f);
+        m_BuffSystem.AddRoundBuff(targetTower, 0, 0, 0, 0, 0, 0, 0f, targetTower.ApplyFire, 1f, null, 0f);
 
         Debug.Log($"Fire Priestess gave fire buff to {targetTower.name}");
     }
@@ -186,15 +195,13 @@ public class FirePriestess : BaseUnit
 
     private void SpawnCurrency(int amount)
     {
-        if (m_CurrencyPickupPrefab == null)
+        if (CurrencyManager.Instance == null)
         {
-            Debug.LogWarning("Fire Priestess has no currency pickup prefab assigned.");
+            Debug.LogWarning("Fire Priestess could not add currency because CurrencyManager is missing.");
             return;
         }
 
-        Vector2 offset = Random.insideUnitCircle * m_CurrencySpawnRadius;
-        CurrencyPickup pickup = Instantiate(m_CurrencyPickupPrefab, transform.position + (Vector3)offset, Quaternion.identity);
-        pickup.Configure(amount);
+        CurrencyManager.Instance.AddCurrency(amount, transform.position);
     }
 }
 
