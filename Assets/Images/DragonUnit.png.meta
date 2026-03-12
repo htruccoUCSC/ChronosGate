@@ -1,10 +1,10 @@
 fileFormatVersion: 2
-guid: ef718a18c7132424299467cda6d27a12
+guid: 4d358020d3736431990bf19c18e3b4dc
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: 1208040086343421634
-    second: image_0
+      213: -8286220231951148692
+    second: DragonUnit_0
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -87,12 +87,12 @@ TextureImporter:
     buildTarget: Standalone
     maxTextureSize: 2048
     resizeAlgorithm: 0
-    textureFormat: 12
+    textureFormat: -1
     textureCompression: 1
     compressionQuality: 50
     crunchedCompression: 0
     allowsAlphaSplitting: 0
-    overridden: 1
+    overridden: 0
     ignorePlatformSupport: 0
     androidETC2FallbackOverride: 0
     forceMaximumCompressionQuality_BC6H_BC7: 0
@@ -100,13 +100,13 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: image_0
+      name: DragonUnit_0
       rect:
         serializedVersion: 2
-        x: 11
-        y: 5
-        width: 545
-        height: 442
+        x: 0
+        y: 0
+        width: 595
+        height: 412
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -115,8 +115,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 2ce8eecde02d3c010800000000000000
-      internalID: 1208040086343421634
+      spriteID: c6995efe99e610d80800000000000000
+      internalID: -8286220231951148692
       vertices: []
       indices: 
       edges: []
@@ -135,7 +135,7 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      image_0: 1208040086343421634
+      DragonUnit_0: -8286220231951148692
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 
