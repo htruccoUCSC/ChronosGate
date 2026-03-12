@@ -1,0 +1,715 @@
+fileFormatVersion: 2
+guid: fd24b9eb853d741fca404dced687139c
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: -3746588141190039527
+    second: pixel-art-5_0
+  - first:
+      213: 5723989577274785147
+    second: pixel-art-5_1
+  - first:
+      213: 2715398090915501096
+    second: pixel-art-5_2
+  - first:
+      213: 30065362221370637
+    second: pixel-art-5_3
+  - first:
+      213: -6168530181574481699
+    second: pixel-art-5_4
+  - first:
+      213: 6580820398997256272
+    second: pixel-art-5_5
+  - first:
+      213: 3017019593344554044
+    second: pixel-art-5_6
+  - first:
+      213: 8801106299354571427
+    second: pixel-art-5_7
+  - first:
+      213: 8938650879505165198
+    second: pixel-art-5_8
+  - first:
+      213: 3052605179811142981
+    second: pixel-art-5_9
+  - first:
+      213: -794453721347000788
+    second: pixel-art-5_10
+  - first:
+      213: 7076704089850524284
+    second: pixel-art-5_11
+  - first:
+      213: -6249955200630851621
+    second: pixel-art-5_12
+  - first:
+      213: 2247898304926100265
+    second: pixel-art-5_13
+  - first:
+      213: -275282923145442698
+    second: pixel-art-5_14
+  - first:
+      213: -3964038797126567884
+    second: pixel-art-5_15
+  - first:
+      213: 6278510336570454567
+    second: pixel-art-5_16
+  - first:
+      213: 7377611865286164985
+    second: pixel-art-5_17
+  - first:
+      213: 3594118662024616476
+    second: pixel-art-5_18
+  - first:
+      213: -2856534048910121130
+    second: pixel-art-5_19
+  - first:
+      213: 1891946499394914127
+    second: pixel-art-5_20
+  - first:
+      213: -4209163999935494943
+    second: pixel-art-5_21
+  - first:
+      213: -711311507429394166
+    second: pixel-art-5_22
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 0
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 1
+  spriteExtrude: 1
+  spriteMeshType: 0
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 100
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationDetail: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 0
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: pixel-art-5_0
+      rect:
+        serializedVersion: 2
+        x: 195
+        y: 344
+        width: 30
+        height: 46
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 9183da49fe1710cc0800000000000000
+      internalID: -3746588141190039527
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: pixel-art-5_1
+      rect:
+        serializedVersion: 2
+        x: 247
+        y: 360
+        width: 18
+        height: 50
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b7d708b8132bf6f40800000000000000
+      internalID: 5723989577274785147
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: pixel-art-5_2
+      rect:
+        serializedVersion: 2
+        x: 275
+        y: 388
+        width: 10
+        height: 6
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 824dac84d280fa520800000000000000
+      internalID: 2715398090915501096
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: pixel-art-5_3
+      rect:
+        serializedVersion: 2
+        x: 299
+        y: 360
+        width: 14
+        height: 50
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d0d8f33a940da6000800000000000000
+      internalID: 30065362221370637
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: pixel-art-5_4
+      rect:
+        serializedVersion: 2
+        x: 339
+        y: 344
+        width: 30
+        height: 46
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: dd82afc6b7af46aa0800000000000000
+      internalID: -6168530181574481699
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: pixel-art-5_5
+      rect:
+        serializedVersion: 2
+        x: 227
+        y: 380
+        width: 6
+        height: 6
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 05830e44945c35b50800000000000000
+      internalID: 6580820398997256272
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: pixel-art-5_6
+      rect:
+        serializedVersion: 2
+        x: 275
+        y: 364
+        width: 10
+        height: 18
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c3412b5d55b9ed920800000000000000
+      internalID: 3017019593344554044
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: pixel-art-5_7
+      rect:
+        serializedVersion: 2
+        x: 327
+        y: 380
+        width: 10
+        height: 6
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 3a26b7b8c8fc32a70800000000000000
+      internalID: 8801106299354571427
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: pixel-art-5_8
+      rect:
+        serializedVersion: 2
+        x: 183
+        y: 352
+        width: 6
+        height: 10
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e8b632cad977c0c70800000000000000
+      internalID: 8938650879505165198
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: pixel-art-5_9
+      rect:
+        serializedVersion: 2
+        x: 231
+        y: 356
+        width: 14
+        height: 18
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 54d1926dc380d5a20800000000000000
+      internalID: 3052605179811142981
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: pixel-art-5_10
+      rect:
+        serializedVersion: 2
+        x: 319
+        y: 356
+        width: 14
+        height: 18
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c26ff94bc8889f4f0800000000000000
+      internalID: -794453721347000788
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: pixel-art-5_11
+      rect:
+        serializedVersion: 2
+        x: 371
+        y: 352
+        width: 10
+        height: 10
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c72381030e0853260800000000000000
+      internalID: 7076704089850524284
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: pixel-art-5_12
+      rect:
+        serializedVersion: 2
+        x: 123
+        y: 280
+        width: 46
+        height: 22
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: bd7fa44dbd2b349a0800000000000000
+      internalID: -6249955200630851621
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: pixel-art-5_13
+      rect:
+        serializedVersion: 2
+        x: 135
+        y: 63
+        width: 294
+        height: 291
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 92ba2543993223f10800000000000000
+      internalID: 2247898304926100265
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: pixel-art-5_14
+      rect:
+        serializedVersion: 2
+        x: 391
+        y: 280
+        width: 50
+        height: 26
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 67a4f21d3affd2cf0800000000000000
+      internalID: -275282923145442698
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: pixel-art-5_15
+      rect:
+        serializedVersion: 2
+        x: 131
+        y: 264
+        width: 10
+        height: 10
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 438776567b7ecf8c0800000000000000
+      internalID: -3964038797126567884
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: pixel-art-5_16
+      rect:
+        serializedVersion: 2
+        x: 423
+        y: 264
+        width: 10
+        height: 10
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 72276e9d2efb12750800000000000000
+      internalID: 6278510336570454567
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: pixel-art-5_17
+      rect:
+        serializedVersion: 2
+        x: 111
+        y: 240
+        width: 50
+        height: 6
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 9f1c61937ea826660800000000000000
+      internalID: 7377611865286164985
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: pixel-art-5_18
+      rect:
+        serializedVersion: 2
+        x: 399
+        y: 236
+        width: 50
+        height: 10
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c1a549271efd0e130800000000000000
+      internalID: 3594118662024616476
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: pixel-art-5_19
+      rect:
+        serializedVersion: 2
+        x: 131
+        y: 211
+        width: 10
+        height: 10
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 65767e5ca6d8b58d0800000000000000
+      internalID: -2856534048910121130
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: pixel-art-5_20
+      rect:
+        serializedVersion: 2
+        x: 423
+        y: 211
+        width: 10
+        height: 10
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f474a76315b814a10800000000000000
+      internalID: 1891946499394914127
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: pixel-art-5_21
+      rect:
+        serializedVersion: 2
+        x: 123
+        y: 183
+        width: 46
+        height: 22
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 1e48b76a4ab0695c0800000000000000
+      internalID: -4209163999935494943
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: pixel-art-5_22
+      rect:
+        serializedVersion: 2
+        x: 395
+        y: 183
+        width: 46
+        height: 22
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a09f503e3f9e026f0800000000000000
+      internalID: -711311507429394166
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: 5e97eb03825dee720800000000000000
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries: []
+    nameFileIdTable:
+      pixel-art-5_0: -3746588141190039527
+      pixel-art-5_1: 5723989577274785147
+      pixel-art-5_10: -794453721347000788
+      pixel-art-5_11: 7076704089850524284
+      pixel-art-5_12: -6249955200630851621
+      pixel-art-5_13: 2247898304926100265
+      pixel-art-5_14: -275282923145442698
+      pixel-art-5_15: -3964038797126567884
+      pixel-art-5_16: 6278510336570454567
+      pixel-art-5_17: 7377611865286164985
+      pixel-art-5_18: 3594118662024616476
+      pixel-art-5_19: -2856534048910121130
+      pixel-art-5_2: 2715398090915501096
+      pixel-art-5_20: 1891946499394914127
+      pixel-art-5_21: -4209163999935494943
+      pixel-art-5_22: -711311507429394166
+      pixel-art-5_3: 30065362221370637
+      pixel-art-5_4: -6168530181574481699
+      pixel-art-5_5: 6580820398997256272
+      pixel-art-5_6: 3017019593344554044
+      pixel-art-5_7: 8801106299354571427
+      pixel-art-5_8: 8938650879505165198
+      pixel-art-5_9: 3052605179811142981
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
