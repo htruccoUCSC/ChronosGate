@@ -39,7 +39,8 @@ public class AugmentSetup : MonoBehaviour
             "Renovations",
             "Reduce board height by 2 and increase board width by 2. (same amounnt of enemies)",
             applyImmediatelyOnAcquire: true,
-            applyOnRoundStart: false);
+            applyOnRoundStart: false,
+            update: false);
         Augment LuckyShotWrapper = new Augment(() => luckyShot.LuckyShotCall(),"Lucky Shot","All units have a 10% to double hit", update: true);
         Augment UniqueWrapper = new Augment(() => Unique.UniqueCall(),"Unique","If a unit is surrounded by different eras gain 3x mult on attack speed and damage with 50 AP", update: true);
         Augment OldSchoolWrapper = new Augment(() => oldSchool.OldSchoolCall(),"OldSchool","Medieval, Prehistoric, and Mystic units gain 30 AP for each surrounding unit of that type" ,update: true);

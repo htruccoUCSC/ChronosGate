@@ -20,9 +20,9 @@ public class TileMapManager : MonoBehaviour
         Height = Mathf.Max(1, newHeight);
         RegenerateBoard();
     }
-    public void expansion()
+    public void expansion(int amount)
     {
-        Height+=1;
+        Height+=amount;
         Height = Mathf.Max(1, Height);
         RegenerateBoard();
     }

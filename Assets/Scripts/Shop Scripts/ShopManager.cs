@@ -79,11 +79,7 @@ public class ShopManager : MonoBehaviour
 
         if (toggleButton != null)
         {
-            toggleButton.onClick.AddListener(ToggleShop);
-        }
-        else
-        {
-            Debug.LogWarning("[ShopManager] Toggle button reference is missing.");
+            toggleButton.gameObject.SetActive(false);
         }
 
         if (nextRoundButton != null)
@@ -290,15 +286,6 @@ public class ShopManager : MonoBehaviour
         {
             shopPanel.SetActive(showPanel);
         }
-
-        if (toggleButton != null)
-        {
-            bool showToggle = gameplayUIVisible && !showPersistentShop;
-            toggleButton.gameObject.SetActive(showToggle);
-            toggleButton.interactable = showToggle;
-        }
-
-        UpdateToggleButtonLabel();
 
         if (nextRoundButton != null)
         {

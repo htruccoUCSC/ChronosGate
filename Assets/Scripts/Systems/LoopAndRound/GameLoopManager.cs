@@ -4,7 +4,7 @@ using UnityEngine.SceneManagement;
 
 /// <summary>
 /// Main game loop manager that orchestrates the flow:
-/// Game Start -> Augment Selection -> 3x(Shop -> Wave) -> Back to Augment Selection
+/// Game Start -> 3x(Combat) -> Augment Selection -> repeat
 /// </summary>
 public class GameLoopManager : MonoBehaviour
 {
@@ -29,6 +29,9 @@ public class GameLoopManager : MonoBehaviour
     protected bool isGameActive = false;
     private bool waitingForNextRound = false;
 
+    public TileMapManager tileMapManager;
+    public int roundsOfGrowth =2;
+    public int roundsOfGrowthTracker=0;
     public enum GameState
     {
         AugmentSelection,
@@ -69,6 +72,10 @@ public class GameLoopManager : MonoBehaviour
         if (newRound == null)
         {
             newRound = FindFirstObjectByType<NewRound>();
+        }
+        if (tileMapManager == null)
+        {
+            tileMapManager = FindFirstObjectByType<TileMapManager>();
         }
         if (FindFirstObjectByType<GameSpeedButton>() == null)
         {
@@ -113,8 +120,8 @@ public class GameLoopManager : MonoBehaviour
         isGameActive = true;
         currentWaveInCycle = 0;
         
-        // Show augment selection at game start
-        ShowAugmentSelection();
+        // Start the run in combat. Augment selection still happens after a full cycle.
+        StartCombatPhase();
     }
 
     protected void ShowAugmentSelection()
@@ -136,40 +143,19 @@ public class GameLoopManager : MonoBehaviour
 
     private void OnAugmentSelected(int augmentIndex)
     {
-        Debug.Log($"Player selected augment {augmentIndex}. Starting shop phase.");
+        Debug.Log($"Player selected augment {augmentIndex}. Starting combat phase.");
         
         // Reset wave cycle counter
         currentWaveInCycle = 0;
         
-        // Move to shopping phase
-        StartShoppingPhase();
+        // Move to combat phase
+        StartCombatPhase();
     }
 
     protected void StartShoppingPhase()
     {
-        CurrentState = GameState.Shopping;
-        Debug.Log($"=== SHOPPING PHASE (Wave {currentWaveInCycle + 1}/{wavesPerAugmentCycle}) ===");
-        
-        bool shouldOpenShopPanel = !autoStartRounds || reopenShopEachRound;
-        if (shopManager != null)
-        {
-            shopManager.SetGameplayUIVisible(true);
-            shopManager.RefreshShopContents();
-            if (shouldOpenShopPanel)
-            {
-                shopManager.OpenShop();
-            }
-        }
-
-        if (autoStartRounds)
-        {
-            waitingForNextRound = false;
-            StartCoroutine(AutoStartCombatPhase());
-            return;
-        }
-
-        // Wait for player to press "Next Round" button when auto-start is disabled.
-        waitingForNextRound = true;
+        Debug.Log($"Shopping phase skipped. Starting combat for wave {currentWaveInCycle + 1}/{wavesPerAugmentCycle}.");
+        StartCombatPhase();
     }
 
     private IEnumerator AutoStartCombatPhase()
@@ -193,12 +179,6 @@ public class GameLoopManager : MonoBehaviour
     /// </summary>
     public void OnNextRoundPressed()
     {
-        if (!waitingForNextRound) return;
-        
-        waitingForNextRound = false;
-        
-        Debug.Log("Next Round pressed. Starting combat phase...");
-        augmentManager.ApplyAllActiveAugments();
         StartCombatPhase();
     }
 
@@ -256,15 +236,31 @@ public class GameLoopManager : MonoBehaviour
             Debug.Log("Cycle complete! Returning to augment selection...");
             yield return new WaitForSeconds(1f); // Brief pause
             ShowAugmentSelection();
+
+            
+
+            // if (roundsOfGrowthTracker < roundsOfGrowth)
+            // {
+            //     roundsOfGrowthTracker++;
+            //     if (tileMapManager != null)
+            //     {
+            //         tileMapManager.expansion(2);
+            //     }
+            //     else
+            //     {
+            //         Debug.LogWarning("GameLoopManager: TileMapManager not found, skipping board expansion.");
+            //     }
+            // }
+            
         }
         else
         {
 
-            // Continue to next shop phase. Wave done
-            Debug.Log($"Moving to next shopping phase... (Next: Wave {currentWaveInCycle + 1}/{wavesPerAugmentCycle})");
+            // Continue directly to the next combat phase.
+            Debug.Log($"Moving to next combat phase... (Next: Wave {currentWaveInCycle + 1}/{wavesPerAugmentCycle})");
             yield return new WaitForSeconds(Mathf.Max(0f, autoStartRoundDelay));
-            waveManager.expandBoard();
-            StartShoppingPhase();
+
+            StartCombatPhase();
         }
     }
 
@@ -296,4 +292,5 @@ public class GameLoopManager : MonoBehaviour
             augmentSelectionUI.OnAugmentSelected -= OnAugmentSelected;
         }
     }
+
 }

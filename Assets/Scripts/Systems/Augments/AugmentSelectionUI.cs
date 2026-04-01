@@ -26,7 +26,7 @@ public class AugmentSelectionUI : MonoBehaviour
     [Header("Control Buttons")]
     [SerializeField] private Button rerollButton;
     [SerializeField] private TextMeshProUGUI rerollCostText;
-    [SerializeField] private Button toggleButton; // Should NOT be inside augmentSelectionPanel
+    [SerializeField] private Button toggleButton;
 
     private AugmentManager augmentManager;
     private List<Augment> selectedAugments = new List<Augment>();
@@ -71,66 +71,9 @@ public class AugmentSelectionUI : MonoBehaviour
             rerollButton.onClick.AddListener(OnRerollButtonClicked);
         }
         
-        // Hook up toggle button
         if (toggleButton != null)
         {
-            toggleButton.onClick.AddListener(ToggleAugmentSelection);
-            // Ensure toggle button is always interactable
-            toggleButton.interactable = true;
-            
-            // Debug all button properties
-            Debug.Log($"[AugmentSelectionUI] Toggle button initialized:");
-            Debug.Log($"  - Button.interactable: {toggleButton.interactable}");
-            Debug.Log($"  - GameObject.activeSelf: {toggleButton.gameObject.activeSelf}");
-            Debug.Log($"  - GameObject.activeInHierarchy: {toggleButton.gameObject.activeInHierarchy}");
-            
-            // Check if there's a CanvasGroup blocking interactions
-            CanvasGroup cg = toggleButton.GetComponent<CanvasGroup>();
-            if (cg != null)
-            {
-                Debug.Log($"  - CanvasGroup found on button");
-                Debug.Log($"    - interactable: {cg.interactable}");
-                Debug.Log($"    - blocksRaycasts: {cg.blocksRaycasts}");
-                Debug.Log($"    - alpha: {cg.alpha}");
-                
-                // Fix CanvasGroup if needed
-                if (!cg.interactable)
-                {
-                    cg.interactable = true;
-                    Debug.Log($"  - Fixed: CanvasGroup.interactable set to true");
-                }
-                if (!cg.blocksRaycasts)
-                {
-                    cg.blocksRaycasts = true;
-                    Debug.Log($"  - Fixed: CanvasGroup.blocksRaycasts set to true");
-                }
-            }
-            
-            // Check parent's CanvasGroup
-            CanvasGroup parentCG = toggleButton.GetComponentInParent<CanvasGroup>();
-            if (parentCG != null && parentCG != cg)
-            {
-                Debug.Log($"  - Parent CanvasGroup found");
-                Debug.Log($"    - interactable: {parentCG.interactable}");
-                Debug.Log($"    - blocksRaycasts: {parentCG.blocksRaycasts}");
-            }
-            
-            // Check Image component
-            Image buttonImage = toggleButton.GetComponent<Image>();
-            if (buttonImage != null)
-            {
-                Debug.Log($"  - Image component found");
-                Debug.Log($"    - raycastTarget: {buttonImage.raycastTarget}");
-                if (!buttonImage.raycastTarget)
-                {
-                    buttonImage.raycastTarget = true;
-                    Debug.Log($"  - Fixed: Image.raycastTarget set to true");
-                }
-            }
-        }
-        else
-        {
-            Debug.LogWarning("[AugmentSelectionUI] toggleButton is NULL! Not assigned in inspector!");
+            toggleButton.gameObject.SetActive(false);
         }
         
         // Initialize reroll cost display
@@ -158,13 +101,6 @@ public class AugmentSelectionUI : MonoBehaviour
         augmentSelectionPanel.SetActive(true);
         isPanelOpen = true;
         
-        // Ensure toggle button is always visible and clickable
-        if (toggleButton != null)
-        {
-            toggleButton.gameObject.SetActive(true);
-            toggleButton.interactable = true;
-        }
-        
         if (GameSpeedButton.Instance != null)
         {
             GameSpeedButton.Instance.SetPaused(true);
@@ -178,23 +114,6 @@ public class AugmentSelectionUI : MonoBehaviour
         if (currencyManager != null)
         {
             UpdateRerollButtonState(currencyManager.GetCurrency());
-        }
-    }
-    
-    /// <summary>
-    /// Toggle the augment selection panel open/closed
-    /// </summary>
-    private void ToggleAugmentSelection()
-    {
-        Debug.Log($"[AugmentSelectionUI] Toggle button clicked! Panel is currently {(isPanelOpen ? "OPEN" : "CLOSED")}");
-        
-        if (isPanelOpen)
-        {
-            HideAugmentSelection();
-        }
-        else
-        {
-            ShowAugmentSelection();
         }
     }
     
@@ -347,8 +266,7 @@ public class AugmentSelectionUI : MonoBehaviour
     }
 
     /// <summary>
-    /// Explicitly hide the augment selection panel
-    /// (Toggle button remains visible)
+    /// Explicitly hide the augment selection panel.
     /// </summary>
     public void HideAugmentSelection()
     {
@@ -362,14 +280,9 @@ public class AugmentSelectionUI : MonoBehaviour
         {
             Time.timeScale = 1f;
         }
-        
-        // Keep toggle button visible when panel is manually closed
-        if (toggleButton != null)
+
+        if (EventSystem.current != null)
         {
-            toggleButton.gameObject.SetActive(true);
-            toggleButton.interactable = true;
-            
-            // Force button to normal state
             EventSystem.current.SetSelectedGameObject(null);
         }
     }
@@ -411,12 +324,6 @@ public class AugmentSelectionUI : MonoBehaviour
         HideAugmentSelection();
         ResetRerollCost(); // Reset reroll cost for next time
         
-        // Hide toggle button when augment is selected
-        if (toggleButton != null)
-        {
-            toggleButton.gameObject.SetActive(false);
-        }
-        
         // Trigger event for other systems (passing the index)
         OnAugmentSelected?.Invoke(augmentIndex);
     }
@@ -447,11 +354,6 @@ public class AugmentSelectionUI : MonoBehaviour
         if (rerollButton != null)
         {
             rerollButton.onClick.RemoveAllListeners();
-        }
-        
-        if (toggleButton != null)
-        {
-            toggleButton.onClick.RemoveAllListeners();
         }
         
         if (currencyManager != null)

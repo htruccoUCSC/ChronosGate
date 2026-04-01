@@ -48,6 +48,12 @@ public void Initialize(
     }
  void Update()
 {
+    if (orbit == null)
+    {
+        Destroy(gameObject);
+        return;
+    }
+
     m_movementTimer += Time.deltaTime;
     if (m_movementTimer >= m_moveInterval)
     {
@@ -80,7 +86,9 @@ public void Initialize(
         {
             BaseEnemy enemy = hit.GetComponentInParent<BaseEnemy>();
             if (enemy != null)
+            {
                 enemy.TakeDamage(orbit, Mathf.RoundToInt(m_damage));
+            }
         }
     }
 
@@ -93,6 +101,9 @@ public void Initialize(
 
     public bool HandleEnemyTrigger(Collider2D other)
     {
+        if (orbit == null)
+            return false;
+
         BaseEnemy enemy = other.GetComponentInParent<BaseEnemy>();
         if (enemy == null)
             return false;
@@ -102,6 +113,12 @@ public void Initialize(
 
 
         return true;
+    }
+
+    private void OnDestroy()
+    {
+        m_target = null;
+        orbit = null;
     }
 
  

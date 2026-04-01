@@ -17,9 +17,8 @@ public class WaveManager : MonoBehaviour
     public GameObject baseEnemyPrefab; //explicit base enemy prefab 
     public GameObject shadowEnemyPrefab; //explicit shadow enemy prefab
     public Tilemap tilemap;        // tilemap used to figure out spawn + map edges
-    public TileMapManager tileMapManager;
-    public int roundsOfGrowth =4;
-    public int roundsOfGrowthTracker=0;
+    public PortalManager portalManager;
+
 
 
     [Header("Spawn")]
@@ -79,6 +78,15 @@ public class WaveManager : MonoBehaviour
         Debug.Log("WaveManager started.");
 
         boardManager = FindFirstObjectByType<BoardManager>();
+        if (portalManager == null)
+        {
+            
+            portalManager = FindFirstObjectByType<PortalManager>();
+        }
+        if (portalManager != null)
+        {
+            portalManager.init();
+        }
 
         // compute map end threshold once at start
         RecomputeMapEndX();
@@ -158,6 +166,7 @@ public class WaveManager : MonoBehaviour
             if (gameOver) yield break;
 
             Debug.Log($"--- WAVE {currentWave} CLEARED ---");
+            AdvancePortalsForClearedWave();
 
             yield return new WaitForSeconds(timeBetweenWaves);
             EndWaveTracking();
@@ -210,6 +219,7 @@ public class WaveManager : MonoBehaviour
         }
 
         Debug.Log($"--- WAVE {currentWave} CLEARED ---");
+        AdvancePortalsForClearedWave();
 
         EndWaveTracking();
         currentWave++;
@@ -219,20 +229,20 @@ public class WaveManager : MonoBehaviour
 
     private void TrySpawnEnemyOnTile()
     {
-        // safety checks
-        if (enemyPrefab == null && enemyRedPrefab == null && enemyYellowPrefab == null && enemyGreenPrefab == null
-            && (enemyPrefabs == null || enemyPrefabs.Count == 0)
-            && baseEnemyPrefab == null && shadowEnemyPrefab == null)
-        {
-            Debug.LogError("WaveManager: no enemy prefab assigned.");
-            return;
-        }
+        // // safety checks
+        // if (enemyPrefab == null && enemyRedPrefab == null && enemyYellowPrefab == null && enemyGreenPrefab == null
+        //     && (enemyPrefabs == null || enemyPrefabs.Count == 0)
+        //     && baseEnemyPrefab == null && shadowEnemyPrefab == null)
+        // {
+        //     Debug.LogError("WaveManager: no enemy prefab assigned.");
+        //     return;
+        // }
 
-        if (tilemap == null)
-        {
-            Debug.LogError("WaveManager: tilemap not assigned.");
-            return;
-        }
+        // if (tilemap == null)
+        // {
+        //     Debug.LogError("WaveManager: tilemap not assigned.");
+        //     return;
+        // }
 
         BoundsInt bounds = tilemap.cellBounds;
 
@@ -248,11 +258,6 @@ public class WaveManager : MonoBehaviour
             }
         }
 
-        if (rightmostXWithTile == int.MinValue)
-        {
-            Debug.LogError("WaveManager: Tilemap has no tiles.");
-            return;
-        }
 
         int spawnX = rightmostXWithTile + Mathf.Max(1, spawnOffsetCells);
 
@@ -270,8 +275,7 @@ public class WaveManager : MonoBehaviour
             return;
         }
 
-        // allow spawning on any valid row in the spawn column
-        int chosenY = validYs[Random.Range(0, validYs.Count)];
+        int chosenY = ChooseSpawnRow(validYs);
 
         // convert tile position to world space and spawn enemy
         Vector3Int spawnCell = new Vector3Int(spawnX, chosenY, 0);
@@ -323,14 +327,60 @@ public class WaveManager : MonoBehaviour
             return;
         }
 
-        TargetDummyTest testEnemy = go.GetComponentInParent<TargetDummyTest>();
-        if (testEnemy != null)
-        {
-            RegisterEnemy(testEnemy);
-            return;
-        }
 
         Debug.LogWarning("WaveManager: spawned enemyPrefab but it has no BaseEnemy or TargetDummyTest component");
+    }
+
+    private int ChooseSpawnRow(List<int> validYs)
+    {
+        if (validYs == null || validYs.Count == 0)
+        {
+            return 0;
+        }
+
+        if (portalManager == null)
+        {
+            Debug.Log("Cant find portal");
+            return validYs[Random.Range(0, validYs.Count)];
+        }
+
+        float totalWeight = 0f;
+        List<(int row, float cumulativeWeight)> weightedRows = new List<(int row, float cumulativeWeight)>();
+
+        for (int i = 0; i < validYs.Count; i++)
+        {
+            int row = validYs[i];
+            Portal portal = portalManager.GetPortal(row);
+            if (portal == null)
+            {
+                continue;
+            }
+
+            float weight = Mathf.Max(0f, portal.tier);
+            if (weight <= 0f)
+            {
+                continue;
+            }
+
+            totalWeight += weight;
+            weightedRows.Add((row, totalWeight));
+        }
+
+        if (weightedRows.Count == 0 || totalWeight <= 0f)
+        {
+            return validYs[Random.Range(0, validYs.Count)];
+        }
+
+        float roll = Random.Range(0f, totalWeight);
+        for (int i = 0; i < weightedRows.Count; i++)
+        {
+            if (roll <= weightedRows[i].cumulativeWeight)
+            {
+                return weightedRows[i].row;
+            }
+        }
+
+        return weightedRows[weightedRows.Count - 1].row;
     }
 
     private bool IsSpawnableCell(Vector3Int cell)
@@ -411,20 +461,22 @@ public class WaveManager : MonoBehaviour
             Debug.Log("GAME OVER (0 lives).");
         }
     }
-    public void expandBoard()
-    {
-         if (roundsOfGrowthTracker < roundsOfGrowth)
-            {
-                roundsOfGrowthTracker++;
-                tileMapManager.expansion();
-            }
-        
-    }
+
 
     private void BeginWaveTracking()
     {
         m_CurrentWaveTotalEnemies = Mathf.Max(0, enemiesPerWave);
         m_CurrentWaveSpawnedEnemies = 0;
+    }
+
+    private void AdvancePortalsForClearedWave()
+    {
+        if (portalManager == null)
+        {
+            return;
+        }
+
+        portalManager.addPortal(1);
     }
 
     private void EndWaveTracking()
