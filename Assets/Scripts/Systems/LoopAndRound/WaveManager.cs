@@ -17,9 +17,7 @@ public class WaveManager : MonoBehaviour
     public GameObject baseEnemyPrefab; //explicit base enemy prefab 
     public GameObject shadowEnemyPrefab; //explicit shadow enemy prefab
     public Tilemap tilemap;        // tilemap used to figure out spawn + map edges
-    public TileMapManager tileMapManager;
-    public int roundsOfGrowth =4;
-    public int roundsOfGrowthTracker=0;
+
 
 
     [Header("Spawn")]
@@ -219,20 +217,20 @@ public class WaveManager : MonoBehaviour
 
     private void TrySpawnEnemyOnTile()
     {
-        // safety checks
-        if (enemyPrefab == null && enemyRedPrefab == null && enemyYellowPrefab == null && enemyGreenPrefab == null
-            && (enemyPrefabs == null || enemyPrefabs.Count == 0)
-            && baseEnemyPrefab == null && shadowEnemyPrefab == null)
-        {
-            Debug.LogError("WaveManager: no enemy prefab assigned.");
-            return;
-        }
+        // // safety checks
+        // if (enemyPrefab == null && enemyRedPrefab == null && enemyYellowPrefab == null && enemyGreenPrefab == null
+        //     && (enemyPrefabs == null || enemyPrefabs.Count == 0)
+        //     && baseEnemyPrefab == null && shadowEnemyPrefab == null)
+        // {
+        //     Debug.LogError("WaveManager: no enemy prefab assigned.");
+        //     return;
+        // }
 
-        if (tilemap == null)
-        {
-            Debug.LogError("WaveManager: tilemap not assigned.");
-            return;
-        }
+        // if (tilemap == null)
+        // {
+        //     Debug.LogError("WaveManager: tilemap not assigned.");
+        //     return;
+        // }
 
         BoundsInt bounds = tilemap.cellBounds;
 
@@ -248,11 +246,6 @@ public class WaveManager : MonoBehaviour
             }
         }
 
-        if (rightmostXWithTile == int.MinValue)
-        {
-            Debug.LogError("WaveManager: Tilemap has no tiles.");
-            return;
-        }
 
         int spawnX = rightmostXWithTile + Mathf.Max(1, spawnOffsetCells);
 
@@ -323,12 +316,6 @@ public class WaveManager : MonoBehaviour
             return;
         }
 
-        TargetDummyTest testEnemy = go.GetComponentInParent<TargetDummyTest>();
-        if (testEnemy != null)
-        {
-            RegisterEnemy(testEnemy);
-            return;
-        }
 
         Debug.LogWarning("WaveManager: spawned enemyPrefab but it has no BaseEnemy or TargetDummyTest component");
     }
@@ -411,15 +398,7 @@ public class WaveManager : MonoBehaviour
             Debug.Log("GAME OVER (0 lives).");
         }
     }
-    public void expandBoard()
-    {
-         if (roundsOfGrowthTracker < roundsOfGrowth)
-            {
-                roundsOfGrowthTracker++;
-                tileMapManager.expansion();
-            }
-        
-    }
+
 
     private void BeginWaveTracking()
     {

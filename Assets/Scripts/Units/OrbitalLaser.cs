@@ -52,11 +52,21 @@ public class OrbitalLaser : BaseUnit
         List<(Transform target, float score)> candidates = new();
         HashSet<int> seenEnemyIds = new();
 
+        if (this == null)
+        {
+            return new List<Transform>();
+        }
+
         LayerMask mask = m_TargetMask.value == 0
             ? LayerMask.GetMask("Enemies")
             : m_TargetMask;
 
         Camera cam = Camera.main;
+        if (cam == null)
+        {
+            return new List<Transform>();
+        }
+
         Vector2 bottomLeft = cam.ViewportToWorldPoint(new Vector2(0, 0));
         Vector2 topRight = cam.ViewportToWorldPoint(new Vector2(1, 1));
         Vector2 center = (bottomLeft + topRight) / 2f;

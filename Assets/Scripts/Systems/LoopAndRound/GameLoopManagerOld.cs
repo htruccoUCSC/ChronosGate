@@ -177,7 +177,6 @@ public class GameLoopManagerOld : MonoBehaviour
         else
         {
             yield return new WaitForSeconds(1f);
-            waveManager.expandBoard();
             StartShoppingPhase();
         }
     }

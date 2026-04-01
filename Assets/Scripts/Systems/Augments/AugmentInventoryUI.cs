@@ -22,24 +22,15 @@ public class AugmentInventoryUI : MonoBehaviour
             return;
         }
 
-        // Hook up view all augments button
         if (viewAllAugmentsButton != null)
         {
-            viewAllAugmentsButton.onClick.AddListener(ShowAllAugmentInfo);
-        }
-        else
-        {
-            Debug.LogError("[AugmentInventoryUI] viewAllAugmentsButton NOT assigned in inspector!");
+            viewAllAugmentsButton.gameObject.SetActive(false);
         }
 
         // Hook up close info panel button
         if (closeInfoPanelButton != null)
         {
             closeInfoPanelButton.onClick.AddListener(HideAugmentInfo);
-        }
-        else
-        {
-            Debug.LogError("[AugmentInventoryUI] closeInfoPanelButton NOT assigned in inspector!");
         }
 
         // Hide this panel after setting up listeners
