@@ -118,6 +118,28 @@ public class AugmentSelectionUI : MonoBehaviour
     }
     
     /// <summary>
+    /// Toggle the augment selection panel open/closed
+    /// </summary>
+    private void ToggleAugmentSelection()
+    {
+        Debug.Log($"[AugmentSelectionUI] Toggle button clicked! Panel is currently {(isPanelOpen ? "OPEN" : "CLOSED")}");
+
+        if (SfxManager.Instance != null)
+        {
+            SfxManager.Instance.PlayUiClick();
+        }
+        
+        if (isPanelOpen)
+        {
+            HideAugmentSelection();
+        }
+        else
+        {
+            ShowAugmentSelection();
+        }
+    }
+    
+    /// <summary>
     /// Reset reroll cost for new augment selection round
     /// </summary>
     public void ResetRerollCost()
@@ -230,6 +252,11 @@ public class AugmentSelectionUI : MonoBehaviour
     /// </summary>
     private void OnRerollButtonClicked()
     {
+        if (SfxManager.Instance != null)
+        {
+            SfxManager.Instance.PlayUiClick();
+        }
+
         if (currencyManager == null)
         {
             Debug.LogError("CurrencyManager not found!");
@@ -296,6 +323,11 @@ public class AugmentSelectionUI : MonoBehaviour
         {
             Debug.LogError("Invalid augment index!");
             return;
+        }
+
+        if (SfxManager.Instance != null)
+        {
+            SfxManager.Instance.PlayUiClick();
         }
 
         Augment selectedAugment = selectedAugments[augmentIndex];

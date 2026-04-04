@@ -159,6 +159,11 @@ public class InventorySlotDrag : MonoBehaviour, IBeginDragHandler, IDragHandler,
         var unit = m_InventoryUI.GetUnit(m_Index);
         if (unit == null) return;
 
+        if (SfxManager.Instance != null)
+        {
+            SfxManager.Instance.PlayTowerPickup();
+        }
+
         m_DragUnit = unit;
         m_Board = m_InventoryUI.unitSpawner != null ? m_InventoryUI.unitSpawner.board : null;
         if (m_Board != null)

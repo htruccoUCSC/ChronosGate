@@ -74,6 +74,7 @@ public class ProgressionGameLoopManager : GameLoopManager
         if (skipInitialAugmentSelection)
         {
             Debug.Log("[ProgressionGameLoopManager] Skipping initial augment selection, starting with shop phase.");
+            SetGameState(GameState.Combat);
             StartShoppingPhase();
         }
         else
@@ -97,6 +98,11 @@ public class ProgressionGameLoopManager : GameLoopManager
         }
 
         Debug.Log("Wave cleared!");
+
+        if (SfxManager.Instance != null)
+        {
+            SfxManager.Instance.PlayRoundComplete();
+        }
 
         if (newRound != null)
         {

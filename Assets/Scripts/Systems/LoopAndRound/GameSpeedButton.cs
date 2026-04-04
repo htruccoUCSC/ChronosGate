@@ -77,6 +77,11 @@ public class GameSpeedButton : MonoBehaviour
             return;
         }
 
+        if (SfxManager.Instance != null)
+        {
+            SfxManager.Instance.PlayUiClick();
+        }
+
         m_CurrentSpeedIndex = (m_CurrentSpeedIndex + 1) % m_Speeds.Length;
         ApplyTimeScale();
         RefreshLabel();

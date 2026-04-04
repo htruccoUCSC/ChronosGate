@@ -168,6 +168,11 @@ public class ShopManagerOld : MonoBehaviour
         isShopOpen = !isShopOpen;
         UpdateShopUIState();
 
+        if (SfxManager.Instance != null)
+        {
+            SfxManager.Instance.PlayUiClick();
+        }
+
         if (!isShopOpen)
         {
             HideConsumableTooltip();
@@ -205,6 +210,11 @@ public class ShopManagerOld : MonoBehaviour
 
     private void OnNextRoundButtonClicked()
     {
+        if (SfxManager.Instance != null)
+        {
+            SfxManager.Instance.PlayUiClick();
+        }
+
         if (awaitingNoTowerConfirmation && Time.unscaledTime > noTowerConfirmExpiresAt)
         {
             ClearNoTowerConfirmationState();
@@ -261,6 +271,11 @@ public class ShopManagerOld : MonoBehaviour
 
     private void OnRerollButtonClicked()
     {
+        if (SfxManager.Instance != null)
+        {
+            SfxManager.Instance.PlayUiClick();
+        }
+
         if (currencyManager == null)
         {
             currencyManager = CurrencyManager.Instance;
