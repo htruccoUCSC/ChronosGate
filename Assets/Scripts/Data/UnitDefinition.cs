@@ -9,6 +9,13 @@ public enum BasicAttackType
     Projectile
 }
 
+public enum UnitRarity
+{
+    Common,
+    Rare,
+    Epic
+}
+
 [CreateAssetMenu(fileName = "NewUnitDef", menuName = "Game/Unit Definition")]
 public class UnitDefinition : ScriptableObject
 {
@@ -18,6 +25,8 @@ public class UnitDefinition : ScriptableObject
     public string Description;
     public string Faction;
     public string PrefabPath;
+    // Falls back to Common if the spreadsheet leaves rarity blank or invalid.
+    public UnitRarity Rarity = UnitRarity.Common;
 
     // Icon logic for inventory and UI
     // I think this is better than just constantly accessing the prefab each time we need the icon
@@ -100,6 +109,7 @@ public class UnitRawData
     public string Description;
     public string PrefabPath;
     public string Faction;
+    public string Rarity;
 
     public int Cost;
     public int Health;

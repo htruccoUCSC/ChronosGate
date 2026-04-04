@@ -87,6 +87,11 @@ public class DatabaseLoader : MonoBehaviour
 
             foreach (var field in rawFields)
             { 
+                if (field.Name == nameof(UnitRawData.Rarity))
+                {
+                    continue;
+                }
+
                 var targetField = defType.GetField(field.Name);
 
                 if (targetField != null)
@@ -105,6 +110,21 @@ public class DatabaseLoader : MonoBehaviour
             {
                 // if parsing fails, set to none
                 unitDef.AttackFunction = BasicAttackType.None;
+            }
+
+            // The spreadsheet exports rarity as text, so we clean it up once when units.json is loaded.
+            if (string.IsNullOrWhiteSpace(unit.Rarity))
+            {
+                unitDef.Rarity = UnitRarity.Common;
+            }
+            else if (Enum.TryParse(unit.Rarity, true, out UnitRarity rarity))
+            {
+                unitDef.Rarity = rarity;
+            }
+            else
+            {
+                Debug.LogWarning($"[DatabaseLoader] Invalid rarity '{unit.Rarity}' for unit '{unit.UnitID}'. Defaulting to Common.");
+                unitDef.Rarity = UnitRarity.Common;
             }
 
             if (string.IsNullOrWhiteSpace(unitDef.UnitID))
