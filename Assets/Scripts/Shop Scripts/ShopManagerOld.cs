@@ -36,6 +36,13 @@ public class ShopManagerOld : MonoBehaviour
     [Header("Progression Settings")]
     [SerializeField] private bool useProgressionFiltering = true;
 
+    // This manages the odds each tower rarity has of showing up in the shop.
+    // 1/1/1 means equal odds, 6/3/1 would make common show up way more often.
+    [Header("Tower Rarity Odds")]
+    [SerializeField] private float commonTowerOdds = 1f;
+    [SerializeField] private float rareTowerOdds = 1f;
+    [SerializeField] private float epicTowerOdds = 1f;
+
     [Header("Next Round Confirmation")]
     [SerializeField] private float noTowerConfirmWindowSeconds = 2f;
     [SerializeField] private string noTowerConfirmWarning = "No towers placed. Click Next Round again to confirm.";
@@ -363,6 +370,16 @@ public class ShopManagerOld : MonoBehaviour
             availableUnits.Add(unitDef);
         }
 
+        // We split units by rarity first so the shop can roll rarity before it rolls the exact troop.
+        List<UnitDefinition> commonPool = new List<UnitDefinition>();
+        List<UnitDefinition> rarePool = new List<UnitDefinition>();
+        List<UnitDefinition> epicPool = new List<UnitDefinition>();
+
+        for (int i = 0; i < availableUnits.Count; i++)
+        {
+            AddUnitToRarityPool(availableUnits[i], commonPool, rarePool, epicPool);
+        }
+
         for (int i = 0; i < towerSlots.Length; i++)
         {
             if (towerSlots[i] == null)
@@ -370,15 +387,67 @@ public class ShopManagerOld : MonoBehaviour
                 continue;
             }
 
-            if (availableUnits.Count == 0)
+            List<UnitDefinition> selectedPool = GetRandomTowerRarityPool(commonPool, rarePool, epicPool);
+            if (selectedPool == null || selectedPool.Count == 0)
             {
                 towerSlots[i].Setup(null);
                 continue;
             }
 
-            UnitDefinition randomUnit = availableUnits[Random.Range(0, availableUnits.Count)];
+            UnitDefinition randomUnit = selectedPool[Random.Range(0, selectedPool.Count)];
             towerSlots[i].Setup(randomUnit);
         }
+    }
+
+    private void AddUnitToRarityPool(UnitDefinition unitDef, List<UnitDefinition> commonPool, List<UnitDefinition> rarePool, List<UnitDefinition> epicPool)
+    {
+        switch (unitDef.Rarity)
+        {
+            case UnitRarity.Rare:
+                rarePool.Add(unitDef);
+                break;
+            case UnitRarity.Epic:
+                epicPool.Add(unitDef);
+                break;
+            default:
+                commonPool.Add(unitDef);
+                break;
+        }
+    }
+
+    private List<UnitDefinition> GetRandomTowerRarityPool(List<UnitDefinition> commonPool, List<UnitDefinition> rarePool, List<UnitDefinition> epicPool)
+    {
+        // If a rarity pool is empty it gets 0 weight, so we never roll into a dead pool.
+        float totalWeight = 0f;
+        float commonWeight = commonPool.Count > 0 ? Mathf.Max(0f, commonTowerOdds) : 0f;
+        float rareWeight = rarePool.Count > 0 ? Mathf.Max(0f, rareTowerOdds) : 0f;
+        float epicWeight = epicPool.Count > 0 ? Mathf.Max(0f, epicTowerOdds) : 0f;
+
+        totalWeight += commonWeight;
+        totalWeight += rareWeight;
+        totalWeight += epicWeight;
+
+        if (totalWeight <= 0f)
+        {
+            if (commonPool.Count > 0) return commonPool;
+            if (rarePool.Count > 0) return rarePool;
+            if (epicPool.Count > 0) return epicPool;
+            return null;
+        }
+
+        float roll = Random.Range(0f, totalWeight);
+        if (roll < commonWeight)
+        {
+            return commonPool;
+        }
+
+        roll -= commonWeight;
+        if (roll < rareWeight)
+        {
+            return rarePool;
+        }
+
+        return epicPool;
     }
 
     public void ShowConsumableTooltip(string description)

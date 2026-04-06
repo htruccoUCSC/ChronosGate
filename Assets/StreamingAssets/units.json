@@ -15,7 +15,8 @@
       "AttackType": "Projectile",
       "LaunchAngle": 60,
       "Faction": "Fantasy",
-      "PrefabPath": "Prefabs/Units/archer_01"
+      "PrefabPath": "Prefabs/Units/archer_01",
+      "Rarity": "Common"
     },
     {
       "UnitID": "martian_01",
@@ -32,7 +33,8 @@
       "AttackType": "Projectile",
       "LaunchAngle": 0,
       "Faction": "Cosmic",
-      "PrefabPath": "Prefabs/Units/martian_01"
+      "PrefabPath": "Prefabs/Units/martian_01",
+      "Rarity": "Common"
     },
     {
       "UnitID": "orbital_01",
@@ -49,7 +51,8 @@
       "AttackType": "None",
       "LaunchAngle": 60,
       "Faction": "Cosmic",
-      "PrefabPath": "Prefabs/Units/orbital_01"
+      "PrefabPath": "Prefabs/Units/orbital_01",
+      "Rarity": "Common"
     },
     {
       "UnitID": "bounty_01",
@@ -66,7 +69,8 @@
       "AttackType": "Projectile",
       "LaunchAngle": 60,
       "Faction": "Cosmic",
-      "PrefabPath": "Prefabs/Units/bounty_01"
+      "PrefabPath": "Prefabs/Units/bounty_01",
+      "Rarity": "Common"
     },
     {
       "UnitID": "spores_01",
@@ -83,7 +87,8 @@
       "AttackType": "None",
       "LaunchAngle": 60,
       "Faction": "Cosmic",
-      "PrefabPath": "Prefabs/Units/spores_01"
+      "PrefabPath": "Prefabs/Units/spores_01",
+      "Rarity": "Common"
     },
     {
       "UnitID": "nest_01",
@@ -100,7 +105,8 @@
       "AttackType": "None",
       "LaunchAngle": 0,
       "Faction": "Cosmic",
-      "PrefabPath": "Prefabs/Units/nest_01"
+      "PrefabPath": "Prefabs/Units/nest_01",
+      "Rarity": "Common"
     },
     {
       "UnitID": "xeno_01",
@@ -117,7 +123,8 @@
       "AttackType": "Projectile",
       "LaunchAngle": 60,
       "Faction": "Cosmic",
-      "PrefabPath": "Prefabs/Units/xeno_01"
+      "PrefabPath": "Prefabs/Units/xeno_01",
+      "Rarity": "Common"
     },
     {
       "UnitID": "elec_01",
@@ -134,7 +141,8 @@
       "AttackType": "Projectile",
       "LaunchAngle": 60,
       "Faction": "Future",
-      "PrefabPath": "Prefabs/Units/elec_01"
+      "PrefabPath": "Prefabs/Units/elec_01",
+      "Rarity": "Common"
     },
     {
       "UnitID": "hero_01",
@@ -151,7 +159,8 @@
       "AttackType": "Projectile",
       "LaunchAngle": 0,
       "Faction": "Fantasy",
-      "PrefabPath": "Prefabs/Units/hero_01"
+      "PrefabPath": "Prefabs/Units/hero_01",
+      "Rarity": "Common"
     },
     {
       "UnitID": "wiz_01",
@@ -168,7 +177,8 @@
       "AttackType": "Projectile",
       "LaunchAngle": 0,
       "Faction": "Fantasy",
-      "PrefabPath": "Prefabs/Units/wiz_01"
+      "PrefabPath": "Prefabs/Units/wiz_01",
+      "Rarity": "Common"
     },
     {
       "UnitID": "tre_01",
@@ -185,7 +195,8 @@
       "AttackType": "Projectile",
       "LaunchAngle": 60,
       "Faction": "Fantasy",
-      "PrefabPath": "Prefabs/Units/tre_01"
+      "PrefabPath": "Prefabs/Units/tre_01",
+      "Rarity": "Common"
     },
     {
       "UnitID": "orc_01",
@@ -202,12 +213,13 @@
       "AttackType": "Projectile",
       "LaunchAngle": 60,
       "Faction": "Fantasy",
-      "PrefabPath": "Prefabs/Units/orc_01"
+      "PrefabPath": "Prefabs/Units/orc_01",
+      "Rarity": "Common"
     },
     {
       "UnitID": "mgcswrd_01",
       "Name": "Magic Sword ",
-      "Description": "When this unit is placed, also place a ‘portal’ that the magic sword can attack but can’t be attacked through. Attacks enemies within 1 tile of itself and 2 tiles around the portal’s location. ability spawns a portal on a random enemy for the rest of the round",
+      "Description": "When this unit is placed, also place a \u2018portal\u2019 that the magic sword can attack but can\u2019t be attacked through. Attacks enemies within 1 tile of itself and 2 tiles around the portal\u2019s location. ability spawns a portal on a random enemy for the rest of the round",
       "Cost": 1,
       "Health": 5,
       "Range": 5,
@@ -219,7 +231,8 @@
       "AttackType": "Projectile",
       "LaunchAngle": 60,
       "Faction": "Fantasy",
-      "PrefabPath": "Prefabs/Units/mgcswrd_01"
+      "PrefabPath": "Prefabs/Units/mgcswrd_01",
+      "Rarity": "Common"
     },
     {
       "UnitID": "drag_01",
@@ -236,7 +249,8 @@
       "AttackType": "Projectile",
       "LaunchAngle": 0,
       "Faction": "Fantasy",
-      "PrefabPath": "Prefabs/Units/drag_01"
+      "PrefabPath": "Prefabs/Units/drag_01",
+      "Rarity": "Common"
     },
     {
       "UnitID": "seer_01",
@@ -253,7 +267,8 @@
       "AttackType": "Projectile",
       "LaunchAngle": 60,
       "Faction": "Fantasy",
-      "PrefabPath": "Prefabs/Units/seer_01"
+      "PrefabPath": "Prefabs/Units/seer_01",
+      "Rarity": "Common"
     },
     {
       "UnitID": "squire_01",
@@ -270,7 +285,8 @@
       "AttackType": "None",
       "LaunchAngle": 60,
       "Faction": "Fantasy",
-      "PrefabPath": "Prefabs/Units/squire_01"
+      "PrefabPath": "Prefabs/Units/squire_01",
+      "Rarity": "Common"
     },
     {
       "UnitID": "drone_01",
@@ -287,7 +303,8 @@
       "AttackType": "Projectile",
       "LaunchAngle": 60,
       "Faction": "Future",
-      "PrefabPath": "Prefabs/Units/drone_01"
+      "PrefabPath": "Prefabs/Units/drone_01",
+      "Rarity": "Common"
     },
     {
       "UnitID": "crypto_01",
@@ -304,7 +321,8 @@
       "AttackType": "Projectile",
       "LaunchAngle": 60,
       "Faction": "Future",
-      "PrefabPath": "Prefabs/Units/crypto_01"
+      "PrefabPath": "Prefabs/Units/crypto_01",
+      "Rarity": "Common"
     },
     {
       "UnitID": "mech_01",
@@ -321,7 +339,8 @@
       "AttackType": "Projectile",
       "LaunchAngle": 0,
       "Faction": "Future",
-      "PrefabPath": "Prefabs/Units/mech_01"
+      "PrefabPath": "Prefabs/Units/mech_01",
+      "Rarity": "Common"
     },
     {
       "UnitID": "laser_01",
@@ -338,7 +357,8 @@
       "AttackType": "None",
       "LaunchAngle": 60,
       "Faction": "Future",
-      "PrefabPath": "Prefabs/Units/laser_01"
+      "PrefabPath": "Prefabs/Units/laser_01",
+      "Rarity": "Common"
     },
     {
       "UnitID": "stim_01",
@@ -355,7 +375,8 @@
       "AttackType": "None",
       "LaunchAngle": 60,
       "Faction": "Future",
-      "PrefabPath": "Prefabs/Units/stim_01"
+      "PrefabPath": "Prefabs/Units/stim_01",
+      "Rarity": "Common"
     },
     {
       "UnitID": "foot_01",
@@ -372,7 +393,8 @@
       "AttackType": "Projectile",
       "LaunchAngle": 60,
       "Faction": "Modern",
-      "PrefabPath": "Prefabs/Units/foot_01"
+      "PrefabPath": "Prefabs/Units/foot_01",
+      "Rarity": "Common"
     },
     {
       "UnitID": "amini_01",
@@ -389,7 +411,8 @@
       "AttackType": "Projectile",
       "LaunchAngle": 60,
       "Faction": "Modern",
-      "PrefabPath": "Prefabs/Units/amini_01"
+      "PrefabPath": "Prefabs/Units/amini_01",
+      "Rarity": "Common"
     },
     {
       "UnitID": "rods_01",
@@ -406,7 +429,8 @@
       "AttackType": "Projectile",
       "LaunchAngle": 60,
       "Faction": "Modern",
-      "PrefabPath": "Prefabs/Units/rods_01"
+      "PrefabPath": "Prefabs/Units/rods_01",
+      "Rarity": "Common"
     },
     {
       "UnitID": "artillery_01",
@@ -423,7 +447,8 @@
       "AttackType": "Projectile",
       "LaunchAngle": 60,
       "Faction": "Modern",
-      "PrefabPath": "Prefabs/Units/artillery_01"
+      "PrefabPath": "Prefabs/Units/artillery_01",
+      "Rarity": "Common"
     },
     {
       "UnitID": "snip_01",
@@ -440,7 +465,8 @@
       "AttackType": "Projectile",
       "LaunchAngle": 60,
       "Faction": "Modern",
-      "PrefabPath": "Prefabs/Units/snip_01"
+      "PrefabPath": "Prefabs/Units/snip_01",
+      "Rarity": "Common"
     },
     {
       "UnitID": "land_01",
@@ -457,7 +483,8 @@
       "AttackType": "Projectile",
       "LaunchAngle": 60,
       "Faction": "Modern",
-      "PrefabPath": "Prefabs/Units/land_01"
+      "PrefabPath": "Prefabs/Units/land_01",
+      "Rarity": "Common"
     },
     {
       "UnitID": "tank_01",
@@ -474,7 +501,8 @@
       "AttackType": "Projectile",
       "LaunchAngle": 60,
       "Faction": "Modern",
-      "PrefabPath": "Prefabs/Units/tank_01"
+      "PrefabPath": "Prefabs/Units/tank_01",
+      "Rarity": "Common"
     },
     {
       "UnitID": "riot_01",
@@ -491,7 +519,8 @@
       "AttackType": "Melee",
       "LaunchAngle": 60,
       "Faction": "Modern",
-      "PrefabPath": "Prefabs/Units/riot_01"
+      "PrefabPath": "Prefabs/Units/riot_01",
+      "Rarity": "Common"
     },
     {
       "UnitID": "gen_01",
@@ -508,7 +537,8 @@
       "AttackType": "None",
       "LaunchAngle": 0,
       "Faction": "Modern",
-      "PrefabPath": "Prefabs/Units/gen_01"
+      "PrefabPath": "Prefabs/Units/gen_01",
+      "Rarity": "Common"
     },
     {
       "UnitID": "jest_01",
@@ -525,7 +555,8 @@
       "AttackType": "Projectile",
       "LaunchAngle": 60,
       "Faction": "Mystic",
-      "PrefabPath": "Prefabs/Units/jest_01"
+      "PrefabPath": "Prefabs/Units/jest_01",
+      "Rarity": "Common"
     },
     {
       "UnitID": "gnome_01",
@@ -542,7 +573,8 @@
       "AttackType": "Projectile",
       "LaunchAngle": 60,
       "Faction": "Mystic",
-      "PrefabPath": "Prefabs/Units/gnome_01"
+      "PrefabPath": "Prefabs/Units/gnome_01",
+      "Rarity": "Common"
     },
     {
       "UnitID": "fairy_01",
@@ -559,7 +591,8 @@
       "AttackType": "None",
       "LaunchAngle": 60,
       "Faction": "Mystic",
-      "PrefabPath": "Prefabs/Units/fairy_01"
+      "PrefabPath": "Prefabs/Units/fairy_01",
+      "Rarity": "Common"
     },
     {
       "UnitID": "magic_01",
@@ -576,7 +609,8 @@
       "AttackType": "Projectile",
       "LaunchAngle": 60,
       "Faction": "Mystic",
-      "PrefabPath": "Prefabs/Units/magic_01"
+      "PrefabPath": "Prefabs/Units/magic_01",
+      "Rarity": "Common"
     },
     {
       "UnitID": "mino_01",
@@ -593,7 +627,8 @@
       "AttackType": "Melee",
       "LaunchAngle": 0,
       "Faction": "Mystic",
-      "PrefabPath": "Prefabs/Units/mino_01"
+      "PrefabPath": "Prefabs/Units/mino_01",
+      "Rarity": "Common"
     },
     {
       "UnitID": "alch_01",
@@ -610,7 +645,8 @@
       "AttackType": "Projectile",
       "LaunchAngle": 60,
       "Faction": "Mystic",
-      "PrefabPath": "Prefabs/Units/alch_01"
+      "PrefabPath": "Prefabs/Units/alch_01",
+      "Rarity": "Common"
     },
     {
       "UnitID": "baba_01",
@@ -627,7 +663,8 @@
       "AttackType": "Projectile",
       "LaunchAngle": 60,
       "Faction": "Mystic",
-      "PrefabPath": "Prefabs/Units/baba_01"
+      "PrefabPath": "Prefabs/Units/baba_01",
+      "Rarity": "Common"
     },
     {
       "UnitID": "unic_01",
@@ -644,7 +681,8 @@
       "AttackType": "Projectile",
       "LaunchAngle": 60,
       "Faction": "Mystic",
-      "PrefabPath": "Prefabs/Units/unic_01"
+      "PrefabPath": "Prefabs/Units/unic_01",
+      "Rarity": "Common"
     },
     {
       "UnitID": "firep_01",
@@ -661,7 +699,8 @@
       "AttackType": "Projectile",
       "LaunchAngle": 60,
       "Faction": "Mystic",
-      "PrefabPath": "Prefabs/Units/firep_01"
+      "PrefabPath": "Prefabs/Units/firep_01",
+      "Rarity": "Common"
     },
     {
       "UnitID": "rock_01",
@@ -678,7 +717,8 @@
       "AttackType": "Projectile",
       "LaunchAngle": 60,
       "Faction": "Prehistoric",
-      "PrefabPath": "Prefabs/Units/rock_01"
+      "PrefabPath": "Prefabs/Units/rock_01",
+      "Rarity": "Common"
     },
     {
       "UnitID": "farm_01",
@@ -695,7 +735,8 @@
       "AttackType": "None",
       "LaunchAngle": 60,
       "Faction": "Prehistoric",
-      "PrefabPath": "Prefabs/Units/farm_01"
+      "PrefabPath": "Prefabs/Units/farm_01",
+      "Rarity": "Common"
     },
     {
       "UnitID": "bow_01",
@@ -712,7 +753,8 @@
       "AttackType": "Projectile",
       "LaunchAngle": 60,
       "Faction": "Prehistoric",
-      "PrefabPath": "Prefabs/Units/bow_01"
+      "PrefabPath": "Prefabs/Units/bow_01",
+      "Rarity": "Common"
     },
     {
       "UnitID": "stick_01",
@@ -729,7 +771,8 @@
       "AttackType": "Melee",
       "LaunchAngle": 60,
       "Faction": "Prehistoric",
-      "PrefabPath": "Prefabs/Units/stick_01"
+      "PrefabPath": "Prefabs/Units/stick_01",
+      "Rarity": "Common"
     },
     {
       "UnitID": "boomer_01",
@@ -746,7 +789,8 @@
       "AttackType": "Projectile",
       "LaunchAngle": 60,
       "Faction": "Prehistoric",
-      "PrefabPath": "Prefabs/Units/boomer_01"
+      "PrefabPath": "Prefabs/Units/boomer_01",
+      "Rarity": "Common"
     },
     {
       "UnitID": "drums_01",
@@ -763,7 +807,8 @@
       "AttackType": "Projectile",
       "LaunchAngle": 60,
       "Faction": "Prehistoric",
-      "PrefabPath": "Prefabs/Units/drums_01"
+      "PrefabPath": "Prefabs/Units/drums_01",
+      "Rarity": "Common"
     },
     {
       "UnitID": "firem_01",
@@ -780,7 +825,8 @@
       "AttackType": "None",
       "LaunchAngle": 60,
       "Faction": "Prehistoric",
-      "PrefabPath": "Prefabs/Units/firem_01"
+      "PrefabPath": "Prefabs/Units/firem_01",
+      "Rarity": "Common"
     }
   ]
 }
