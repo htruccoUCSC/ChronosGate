@@ -219,6 +219,11 @@ public class ShopManager : MonoBehaviour
             return;
         }
 
+        if (SfxManager.Instance != null)
+        {
+            SfxManager.Instance.PlayUiClick();
+        }
+
         if (alwaysVisibleDuringGameplay)
         {
             isShopOpen = true;
@@ -360,6 +365,11 @@ public class ShopManager : MonoBehaviour
 
     private void OnPauseButtonClicked()
     {
+        if (SfxManager.Instance != null)
+        {
+            SfxManager.Instance.PlayUiClick();
+        }
+
         if (GameSpeedButton.Instance != null)
         {
             GameSpeedButton.Instance.TogglePaused();
@@ -385,6 +395,11 @@ public class ShopManager : MonoBehaviour
     
     private void OnRerollButtonClicked()
     {
+        if (SfxManager.Instance != null)
+        {
+            SfxManager.Instance.PlayUiClick();
+        }
+
         // Try to get currency manager if not already cached
         if (currencyManager == null)
         {

@@ -10,7 +10,6 @@ public class Fairy : BaseUnit
     [SerializeField] private float m_OverhealCurrencyMultiplier = 1.5f;
 
     private BoardManager m_BoardManager;
-    private int m_BasicAttackCounter = 0;
 
     private void Awake()
     {

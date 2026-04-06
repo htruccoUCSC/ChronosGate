@@ -113,6 +113,11 @@ public class TowerSlot : MonoBehaviour, IPointerEnterHandler, IPointerExitHandle
             return;
         }
 
+        if (SfxManager.Instance != null)
+        {
+            SfxManager.Instance.PlayTowerPickup();
+        }
+
         if (TryPurchaseToInventory())
         {
             ClearSlot();
@@ -124,6 +129,11 @@ public class TowerSlot : MonoBehaviour, IPointerEnterHandler, IPointerExitHandle
         if (!CanInteract())
         {
             return;
+        }
+
+        if (SfxManager.Instance != null)
+        {
+            SfxManager.Instance.PlayTowerPickup();
         }
 
         if (inventoryUI == null || inventoryUI.unitSpawner == null)
