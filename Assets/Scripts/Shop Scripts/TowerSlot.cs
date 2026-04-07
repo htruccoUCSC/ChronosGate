@@ -283,6 +283,7 @@ public class TowerSlot : MonoBehaviour, IPointerEnterHandler, IPointerExitHandle
 
         if (inventoryUI.AddUnit(unitDefinition))
         {
+            NotifyPurchase();
             Debug.Log($"Purchased {unitDefinition.Name} for {unitDefinition.Cost} gold!");
             return true;
         }
@@ -302,6 +303,7 @@ public class TowerSlot : MonoBehaviour, IPointerEnterHandler, IPointerExitHandle
         bool spawned = inventoryUI.unitSpawner.TrySpawnAtScreenPosition(unitDefinition, screenPosition);
         if (spawned)
         {
+            NotifyPurchase();
             Debug.Log($"Purchased {unitDefinition.Name} for {unitDefinition.Cost} gold!");
             return true;
         }
@@ -326,6 +328,30 @@ public class TowerSlot : MonoBehaviour, IPointerEnterHandler, IPointerExitHandle
 
         Debug.Log($"Cannot afford unit! Need {unitDefinition.Cost}, have {currencyManager.GetCurrency()}");
         return false;
+    }
+
+    private void NotifyPurchase()
+    {
+        if (shopManager == null)
+        {
+            shopManager = FindFirstObjectByType<ShopManager>();
+        }
+
+        if (shopManager != null)
+        {
+            shopManager.OnUnitPurchased(unitDefinition);
+            return;
+        }
+
+        if (shopManagerOld == null)
+        {
+            shopManagerOld = FindFirstObjectByType<ShopManagerOld>();
+        }
+
+        if (shopManagerOld != null)
+        {
+            shopManagerOld.OnUnitPurchased(unitDefinition);
+        }
     }
 
     private bool IsPointerOverUi(PointerEventData eventData)
