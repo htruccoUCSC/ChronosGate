@@ -27,7 +27,6 @@ public class GameLoopManager : MonoBehaviour
 
     protected int currentWaveInCycle = 0;
     protected bool isGameActive = false;
-    private bool waitingForNextRound = false;
 
     public TileMapManager tileMapManager;
     public int roundsOfGrowth =2;

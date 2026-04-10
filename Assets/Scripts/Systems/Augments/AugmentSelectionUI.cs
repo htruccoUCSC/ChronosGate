@@ -32,7 +32,6 @@ public class AugmentSelectionUI : MonoBehaviour
     private List<Augment> selectedAugments = new List<Augment>();
     private int rerollCost = 3;
     private CurrencyManager currencyManager;
-    private bool isPanelOpen = false;
 
     // Events that other systems can subscribe to
     public event Action<int> OnAugmentSelected;
@@ -99,7 +98,6 @@ public class AugmentSelectionUI : MonoBehaviour
         
         // Show the panel
         augmentSelectionPanel.SetActive(true);
-        isPanelOpen = true;
         
         if (GameSpeedButton.Instance != null)
         {
@@ -271,7 +269,6 @@ public class AugmentSelectionUI : MonoBehaviour
     public void HideAugmentSelection()
     {
         augmentSelectionPanel.SetActive(false);
-        isPanelOpen = false;
         if (GameSpeedButton.Instance != null)
         {
             GameSpeedButton.Instance.SetPaused(false);

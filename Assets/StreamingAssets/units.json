@@ -34,7 +34,7 @@
       "LaunchAngle": 0,
       "Faction": "Cosmic",
       "PrefabPath": "Prefabs/Units/martian_01",
-      "Rarity": "Common"
+      "Rarity": "Rare"
     },
     {
       "UnitID": "orbital_01",
@@ -52,7 +52,7 @@
       "LaunchAngle": 60,
       "Faction": "Cosmic",
       "PrefabPath": "Prefabs/Units/orbital_01",
-      "Rarity": "Common"
+      "Rarity": "Legendary"
     },
     {
       "UnitID": "bounty_01",
@@ -70,7 +70,7 @@
       "LaunchAngle": 60,
       "Faction": "Cosmic",
       "PrefabPath": "Prefabs/Units/bounty_01",
-      "Rarity": "Common"
+      "Rarity": "Epic"
     },
     {
       "UnitID": "spores_01",
@@ -88,7 +88,7 @@
       "LaunchAngle": 60,
       "Faction": "Cosmic",
       "PrefabPath": "Prefabs/Units/spores_01",
-      "Rarity": "Common"
+      "Rarity": "Uncommon"
     },
     {
       "UnitID": "nest_01",
@@ -106,7 +106,7 @@
       "LaunchAngle": 0,
       "Faction": "Cosmic",
       "PrefabPath": "Prefabs/Units/nest_01",
-      "Rarity": "Common"
+      "Rarity": "Rare"
     },
     {
       "UnitID": "xeno_01",
@@ -142,7 +142,7 @@
       "LaunchAngle": 60,
       "Faction": "Future",
       "PrefabPath": "Prefabs/Units/elec_01",
-      "Rarity": "Common"
+      "Rarity": "Rare"
     },
     {
       "UnitID": "hero_01",
@@ -160,7 +160,7 @@
       "LaunchAngle": 0,
       "Faction": "Fantasy",
       "PrefabPath": "Prefabs/Units/hero_01",
-      "Rarity": "Common"
+      "Rarity": "Uncommon"
     },
     {
       "UnitID": "wiz_01",
@@ -178,7 +178,7 @@
       "LaunchAngle": 0,
       "Faction": "Fantasy",
       "PrefabPath": "Prefabs/Units/wiz_01",
-      "Rarity": "Common"
+      "Rarity": "Uncommon"
     },
     {
       "UnitID": "tre_01",
@@ -196,7 +196,7 @@
       "LaunchAngle": 60,
       "Faction": "Fantasy",
       "PrefabPath": "Prefabs/Units/tre_01",
-      "Rarity": "Common"
+      "Rarity": "Rare"
     },
     {
       "UnitID": "orc_01",
@@ -214,7 +214,7 @@
       "LaunchAngle": 60,
       "Faction": "Fantasy",
       "PrefabPath": "Prefabs/Units/orc_01",
-      "Rarity": "Common"
+      "Rarity": "Epic"
     },
     {
       "UnitID": "mgcswrd_01",
@@ -232,7 +232,7 @@
       "LaunchAngle": 60,
       "Faction": "Fantasy",
       "PrefabPath": "Prefabs/Units/mgcswrd_01",
-      "Rarity": "Common"
+      "Rarity": "Rare"
     },
     {
       "UnitID": "drag_01",
@@ -250,7 +250,7 @@
       "LaunchAngle": 0,
       "Faction": "Fantasy",
       "PrefabPath": "Prefabs/Units/drag_01",
-      "Rarity": "Common"
+      "Rarity": "Legendary"
     },
     {
       "UnitID": "seer_01",
@@ -268,7 +268,7 @@
       "LaunchAngle": 60,
       "Faction": "Fantasy",
       "PrefabPath": "Prefabs/Units/seer_01",
-      "Rarity": "Common"
+      "Rarity": "Epic"
     },
     {
       "UnitID": "squire_01",
@@ -286,7 +286,7 @@
       "LaunchAngle": 60,
       "Faction": "Fantasy",
       "PrefabPath": "Prefabs/Units/squire_01",
-      "Rarity": "Common"
+      "Rarity": "Uncommon"
     },
     {
       "UnitID": "drone_01",
@@ -304,7 +304,7 @@
       "LaunchAngle": 60,
       "Faction": "Future",
       "PrefabPath": "Prefabs/Units/drone_01",
-      "Rarity": "Common"
+      "Rarity": "Epic"
     },
     {
       "UnitID": "crypto_01",
@@ -322,7 +322,7 @@
       "LaunchAngle": 60,
       "Faction": "Future",
       "PrefabPath": "Prefabs/Units/crypto_01",
-      "Rarity": "Common"
+      "Rarity": "Rare"
     },
     {
       "UnitID": "mech_01",
@@ -340,7 +340,7 @@
       "LaunchAngle": 0,
       "Faction": "Future",
       "PrefabPath": "Prefabs/Units/mech_01",
-      "Rarity": "Common"
+      "Rarity": "Epic"
     },
     {
       "UnitID": "laser_01",
@@ -376,7 +376,7 @@
       "LaunchAngle": 60,
       "Faction": "Future",
       "PrefabPath": "Prefabs/Units/stim_01",
-      "Rarity": "Common"
+      "Rarity": "Uncommon"
     },
     {
       "UnitID": "foot_01",
@@ -412,7 +412,7 @@
       "LaunchAngle": 60,
       "Faction": "Modern",
       "PrefabPath": "Prefabs/Units/amini_01",
-      "Rarity": "Common"
+      "Rarity": "Epic"
     },
     {
       "UnitID": "rods_01",
@@ -430,7 +430,7 @@
       "LaunchAngle": 60,
       "Faction": "Modern",
       "PrefabPath": "Prefabs/Units/rods_01",
-      "Rarity": "Common"
+      "Rarity": "Legendary"
     },
     {
       "UnitID": "artillery_01",
@@ -448,7 +448,7 @@
       "LaunchAngle": 60,
       "Faction": "Modern",
       "PrefabPath": "Prefabs/Units/artillery_01",
-      "Rarity": "Common"
+      "Rarity": "Rare"
     },
     {
       "UnitID": "snip_01",
@@ -466,7 +466,7 @@
       "LaunchAngle": 60,
       "Faction": "Modern",
       "PrefabPath": "Prefabs/Units/snip_01",
-      "Rarity": "Common"
+      "Rarity": "Rare"
     },
     {
       "UnitID": "land_01",
@@ -502,7 +502,7 @@
       "LaunchAngle": 60,
       "Faction": "Modern",
       "PrefabPath": "Prefabs/Units/tank_01",
-      "Rarity": "Common"
+      "Rarity": "Uncommon"
     },
     {
       "UnitID": "riot_01",
@@ -538,7 +538,7 @@
       "LaunchAngle": 0,
       "Faction": "Modern",
       "PrefabPath": "Prefabs/Units/gen_01",
-      "Rarity": "Common"
+      "Rarity": "Uncommon"
     },
     {
       "UnitID": "jest_01",
@@ -556,7 +556,7 @@
       "LaunchAngle": 60,
       "Faction": "Mystic",
       "PrefabPath": "Prefabs/Units/jest_01",
-      "Rarity": "Common"
+      "Rarity": "Rare"
     },
     {
       "UnitID": "gnome_01",
@@ -574,7 +574,7 @@
       "LaunchAngle": 60,
       "Faction": "Mystic",
       "PrefabPath": "Prefabs/Units/gnome_01",
-      "Rarity": "Common"
+      "Rarity": "Uncommon"
     },
     {
       "UnitID": "fairy_01",
@@ -592,7 +592,7 @@
       "LaunchAngle": 60,
       "Faction": "Mystic",
       "PrefabPath": "Prefabs/Units/fairy_01",
-      "Rarity": "Common"
+      "Rarity": "Rare"
     },
     {
       "UnitID": "magic_01",
@@ -610,7 +610,7 @@
       "LaunchAngle": 60,
       "Faction": "Mystic",
       "PrefabPath": "Prefabs/Units/magic_01",
-      "Rarity": "Common"
+      "Rarity": "Epic"
     },
     {
       "UnitID": "mino_01",
@@ -664,7 +664,7 @@
       "LaunchAngle": 60,
       "Faction": "Mystic",
       "PrefabPath": "Prefabs/Units/baba_01",
-      "Rarity": "Common"
+      "Rarity": "Uncommon"
     },
     {
       "UnitID": "unic_01",
@@ -700,7 +700,7 @@
       "LaunchAngle": 60,
       "Faction": "Mystic",
       "PrefabPath": "Prefabs/Units/firep_01",
-      "Rarity": "Common"
+      "Rarity": "Uncommon"
     },
     {
       "UnitID": "rock_01",
@@ -736,7 +736,7 @@
       "LaunchAngle": 60,
       "Faction": "Prehistoric",
       "PrefabPath": "Prefabs/Units/farm_01",
-      "Rarity": "Common"
+      "Rarity": "Legendary"
     },
     {
       "UnitID": "bow_01",
@@ -754,7 +754,7 @@
       "LaunchAngle": 60,
       "Faction": "Prehistoric",
       "PrefabPath": "Prefabs/Units/bow_01",
-      "Rarity": "Common"
+      "Rarity": "Rare"
     },
     {
       "UnitID": "stick_01",
@@ -790,7 +790,7 @@
       "LaunchAngle": 60,
       "Faction": "Prehistoric",
       "PrefabPath": "Prefabs/Units/boomer_01",
-      "Rarity": "Common"
+      "Rarity": "Epic"
     },
     {
       "UnitID": "drums_01",
@@ -808,7 +808,7 @@
       "LaunchAngle": 60,
       "Faction": "Prehistoric",
       "PrefabPath": "Prefabs/Units/drums_01",
-      "Rarity": "Common"
+      "Rarity": "Legendary"
     },
     {
       "UnitID": "firem_01",
@@ -826,7 +826,7 @@
       "LaunchAngle": 60,
       "Faction": "Prehistoric",
       "PrefabPath": "Prefabs/Units/firem_01",
-      "Rarity": "Common"
+      "Rarity": "Rare"
     }
   ]
 }

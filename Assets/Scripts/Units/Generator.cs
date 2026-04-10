@@ -3,8 +3,6 @@ using UnityEngine;
 public class Generator : BaseUnit
 {
     // [SerializeField] private CurrencyPickup currencyPickupPrefab;
-    [SerializeField] private int baseCurrencyAmount = 1;
-
     protected override void ScanTargeting()
     {
         currentTarget = transform;

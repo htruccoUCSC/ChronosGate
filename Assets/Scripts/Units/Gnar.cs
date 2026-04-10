@@ -6,7 +6,6 @@ public class Boomerang : BaseUnit
 {
     [SerializeField] private LayerMask m_TargetMask;
     [SerializeField] private float m_SpreadAngle = 12f;
-    [SerializeField] private int m_ProjectilesPerAttack = 1;
     [Header("Ability")]
     [SerializeField] private float m_AbilityBoomerangScale;
     [SerializeField] private float m_AbilitySlowPercent = 0.3f;
