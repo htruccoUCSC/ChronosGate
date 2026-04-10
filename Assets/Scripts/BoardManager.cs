@@ -5,6 +5,12 @@ using UnityEngine.Tilemaps;
 
 public class BoardManager : MonoBehaviour
 {
+    private class UnitRespawnRecord
+    {
+        public Vector3Int CellPos;
+        public UnitInstance Instance;
+    }
+
     private const float TILE_FILL_RATIO = 1.0f;
 
     // I hade to change this to public get so other scripts can access the tilemap
@@ -22,6 +28,8 @@ public class BoardManager : MonoBehaviour
     // this is way faster than looping through every object on the board
     public List<BaseUnit> unitList = new List<BaseUnit>();
     private Dictionary<Vector3Int, GameObject> occupiedTiles = new Dictionary<Vector3Int, GameObject>();
+    private readonly Dictionary<Vector3Int, UnitRespawnRecord> m_RespawnRoster = new Dictionary<Vector3Int, UnitRespawnRecord>();
+    private readonly HashSet<Vector3Int> m_DeathBlockedCells = new HashSet<Vector3Int>();
 
     public Transform UnitsParent;
     public Transform EnemyParent;
@@ -168,6 +176,10 @@ public class BoardManager : MonoBehaviour
     {
         BaseUnit baseUnit = unitObject.GetComponent<BaseUnit>();
         UnitDefinition definition = baseUnit != null && baseUnit.myData != null ? baseUnit.myData.BaseDef : null;
+        if (baseUnit != null && TryGetUnitCell(unitObject, out Vector3Int cellPos))
+        {
+            RemoveRespawnRecord(cellPos);
+        }
 
         bool movedToInventory = inventory != null && definition != null && inventory.AddUnit(definition);
         if (!movedToInventory)
@@ -272,17 +284,23 @@ public class BoardManager : MonoBehaviour
             return false;
         }
 
+        if (m_DeathBlockedCells.Contains(cellPos))
+        {
+            return false;
+        }
+
         return true;
     }
 
     public void RegisterUnit(Vector3Int cellPos, GameObject unit)
     {
-       
+        m_DeathBlockedCells.Remove(cellPos);
         occupiedTiles[cellPos] = unit;
         if (unit.TryGetComponent(out BaseUnit baseUnit))
         {
             unitGrid[cellPos.x, cellPos.y] = baseUnit;
             unitList.Add(baseUnit);
+            UpdateRespawnRecord(cellPos, baseUnit);
         }
         unit.transform.SetParent(UnitsParent);
     }
@@ -347,6 +365,7 @@ public class BoardManager : MonoBehaviour
         if (!TryGetUnitCell(unit.gameObject, out Vector3Int cellPos)) return false;
 
         occupiedTiles.Remove(cellPos);
+        RemoveRespawnRecord(cellPos);
 
         if (cellPos.x >= 0 && cellPos.x < Width && cellPos.y >= 0 && cellPos.y < Height)
         {
@@ -356,6 +375,145 @@ public class BoardManager : MonoBehaviour
         unitList.Remove(unit);
         Destroy(unit.gameObject);
         return true;
+    }
+
+    public void MarkUnitDefeated(BaseUnit unit)
+    {
+        if (unit == null)
+        {
+            return;
+        }
+
+        if (!TryGetUnitCell(unit.gameObject, out Vector3Int cellPos))
+        {
+            return;
+        }
+
+        occupiedTiles.Remove(cellPos);
+
+        if (cellPos.x >= 0 && cellPos.x < Width && cellPos.y >= 0 && cellPos.y < Height)
+        {
+            unitGrid[cellPos.x, cellPos.y] = null;
+        }
+
+        unitList.Remove(unit);
+        m_DeathBlockedCells.Add(cellPos);
+    }
+
+    public void ClearDeathBlockedCells()
+    {
+        m_DeathBlockedCells.Clear();
+    }
+
+    public void RefreshRespawnRecord(BaseUnit unit)
+    {
+        if (unit == null)
+        {
+            return;
+        }
+
+        if (!TryGetUnitCell(unit.gameObject, out Vector3Int cellPos))
+        {
+            return;
+        }
+
+        UpdateRespawnRecord(cellPos, unit);
+    }
+
+    public void RestoreRespawnRoster()
+    {
+        if (GameTilemap == null || m_RespawnRoster.Count == 0)
+        {
+            return;
+        }
+
+        List<UnitRespawnRecord> records = new List<UnitRespawnRecord>(m_RespawnRoster.Values);
+        for (int i = 0; i < records.Count; i++)
+        {
+            UnitRespawnRecord record = records[i];
+            if (record == null || record.Instance == null || record.Instance.BaseDef == null)
+            {
+                continue;
+            }
+
+            Vector3Int cellPos = record.CellPos;
+            if (!IsValidRespawnCell(cellPos))
+            {
+                continue;
+            }
+
+            if (TryGetUnitAtCell(cellPos, out BaseUnit existingUnit) && existingUnit != null)
+            {
+                continue;
+            }
+
+            if (occupiedTiles.TryGetValue(cellPos, out GameObject occupiedObject) && occupiedObject != null)
+            {
+                continue;
+            }
+
+            SpawnUnitFromRecord(record);
+        }
+    }
+
+    private bool IsValidRespawnCell(Vector3Int cellPos)
+    {
+        if (cellPos.x < 0 || cellPos.x >= Width || cellPos.y < 0 || cellPos.y >= Height)
+        {
+            return false;
+        }
+
+        if (cellPos.y == 0 || cellPos.y == Height - 1)
+        {
+            return false;
+        }
+
+        return GameTilemap.HasTile(cellPos);
+    }
+
+    private void SpawnUnitFromRecord(UnitRespawnRecord record)
+    {
+        GameObject prefab = Resources.Load<GameObject>(record.Instance.BaseDef.PrefabPath);
+        if (prefab == null)
+        {
+            Debug.LogWarning($"[BoardManager] Could not reload prefab for respawned unit '{record.Instance.BaseDef.UnitID}'.");
+            return;
+        }
+
+        Vector3 spawnPos = GameTilemap.GetCellCenterWorld(record.CellPos);
+        GameObject go = Instantiate(prefab, spawnPos, Quaternion.identity);
+        BaseUnit baseUnit = go.GetComponent<BaseUnit>();
+        if (baseUnit == null)
+        {
+            Debug.LogWarning($"[BoardManager] Respawned prefab '{record.Instance.BaseDef.UnitID}' is missing BaseUnit.");
+            Destroy(go);
+            return;
+        }
+
+        UnitInstance clonedInstance = UnitInstance.CloneRuntimeInstance(record.Instance);
+        baseUnit.Initialize(clonedInstance);
+        baseUnit.ResetHealth();
+        baseUnit.ResetMana();
+        RegisterUnit(record.CellPos, go);
+    }
+
+    private void UpdateRespawnRecord(Vector3Int cellPos, BaseUnit unit)
+    {
+        if (unit == null || unit.myData == null)
+        {
+            return;
+        }
+
+        m_RespawnRoster[cellPos] = new UnitRespawnRecord
+        {
+            CellPos = cellPos,
+            Instance = UnitInstance.CloneRuntimeInstance(unit.myData)
+        };
+    }
+
+    private void RemoveRespawnRecord(Vector3Int cellPos)
+    {
+        m_RespawnRoster.Remove(cellPos);
     }
 
     void CenterCamera()
