@@ -701,6 +701,12 @@ public abstract class BaseUnit : MonoBehaviour
         }
         Debug.Log($"{gameObject.name} has been defeated!");
 
+        BoardManager board = FindFirstObjectByType<BoardManager>();
+        if (board != null)
+        {
+            board.MarkUnitDefeated(this);
+        }
+
         Destroy(gameObject);
     }
 
@@ -979,6 +985,12 @@ protected void SpawnSniperProjectile(GameObject prefab, float damage, bool isAOE
         if (buffs != null)
         {
             buffs.PlayBuffOverlay(this);
+        }
+
+        BoardManager board = FindFirstObjectByType<BoardManager>();
+        if (board != null)
+        {
+            board.RefreshRespawnRecord(this);
         }
     }
     public int CurrentLevel
