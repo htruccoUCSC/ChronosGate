@@ -247,6 +247,11 @@ private const float DEBUFF_TICK_RATE = 1f;
 
     public virtual void TakeDamage(BaseUnit unit, int damage)
     {
+        if (damage > 0 && SfxManager.Instance != null)
+        {
+            SfxManager.Instance.PlayEnemyHit();
+        }
+
         HitTint hitTint = GetComponent<HitTint>();
         if (hitTint != null)
         {
@@ -280,6 +285,11 @@ private const float DEBUFF_TICK_RATE = 1f;
 
     protected virtual void Die()
     {
+        if (SfxManager.Instance != null)
+        {
+            SfxManager.Instance.PlayEnemyDeath();
+        }
+
         HitTint hitTint = GetComponent<HitTint>();
         if (hitTint != null)
         {

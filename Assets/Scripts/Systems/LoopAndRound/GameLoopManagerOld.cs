@@ -156,6 +156,11 @@ public class GameLoopManagerOld : MonoBehaviour
             yield break;
         }
 
+        if (SfxManager.Instance != null)
+        {
+            SfxManager.Instance.PlayRoundComplete();
+        }
+
         if (newRound != null)
         {
             newRound.startNewRound();
@@ -283,6 +288,12 @@ public class GameLoopManagerOld : MonoBehaviour
     {
         CurrentState = GameState.GameOver;
         isGameActive = false;
+
+        if (SfxManager.Instance != null)
+        {
+            SfxManager.Instance.PlayRoundLost();
+        }
+
         Invoke(nameof(LoadGameOverScene), 3f);
     }
 

@@ -32,6 +32,7 @@ public class AugmentSelectionUI : MonoBehaviour
     private List<Augment> selectedAugments = new List<Augment>();
     private int rerollCost = 3;
     private CurrencyManager currencyManager;
+    private bool isPanelOpen = false;
 
     // Events that other systems can subscribe to
     public event Action<int> OnAugmentSelected;
@@ -98,6 +99,7 @@ public class AugmentSelectionUI : MonoBehaviour
         
         // Show the panel
         augmentSelectionPanel.SetActive(true);
+        isPanelOpen = true;
         
         if (GameSpeedButton.Instance != null)
         {
@@ -112,6 +114,28 @@ public class AugmentSelectionUI : MonoBehaviour
         if (currencyManager != null)
         {
             UpdateRerollButtonState(currencyManager.GetCurrency());
+        }
+    }
+    
+    /// <summary>
+    /// Toggle the augment selection panel open/closed
+    /// </summary>
+    private void ToggleAugmentSelection()
+    {
+        Debug.Log($"[AugmentSelectionUI] Toggle button clicked! Panel is currently {(isPanelOpen ? "OPEN" : "CLOSED")}");
+
+        if (SfxManager.Instance != null)
+        {
+            SfxManager.Instance.PlayUiClick();
+        }
+        
+        if (isPanelOpen)
+        {
+            HideAugmentSelection();
+        }
+        else
+        {
+            ShowAugmentSelection();
         }
     }
     
@@ -228,6 +252,11 @@ public class AugmentSelectionUI : MonoBehaviour
     /// </summary>
     private void OnRerollButtonClicked()
     {
+        if (SfxManager.Instance != null)
+        {
+            SfxManager.Instance.PlayUiClick();
+        }
+
         if (currencyManager == null)
         {
             Debug.LogError("CurrencyManager not found!");
@@ -269,6 +298,7 @@ public class AugmentSelectionUI : MonoBehaviour
     public void HideAugmentSelection()
     {
         augmentSelectionPanel.SetActive(false);
+        isPanelOpen = false;
         if (GameSpeedButton.Instance != null)
         {
             GameSpeedButton.Instance.SetPaused(false);
@@ -293,6 +323,11 @@ public class AugmentSelectionUI : MonoBehaviour
         {
             Debug.LogError("Invalid augment index!");
             return;
+        }
+
+        if (SfxManager.Instance != null)
+        {
+            SfxManager.Instance.PlayUiClick();
         }
 
         Augment selectedAugment = selectedAugments[augmentIndex];

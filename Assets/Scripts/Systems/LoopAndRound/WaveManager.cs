@@ -244,19 +244,13 @@ public class WaveManager : MonoBehaviour
         //     return;
         // }
 
-        BoundsInt bounds = tilemap.cellBounds;
-
-        // find the rightmost column that actually has tiles
-        int rightmostXWithTile = int.MinValue;
-        for (int x = bounds.xMin; x < bounds.xMax; x++)
+        if (!TryGetRightmostSpawnableColumn(out int rightmostXWithTile))
         {
-            for (int y = bounds.yMin; y < bounds.yMax; y++)
-            {
-                Vector3Int cell = new Vector3Int(x, y, 0);
-                if (IsSpawnableCell(cell) && x > rightmostXWithTile)
-                    rightmostXWithTile = x;
-            }
+            Debug.LogError("WaveManager: Could not determine a valid rightmost spawn column.");
+            return;
         }
+        
+        BoundsInt bounds = tilemap.cellBounds;
 
 
         int spawnX = rightmostXWithTile + Mathf.Max(1, spawnOffsetCells);
@@ -329,6 +323,81 @@ public class WaveManager : MonoBehaviour
 
 
         Debug.LogWarning("WaveManager: spawned enemyPrefab but it has no BaseEnemy or TargetDummyTest component");
+    }
+
+    public bool SpawnEnemyInLane(GameObject enemyPrefabToSpawn, int laneY)
+    {
+        if (enemyPrefabToSpawn == null)
+        {
+            Debug.LogError("WaveManager: SpawnEnemyInLane called with null prefab.");
+            return false;
+        }
+
+        if (tilemap == null)
+        {
+            Debug.LogError("WaveManager: tilemap not assigned.");
+            return false;
+        }
+
+        if (!TryGetRightmostSpawnableColumn(out int rightmostXWithTile))
+        {
+            Debug.LogError("WaveManager: Could not determine a valid rightmost spawn column.");
+            return false;
+        }
+
+        Vector3Int laneCell = new Vector3Int(rightmostXWithTile, laneY, 0);
+        if (!IsSpawnableCell(laneCell))
+        {
+            Debug.LogWarning($"WaveManager: lane {laneY} is not spawnable.");
+            return false;
+        }
+
+        int spawnX = rightmostXWithTile + Mathf.Max(1, spawnOffsetCells);
+        Vector3Int spawnCell = new Vector3Int(spawnX, laneY, 0);
+        Vector3 spawnWorld = tilemap.GetCellCenterWorld(spawnCell);
+
+        GameObject go = Instantiate(enemyPrefabToSpawn, spawnWorld, Quaternion.identity);
+        if (boardManager != null && boardManager.EnemyParent != null)
+        {
+            go.transform.SetParent(boardManager.EnemyParent);
+        }
+
+        BaseEnemy baseEnemy = go.GetComponentInParent<BaseEnemy>();
+        if (baseEnemy != null)
+        {
+            RegisterEnemy(baseEnemy);
+        }
+        else
+        {
+            Debug.LogWarning("WaveManager: SpawnEnemyInLane spawned object without BaseEnemy component.");
+        }
+
+        return true;
+    }
+
+    private bool TryGetRightmostSpawnableColumn(out int rightmostXWithTile)
+    {
+        rightmostXWithTile = int.MinValue;
+
+        if (tilemap == null)
+        {
+            return false;
+        }
+
+        BoundsInt bounds = tilemap.cellBounds;
+        for (int x = bounds.xMin; x < bounds.xMax; x++)
+        {
+            for (int y = bounds.yMin; y < bounds.yMax; y++)
+            {
+                Vector3Int cell = new Vector3Int(x, y, 0);
+                if (IsSpawnableCell(cell) && x > rightmostXWithTile)
+                {
+                    rightmostXWithTile = x;
+                }
+            }
+        }
+
+        return rightmostXWithTile != int.MinValue;
     }
 
     private int ChooseSpawnRow(List<int> validYs)

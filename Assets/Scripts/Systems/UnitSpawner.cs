@@ -111,6 +111,11 @@ public class UnitSpawner : MonoBehaviour
             augmentManager.ReapplyPlacementAugments();
         }
 
+        if (SfxManager.Instance != null)
+        {
+            SfxManager.Instance.PlayTowerDrop();
+        }
+
         return true;
     }
 }

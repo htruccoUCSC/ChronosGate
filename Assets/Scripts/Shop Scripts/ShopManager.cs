@@ -28,6 +28,7 @@ public class ShopManager : MonoBehaviour
     [SerializeField] private DatabaseLoader databaseLoader;
     [SerializeField] private InventoryUI inventoryUI;
     [SerializeField] private ItemInventoryUI itemInventoryUI;
+    [SerializeField] private GameObject itemInventoryRoot;
     
     [Header("Tooltip")]
     [SerializeField] private GameObject consumableTooltip;
@@ -35,6 +36,10 @@ public class ShopManager : MonoBehaviour
     
     [Header("Item Definition Source")]
     [SerializeField] private ItemDefinition[] availableItems;
+
+    [Header("Consumable Shop")]
+    [SerializeField] private bool enableConsumableShop = false;
+    [SerializeField] private GameObject consumableShopRoot;
     
     [Header("Progression Settings")]
     [SerializeField] private bool useProgressionFiltering = true;
@@ -145,14 +150,19 @@ public class ShopManager : MonoBehaviour
             consumableTooltip.SetActive(false);
         }
 
+        ConfigureConsumableShopVisibility();
+
         UpdateShopUIState();
         
         // Initialize all consumable slots with reference to this manager
-        foreach (ConsumableSlot slot in consumableSlots)
+        if (enableConsumableShop)
         {
-            if (slot != null)
+            foreach (ConsumableSlot slot in consumableSlots)
             {
-                slot.Initialize(this);
+                if (slot != null)
+                {
+                    slot.Initialize(this);
+                }
             }
         }
 
@@ -161,7 +171,7 @@ public class ShopManager : MonoBehaviour
             inventoryUI = FindFirstObjectByType<InventoryUI>();
         }
 
-        if (itemInventoryUI == null)
+        if (enableConsumableShop && itemInventoryUI == null)
         {
             itemInventoryUI = FindFirstObjectByType<ItemInventoryUI>();
         }
@@ -169,9 +179,13 @@ public class ShopManager : MonoBehaviour
         // Initialize consumable slots with item inventory UI
         foreach (ConsumableSlot slot in consumableSlots)
         {
-            if (slot != null && itemInventoryUI != null)
+            if (enableConsumableShop && slot != null && itemInventoryUI != null)
             {
                 slot.InitializeInventory(itemInventoryUI);
+            }
+            else if (!enableConsumableShop && slot != null)
+            {
+                slot.Setup(null);
             }
         }
 
@@ -231,7 +245,10 @@ public class ShopManager : MonoBehaviour
             Debug.Log("[ShopManager] UnitUnlockManager ready, populating shop...");
         }
         
-        PopulateConsumableSlots();
+        if (enableConsumableShop)
+        {
+            PopulateConsumableSlots();
+        }
         PopulateTowerSlots();
     }
     
@@ -240,6 +257,11 @@ public class ShopManager : MonoBehaviour
         if (!gameplayUIVisible)
         {
             return;
+        }
+
+        if (SfxManager.Instance != null)
+        {
+            SfxManager.Instance.PlayUiClick();
         }
 
         if (alwaysVisibleDuringGameplay)
@@ -274,7 +296,10 @@ public class ShopManager : MonoBehaviour
 
     public void RefreshShopContents()
     {
-        PopulateConsumableSlots();
+        if (enableConsumableShop)
+        {
+            PopulateConsumableSlots();
+        }
         PopulateTowerSlots();
     }
 
@@ -383,6 +408,11 @@ public class ShopManager : MonoBehaviour
 
     private void OnPauseButtonClicked()
     {
+        if (SfxManager.Instance != null)
+        {
+            SfxManager.Instance.PlayUiClick();
+        }
+
         if (GameSpeedButton.Instance != null)
         {
             GameSpeedButton.Instance.TogglePaused();
@@ -408,6 +438,11 @@ public class ShopManager : MonoBehaviour
     
     private void OnRerollButtonClicked()
     {
+        if (SfxManager.Instance != null)
+        {
+            SfxManager.Instance.PlayUiClick();
+        }
+
         // Try to get currency manager if not already cached
         if (currencyManager == null)
         {
@@ -429,7 +464,12 @@ public class ShopManager : MonoBehaviour
         Debug.Log($"[ShopManager] Rerolled shop for {rerollCost} gold!");
         rerollCost += 2; // Increase cost by 2 for next reroll
         UpdateRerollCostDisplay();
-        PopulateConsumableSlots();
+
+        if (enableConsumableShop)
+        {
+            PopulateConsumableSlots();
+        }
+
         PopulateTowerSlots();
     }
     
@@ -467,6 +507,77 @@ public class ShopManager : MonoBehaviour
     private void RerollShop()
     {
         PopulateTowerSlots();
+    }
+
+    private void ConfigureConsumableShopVisibility()
+    {
+        if (enableConsumableShop)
+        {
+            return;
+        }
+
+        if (itemInventoryUI == null)
+        {
+            itemInventoryUI = FindFirstObjectByType<ItemInventoryUI>();
+        }
+
+        if (consumableShopRoot == null)
+        {
+            consumableShopRoot = FindConsumableShopRoot();
+        }
+
+        if (itemInventoryRoot == null && itemInventoryUI != null)
+        {
+            itemInventoryRoot = itemInventoryUI.gameObject;
+        }
+
+        if (consumableShopRoot != null)
+        {
+            consumableShopRoot.SetActive(false);
+        }
+
+        for (int i = 0; i < consumableSlots.Length; i++)
+        {
+            if (consumableSlots[i] != null)
+            {
+                consumableSlots[i].gameObject.SetActive(false);
+            }
+        }
+
+        if (itemInventoryRoot != null)
+        {
+            itemInventoryRoot.SetActive(false);
+        }
+
+        if (consumableTooltip != null)
+        {
+            consumableTooltip.SetActive(false);
+        }
+    }
+
+    private GameObject FindConsumableShopRoot()
+    {
+        for (int i = 0; i < consumableSlots.Length; i++)
+        {
+            ConsumableSlot slot = consumableSlots[i];
+            if (slot == null)
+            {
+                continue;
+            }
+
+            Transform current = slot.transform;
+            while (current != null)
+            {
+                if (current.name.ToLower().Contains("consumable"))
+                {
+                    return current.gameObject;
+                }
+
+                current = current.parent;
+            }
+        }
+
+        return null;
     }
 
     private void PopulateConsumableSlots()
@@ -756,6 +867,11 @@ public class ShopManager : MonoBehaviour
     
     public void ShowConsumableTooltip(string description)
     {
+        if (!enableConsumableShop)
+        {
+            return;
+        }
+
         Debug.Log($"ShowConsumableTooltip called with: {description}");
         
         if (consumableTooltip == null)
@@ -777,6 +893,11 @@ public class ShopManager : MonoBehaviour
     
     public void HideConsumableTooltip()
     {
+        if (!enableConsumableShop)
+        {
+            return;
+        }
+
         Debug.Log("HideConsumableTooltip called");
         
         if (consumableTooltip != null)

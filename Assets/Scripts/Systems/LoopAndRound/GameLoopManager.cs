@@ -14,6 +14,7 @@ public class GameLoopManager : MonoBehaviour
     [SerializeField] protected AugmentSelectionUI augmentSelectionUI;
     [SerializeField] protected ShopManager shopManager;
     [SerializeField] protected WaveManager waveManager;
+    [SerializeField] protected MusicController musicController;
      public AugmentManager augmentManager;
 
     public NewRound newRound;
@@ -27,7 +28,6 @@ public class GameLoopManager : MonoBehaviour
 
     protected int currentWaveInCycle = 0;
     protected bool isGameActive = false;
-
     public TileMapManager tileMapManager;
     public int roundsOfGrowth =2;
     public int roundsOfGrowthTracker=0;
@@ -39,7 +39,7 @@ public class GameLoopManager : MonoBehaviour
         GameOver
     }
 
-    public GameState CurrentState { get; private set; } = GameState.AugmentSelection;
+    public GameState CurrentState { get; private set; } = GameState.Combat;
     public int CurrentWaveInCycle => currentWaveInCycle;
     public int WavesPerAugmentCycle => wavesPerAugmentCycle;
 
@@ -75,6 +75,10 @@ public class GameLoopManager : MonoBehaviour
         if (tileMapManager == null)
         {
             tileMapManager = FindFirstObjectByType<TileMapManager>();
+        }
+        if (musicController == null)
+        {
+            musicController = FindFirstObjectByType<MusicController>();
         }
         if (FindFirstObjectByType<GameSpeedButton>() == null)
         {
@@ -118,14 +122,17 @@ public class GameLoopManager : MonoBehaviour
         
         isGameActive = true;
         currentWaveInCycle = 0;
+        SetGameState(GameState.Combat);
         
-        // Start the run in combat. Augment selection still happens after a full cycle.
+        // Start the run in combat after a short pause. Augment selection still happens after a full cycle.
+        Debug.Log("Starting first combat phase...");
+
         StartCombatPhase();
     }
 
     protected void ShowAugmentSelection()
     {
-        CurrentState = GameState.AugmentSelection;
+        SetGameState(GameState.AugmentSelection);
         Debug.Log("=== AUGMENT SELECTION PHASE ===");
 
         if (shopManager != null)
@@ -146,6 +153,11 @@ public class GameLoopManager : MonoBehaviour
         
         // Reset wave cycle counter
         currentWaveInCycle = 0;
+
+        if (FindFirstObjectByType<BoardManager>() is BoardManager boardManager)
+        {
+            boardManager.RestoreRespawnRoster();
+        }
         
         // Move to combat phase
         StartCombatPhase();
@@ -183,7 +195,7 @@ public class GameLoopManager : MonoBehaviour
 
     private void StartCombatPhase()
     {
-        CurrentState = GameState.Combat;
+        SetGameState(GameState.Combat);
         Debug.Log($"=== COMBAT PHASE - Wave {waveManager.currentWave} (Cycle: {currentWaveInCycle + 1}/{wavesPerAugmentCycle}) ===");
 
         if (shopManager != null)
@@ -223,6 +235,8 @@ public class GameLoopManager : MonoBehaviour
         {
             newRound.startNewRound();
         }
+
+        RefreshShopAfterWaveClear();
 
         // Increment AFTER completing the wave
         currentWaveInCycle++;
@@ -266,7 +280,7 @@ public class GameLoopManager : MonoBehaviour
     // triggers when we run out of lives 
     protected void GameOver()
     {
-        CurrentState = GameState.GameOver;
+        SetGameState(GameState.GameOver);
         isGameActive = false;
         Debug.Log("=== GAME OVER ===");
         
@@ -282,6 +296,32 @@ public class GameLoopManager : MonoBehaviour
     public bool IsGameActive()
     {
         return isGameActive;
+    }
+
+    protected void RefreshShopAfterWaveClear()
+    {
+        if (shopManager == null)
+        {
+            return;
+        }
+
+        if (reopenShopEachRound)
+        {
+            shopManager.OpenShop();
+            return;
+        }
+
+        shopManager.RefreshShopContents();
+    }
+
+    protected void SetGameState(GameState newState)
+    {
+        CurrentState = newState;
+
+        if (musicController != null)
+        {
+            musicController.ApplyState(newState);
+        }
     }
 
     private void OnDestroy()
