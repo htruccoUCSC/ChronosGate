@@ -39,7 +39,7 @@ public class GameLoopManager : MonoBehaviour
         GameOver
     }
 
-    public GameState CurrentState { get; private set; } = GameState.AugmentSelection;
+    public GameState CurrentState { get; private set; } = GameState.Combat;
     public int CurrentWaveInCycle => currentWaveInCycle;
     public int WavesPerAugmentCycle => wavesPerAugmentCycle;
 
@@ -126,7 +126,7 @@ public class GameLoopManager : MonoBehaviour
         
         // Start the run in combat after a short pause. Augment selection still happens after a full cycle.
         Debug.Log("Starting first combat phase...");
-        yield return new WaitForSeconds(Mathf.Max(0f, autoStartRoundDelay));
+
         StartCombatPhase();
     }
 
