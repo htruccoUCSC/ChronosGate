@@ -12,8 +12,10 @@ public enum BasicAttackType
 public enum UnitRarity
 {
     Common,
+    Uncommon,
     Rare,
-    Epic
+    Epic,
+    Legendary
 }
 
 [CreateAssetMenu(fileName = "NewUnitDef", menuName = "Game/Unit Definition")]

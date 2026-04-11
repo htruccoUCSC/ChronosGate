@@ -236,7 +236,8 @@
       "AttackType": "Projectile",
       "LaunchAngle": 60,
       "Faction": "Future",
-      "PrefabPath": "Prefabs/Units/drone_01"
+      "PrefabPath": "Prefabs/Units/drone_01",
+      "Rarity": "Epic"
     },
     {
       "UnitID": "magic_01",
@@ -270,7 +271,8 @@
       "AttackType": "Projectile",
       "LaunchAngle": 0,
       "Faction": "Future",
-      "PrefabPath": "Prefabs/Units/mech_01"
+      "PrefabPath": "Prefabs/Units/mech_01",
+      "Rarity": "Epic"
     },
     {
       "UnitID": "amini_01",
@@ -389,7 +391,8 @@
       "AttackType": "Projectile",
       "LaunchAngle": 60,
       "Faction": "Modern",
-      "PrefabPath": "Prefabs/Units/rods_01"
+      "PrefabPath": "Prefabs/Units/rods_01",
+      "Rarity": "Legendary"
     },
     {
       "UnitID": "drums_01",
@@ -542,7 +545,8 @@
       "AttackType": "Projectile",
       "LaunchAngle": 60,
       "Faction": "Mystic",
-      "PrefabPath": "Prefabs/Units/jest_01"
+      "PrefabPath": "Prefabs/Units/jest_01",
+      "Rarity": "Rare"
     },
     {
       "UnitID": "mgcswrd_01",
@@ -627,7 +631,8 @@
       "AttackType": "Projectile",
       "LaunchAngle": 60,
       "Faction": "Mystic",
-      "PrefabPath": "Prefabs/Units/baba_01"
+      "PrefabPath": "Prefabs/Units/baba_01",
+      "Rarity": "Uncommon"
     },
     {
       "UnitID": "firep_01",
@@ -644,7 +649,8 @@
       "AttackType": "Projectile",
       "LaunchAngle": 60,
       "Faction": "Mystic",
-      "PrefabPath": "Prefabs/Units/firep_01"
+      "PrefabPath": "Prefabs/Units/firep_01",
+      "Rarity": "Uncommon"
     },
     {
       "UnitID": "gen_01",
