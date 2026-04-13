@@ -18,6 +18,7 @@ public class WaveManager : MonoBehaviour
     public GameObject shadowEnemyPrefab; //explicit shadow enemy prefab
     public Tilemap tilemap;        // tilemap used to figure out spawn + map edges
     public PortalManager portalManager;
+    public SpawnableManager spawnableManager;
 
 
 
@@ -25,6 +26,7 @@ public class WaveManager : MonoBehaviour
     public int spawnOffsetCells = 0;   // how far past the right edge enemies spawn
     public float spawnDelay = 0.75f;   // delay between enemy spawns in a wave
     [Range(0f, 1f)] public float shadowSpawnChance = 0.2f;
+    public int shadowUnlockWave = 999;
 
     [Header("Waves")]
     public int currentWave = 1;          // current wave number
@@ -78,6 +80,11 @@ public class WaveManager : MonoBehaviour
         Debug.Log("WaveManager started.");
 
         boardManager = FindFirstObjectByType<BoardManager>();
+        if (spawnableManager == null)
+        {
+            spawnableManager = FindFirstObjectByType<SpawnableManager>();
+        }
+
         if (portalManager == null)
         {
             
@@ -87,6 +94,8 @@ public class WaveManager : MonoBehaviour
         {
             portalManager.init();
         }
+
+        UpdateSpawnablesForCurrentWave();
 
         // compute map end threshold once at start
         RecomputeMapEndX();
@@ -150,6 +159,7 @@ public class WaveManager : MonoBehaviour
         while (!gameOver)
         {
             Debug.Log($"--- WAVE {currentWave} START ---");
+            UpdateSpawnablesForCurrentWave();
             BeginWaveTracking();
 
             // spawn enemies for this wave
@@ -193,6 +203,7 @@ public class WaveManager : MonoBehaviour
     {
         waveActive = true;
         Debug.Log($"--- WAVE {currentWave} START ---");
+        UpdateSpawnablesForCurrentWave();
         BeginWaveTracking();
 
         // spawn enemies for this wave
@@ -275,33 +286,19 @@ public class WaveManager : MonoBehaviour
         Vector3Int spawnCell = new Vector3Int(spawnX, chosenY, 0);
         Vector3 spawnWorld = tilemap.GetCellCenterWorld(spawnCell);
 
-        List<GameObject> nonShadowPrefabs = new List<GameObject>();
-        if (enemyPrefabs != null && enemyPrefabs.Count > 0)
-        {
-            nonShadowPrefabs.AddRange(enemyPrefabs);
-        }
-        else
-        {
-            if (baseEnemyPrefab != null) nonShadowPrefabs.Add(baseEnemyPrefab);
-            if (enemyPrefab != null) nonShadowPrefabs.Add(enemyPrefab);
-            if (enemyRedPrefab != null) nonShadowPrefabs.Add(enemyRedPrefab);
-            if (enemyYellowPrefab != null) nonShadowPrefabs.Add(enemyYellowPrefab);
-            if (enemyGreenPrefab != null) nonShadowPrefabs.Add(enemyGreenPrefab);
-        }
-
         GameObject prefabToSpawn = null;
-        bool canSpawnShadow = shadowEnemyPrefab != null;
+        bool canSpawnShadow = shadowEnemyPrefab != null && currentWave >= shadowUnlockWave;
         if (canSpawnShadow && Random.value < shadowSpawnChance)
         {
             prefabToSpawn = shadowEnemyPrefab;
         }
-        else if (nonShadowPrefabs.Count > 0)
+        else
         {
-            prefabToSpawn = nonShadowPrefabs[Random.Range(0, nonShadowPrefabs.Count)];
-        }
-        else if (canSpawnShadow)
-        {
-            prefabToSpawn = shadowEnemyPrefab;
+            prefabToSpawn = GetRandomNonShadowPrefab();
+            if (prefabToSpawn == null && canSpawnShadow)
+            {
+                prefabToSpawn = shadowEnemyPrefab;
+            }
         }
 
         if (prefabToSpawn == null)
@@ -323,6 +320,31 @@ public class WaveManager : MonoBehaviour
 
 
         Debug.LogWarning("WaveManager: spawned enemyPrefab but it has no BaseEnemy or TargetDummyTest component");
+    }
+
+    private GameObject GetRandomNonShadowPrefab()
+    {
+        if (spawnableManager != null)
+        {
+            return spawnableManager.GetRandomSpawnable();
+        }
+
+        if (baseEnemyPrefab != null)
+        {
+            return baseEnemyPrefab;
+        }
+
+        return enemyPrefab;
+    }
+
+    private void UpdateSpawnablesForCurrentWave()
+    {
+        if (spawnableManager == null)
+        {
+            return;
+        }
+
+        spawnableManager.UpdateSpawnablesForRound(currentWave);
     }
 
     public bool SpawnEnemyInLane(GameObject enemyPrefabToSpawn, int laneY)

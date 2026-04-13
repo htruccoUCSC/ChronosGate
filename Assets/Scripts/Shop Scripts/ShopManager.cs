@@ -862,7 +862,14 @@ public class ShopManager : MonoBehaviour
     private int GetCurrentShopRound()
     {
         WaveManager waveManager = FindFirstObjectByType<WaveManager>();
-        return waveManager != null ? Mathf.Max(1, waveManager.currentWave) : 1;
+        GameLoopManager gameLoopManager = FindFirstObjectByType<GameLoopManager>();
+        if (waveManager == null)
+        {
+            return 1;
+        }
+
+        int wavesPerCycle = gameLoopManager != null ? Mathf.Max(1, gameLoopManager.WavesPerAugmentCycle) : 1;
+        return Mathf.Max(1, ((Mathf.Max(1, waveManager.currentWave) - 1) / wavesPerCycle) + 1);
     }
     
     public void ShowConsumableTooltip(string description)
