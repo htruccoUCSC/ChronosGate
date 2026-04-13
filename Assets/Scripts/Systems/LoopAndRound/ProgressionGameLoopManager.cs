@@ -88,8 +88,13 @@ public class ProgressionGameLoopManager : GameLoopManager
     /// </summary>
     protected override IEnumerator WaitForWaveCompletion()
     {
-        // Wait for wave to complete
-        yield return new WaitUntil(() => waveManager.IsWaveComplete() || waveManager.IsGameOver());
+        while (currentCombatTimeRemaining > 0f && !waveManager.IsGameOver())
+        {
+            currentCombatTimeRemaining = Mathf.Max(0f, currentCombatTimeRemaining - Time.deltaTime);
+            yield return null;
+        }
+
+        combatTimerActive = false;
 
         if (waveManager.IsGameOver() || waveManager.lives <= 0)
         {
@@ -104,16 +109,16 @@ public class ProgressionGameLoopManager : GameLoopManager
             SfxManager.Instance.PlayRoundComplete();
         }
 
+        int completedWaveNumber = waveManager.currentWave;
+        waveManager.ForceCompleteCurrentWave();
+
         if (newRound != null)
         {
             newRound.startNewRound();
         }
 
         RefreshShopAfterWaveClear();
-        
-        // Check for unit unlock BEFORE incrementing wave
-        int completedWaveNumber = waveManager.currentWave;
-        
+
         // Check for lane unlock FIRST (affects board space)
         bool lanesUnlocked = CheckForLaneUnlock(completedWaveNumber);
         if (lanesUnlocked)

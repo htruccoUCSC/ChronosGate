@@ -46,6 +46,7 @@ public class WaveManager : MonoBehaviour
 
     // bool that enables the old automatic wave behavior
     private bool autoRunWaves = false;
+    private Coroutine m_CurrentWaveRoutine;
 
     private float leftLoseX = 0f; // world X where enemies count as "reached the end"
     private BoardManager boardManager;
@@ -189,7 +190,7 @@ public class WaveManager : MonoBehaviour
     public void StartNextWave()
     {
         if (gameOver || waveActive) return;
-        StartCoroutine(RunSingleWave());
+        m_CurrentWaveRoutine = StartCoroutine(RunSingleWave());
     }
 
     // returns true if the current wave is fully cleared
@@ -213,6 +214,7 @@ public class WaveManager : MonoBehaviour
             {
                 EndWaveTracking();
                 waveActive = false;
+                m_CurrentWaveRoutine = null;
                 yield break;
             }
 
@@ -226,10 +228,34 @@ public class WaveManager : MonoBehaviour
         {
             EndWaveTracking();
             waveActive = false;
+            m_CurrentWaveRoutine = null;
             yield break;
         }
 
         Debug.Log($"--- WAVE {currentWave} CLEARED ---");
+        AdvancePortalsForClearedWave();
+
+        EndWaveTracking();
+        currentWave++;
+        enemiesPerWave += enemiesAddedPerWave;
+        waveActive = false;
+        m_CurrentWaveRoutine = null;
+    }
+
+    public void ForceCompleteCurrentWave()
+    {
+        if (gameOver || !waveActive)
+        {
+            return;
+        }
+
+        if (m_CurrentWaveRoutine != null)
+        {
+            StopCoroutine(m_CurrentWaveRoutine);
+            m_CurrentWaveRoutine = null;
+        }
+
+        Debug.Log($"--- WAVE {currentWave} TIMER COMPLETE ---");
         AdvancePortalsForClearedWave();
 
         EndWaveTracking();

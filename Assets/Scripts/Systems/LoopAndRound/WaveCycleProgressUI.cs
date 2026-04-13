@@ -209,19 +209,17 @@ public class WaveCycleProgressUI : MonoBehaviour
 
         int totalWaves = Mathf.Max(1, loop.WavesPerAugmentCycle);
         int currentWaveIndex = Mathf.Clamp(loop.CurrentWaveInCycle, 0, totalWaves - 1);
-        WaveManager waveManager = WaveManager.Instance;
         float currentWaveFill = 0f;
-        if (waveManager != null && waveManager.CurrentWaveTotalEnemies > 0)
+        if (loop.IsCombatTimerActive && loop.CombatPhaseDuration > 0f)
         {
-            int enemiesRemaining = Mathf.Clamp(waveManager.CurrentWaveEnemiesRemaining, 0, waveManager.CurrentWaveTotalEnemies);
-            currentWaveFill = 1f - (enemiesRemaining / (float)waveManager.CurrentWaveTotalEnemies);
+            currentWaveFill = 1f - (loop.CurrentCombatTimeRemaining / loop.CombatPhaseDuration);
         }
 
         if (m_TitleLabel != null)
         {
-            if (waveManager != null && waveManager.CurrentWaveTotalEnemies > 0)
+            if (loop.IsCombatTimerActive)
             {
-                m_TitleLabel.text = $"Wave Progress {currentWaveIndex + 1}/{totalWaves}  {waveManager.CurrentWaveEnemiesRemaining} left";
+                m_TitleLabel.text = $"Wave Progress {currentWaveIndex + 1}/{totalWaves}  {Mathf.CeilToInt(loop.CurrentCombatTimeRemaining)}s left";
             }
             else
             {

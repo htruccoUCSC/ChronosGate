@@ -25,9 +25,12 @@ public class GameLoopManager : MonoBehaviour
     [SerializeField] protected bool autoStartRounds = true;
     [SerializeField] protected float autoStartRoundDelay = 1.5f;
     [SerializeField] protected bool reopenShopEachRound = true;
+    [SerializeField] protected float combatPhaseDuration = 20f;
 
     protected int currentWaveInCycle = 0;
     protected bool isGameActive = false;
+    protected float currentCombatTimeRemaining = 0f;
+    protected bool combatTimerActive = false;
     public TileMapManager tileMapManager;
     public int roundsOfGrowth =2;
     public int roundsOfGrowthTracker=0;
@@ -42,6 +45,9 @@ public class GameLoopManager : MonoBehaviour
     public GameState CurrentState { get; private set; } = GameState.Combat;
     public int CurrentWaveInCycle => currentWaveInCycle;
     public int WavesPerAugmentCycle => wavesPerAugmentCycle;
+    public float CombatPhaseDuration => Mathf.Max(0f, combatPhaseDuration);
+    public float CurrentCombatTimeRemaining => Mathf.Max(0f, currentCombatTimeRemaining);
+    public bool IsCombatTimerActive => combatTimerActive;
 
     private void Awake()
     {
@@ -197,6 +203,8 @@ public class GameLoopManager : MonoBehaviour
     {
         SetGameState(GameState.Combat);
         Debug.Log($"=== COMBAT PHASE - Wave {waveManager.currentWave} (Cycle: {currentWaveInCycle + 1}/{wavesPerAugmentCycle}) ===");
+        combatTimerActive = true;
+        currentCombatTimeRemaining = CombatPhaseDuration;
 
         if (shopManager != null)
         {
@@ -220,13 +228,23 @@ public class GameLoopManager : MonoBehaviour
 
     protected virtual IEnumerator WaitForWaveCompletion()
     {
-        // Stop waiting if the wave ends normally or if the player runs out of lives.
-        yield return new WaitUntil(() => waveManager.IsWaveComplete() || waveManager.IsGameOver());
+        while (currentCombatTimeRemaining > 0f && !waveManager.IsGameOver())
+        {
+            currentCombatTimeRemaining = Mathf.Max(0f, currentCombatTimeRemaining - Time.deltaTime);
+            yield return null;
+        }
+
+        combatTimerActive = false;
 
         if (waveManager.IsGameOver() || waveManager.lives <= 0)
         {
             GameOver();
             yield break;
+        }
+
+        if (waveManager != null)
+        {
+            waveManager.ForceCompleteCurrentWave();
         }
 
         Debug.Log("Wave cleared!");
@@ -317,6 +335,12 @@ public class GameLoopManager : MonoBehaviour
     protected void SetGameState(GameState newState)
     {
         CurrentState = newState;
+
+        if (newState != GameState.Combat)
+        {
+            combatTimerActive = false;
+            currentCombatTimeRemaining = 0f;
+        }
 
         if (musicController != null)
         {

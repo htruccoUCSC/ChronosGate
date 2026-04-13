@@ -30,6 +30,8 @@ public class BoardManager : MonoBehaviour
     private Dictionary<Vector3Int, GameObject> occupiedTiles = new Dictionary<Vector3Int, GameObject>();
     private readonly Dictionary<Vector3Int, UnitRespawnRecord> m_RespawnRoster = new Dictionary<Vector3Int, UnitRespawnRecord>();
     private readonly HashSet<Vector3Int> m_DeathBlockedCells = new HashSet<Vector3Int>();
+    private readonly Dictionary<Vector3Int, GameObject> m_DeathIndicators = new Dictionary<Vector3Int, GameObject>();
+    private static Sprite s_DeathIndicatorSprite;
 
     public Transform UnitsParent;
     public Transform EnemyParent;
@@ -295,6 +297,7 @@ public class BoardManager : MonoBehaviour
     public void RegisterUnit(Vector3Int cellPos, GameObject unit)
     {
         m_DeathBlockedCells.Remove(cellPos);
+        RemoveDeathIndicator(cellPos);
         occupiedTiles[cellPos] = unit;
         if (unit.TryGetComponent(out BaseUnit baseUnit))
         {
@@ -366,6 +369,7 @@ public class BoardManager : MonoBehaviour
 
         occupiedTiles.Remove(cellPos);
         RemoveRespawnRecord(cellPos);
+        RemoveDeathIndicator(cellPos);
 
         if (cellPos.x >= 0 && cellPos.x < Width && cellPos.y >= 0 && cellPos.y < Height)
         {
@@ -398,6 +402,7 @@ public class BoardManager : MonoBehaviour
 
         unitList.Remove(unit);
         m_DeathBlockedCells.Add(cellPos);
+        CreateDeathIndicator(cellPos);
     }
 
     public void ClearDeathBlockedCells()
@@ -514,6 +519,85 @@ public class BoardManager : MonoBehaviour
     private void RemoveRespawnRecord(Vector3Int cellPos)
     {
         m_RespawnRoster.Remove(cellPos);
+    }
+
+    private void CreateDeathIndicator(Vector3Int cellPos)
+    {
+        RemoveDeathIndicator(cellPos);
+
+        if (GameTilemap == null || !GameTilemap.HasTile(cellPos))
+        {
+            return;
+        }
+
+        GameObject marker = new GameObject($"DeathIndicator_{cellPos.x}_{cellPos.y}");
+        marker.transform.SetParent(transform, false);
+        marker.transform.position = GameTilemap.GetCellCenterWorld(cellPos) + new Vector3(0f, 0f, -0.1f);
+
+        SpriteRenderer background = marker.AddComponent<SpriteRenderer>();
+        background.sprite = GetDeathIndicatorSprite();
+        background.color = new Color(0.25f, 0.85f, 1f, 0.35f);
+        background.sortingOrder = 250;
+        marker.transform.localScale = new Vector3(0.8f, 0.8f, 1f);
+
+        GameObject textObject = new GameObject("Label");
+        textObject.transform.SetParent(marker.transform, false);
+        textObject.transform.localPosition = new Vector3(0f, 0f, -0.01f);
+
+        TextMesh label = textObject.AddComponent<TextMesh>();
+        label.text = "Back\nNext";
+        label.anchor = TextAnchor.MiddleCenter;
+        label.alignment = TextAlignment.Center;
+        label.characterSize = 0.16f;
+        label.fontSize = 24;
+        label.color = new Color(0.05f, 0.14f, 0.2f, 1f);
+
+        m_DeathIndicators[cellPos] = marker;
+    }
+
+    private void RemoveDeathIndicator(Vector3Int cellPos)
+    {
+        if (!m_DeathIndicators.TryGetValue(cellPos, out GameObject marker))
+        {
+            return;
+        }
+
+        if (marker != null)
+        {
+            Destroy(marker);
+        }
+
+        m_DeathIndicators.Remove(cellPos);
+    }
+
+    private void ClearDeathIndicators()
+    {
+        foreach (KeyValuePair<Vector3Int, GameObject> indicator in m_DeathIndicators)
+        {
+            if (indicator.Value != null)
+            {
+                Destroy(indicator.Value);
+            }
+        }
+
+        m_DeathIndicators.Clear();
+    }
+
+    private static Sprite GetDeathIndicatorSprite()
+    {
+        if (s_DeathIndicatorSprite != null)
+        {
+            return s_DeathIndicatorSprite;
+        }
+
+        Texture2D texture = new Texture2D(1, 1, TextureFormat.RGBA32, false);
+        texture.SetPixel(0, 0, Color.white);
+        texture.Apply();
+        texture.filterMode = FilterMode.Point;
+        texture.wrapMode = TextureWrapMode.Clamp;
+
+        s_DeathIndicatorSprite = Sprite.Create(texture, new Rect(0f, 0f, 1f, 1f), new Vector2(0.5f, 0.5f), 1f);
+        return s_DeathIndicatorSprite;
     }
 
     void CenterCamera()
