@@ -108,6 +108,8 @@ public class ProgressionGameLoopManager : GameLoopManager
         {
             newRound.startNewRound();
         }
+
+        RefreshShopAfterWaveClear();
         
         // Check for unit unlock BEFORE incrementing wave
         int completedWaveNumber = waveManager.currentWave;

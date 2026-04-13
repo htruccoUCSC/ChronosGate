@@ -28,6 +28,7 @@ public class ShopManager : MonoBehaviour
     [SerializeField] private DatabaseLoader databaseLoader;
     [SerializeField] private InventoryUI inventoryUI;
     [SerializeField] private ItemInventoryUI itemInventoryUI;
+    [SerializeField] private GameObject itemInventoryRoot;
     
     [Header("Tooltip")]
     [SerializeField] private GameObject consumableTooltip;
@@ -35,16 +36,23 @@ public class ShopManager : MonoBehaviour
     
     [Header("Item Definition Source")]
     [SerializeField] private ItemDefinition[] availableItems;
+
+    [Header("Consumable Shop")]
+    [SerializeField] private bool enableConsumableShop = false;
+    [SerializeField] private GameObject consumableShopRoot;
     
     [Header("Progression Settings")]
     [SerializeField] private bool useProgressionFiltering = true;
 
-    // This manages the odds each tower rarity has of showing up in the shop.
-    // 1/1/1 means equal odds, 6/3/1 would make common show up way more often.
-    [Header("Tower Rarity Odds")]
-    [SerializeField] private float commonTowerOdds = 1f;
-    [SerializeField] private float rareTowerOdds = 1f;
-    [SerializeField] private float epicTowerOdds = 1f;
+    [Header("Tower Pool")]
+    [SerializeField] private int commonCopiesPerTowerInPool = 9;
+    [SerializeField] private int uncommonCopiesPerTowerInPool = 9;
+    [SerializeField] private int rareCopiesPerTowerInPool = 9;
+    [SerializeField] private int epicCopiesPerTowerInPool = 9;
+    [SerializeField] private int legendaryCopiesPerTowerInPool = 9;
+
+    [Header("Debug")]
+    [SerializeField] private bool logTowerRarityRolls = false;
     
     [Header("Visibility")]
     [SerializeField] private bool alwaysVisibleDuringGameplay = false;
@@ -58,6 +66,26 @@ public class ShopManager : MonoBehaviour
     private TextMeshProUGUI nextRoundButtonLabel;
     private string cachedNextRoundLabelText;
     private bool gameplayUIVisible;
+    private readonly Dictionary<string, int> remainingTowerPoolCounts = new Dictionary<string, int>();
+    private static readonly UnitRarity[] TowerRarityOrder =
+    {
+        UnitRarity.Common,
+        UnitRarity.Uncommon,
+        UnitRarity.Rare,
+        UnitRarity.Epic,
+        UnitRarity.Legendary
+    };
+    private static readonly float[,] TowerRarityOddsByRound =
+    {
+        { 60f, 30f, 7f, 2f, 1f },
+        { 50f, 35f, 11f, 3f, 1f },
+        { 39f, 40f, 15f, 5f, 1f },
+        { 27f, 35f, 25f, 10f, 3f },
+        { 20f, 30f, 30f, 15f, 5f },
+        { 12f, 20f, 40f, 20f, 8f },
+        { 10f, 15f, 30f, 30f, 15f },
+        { 5f, 10f, 20f, 40f, 25f }
+    };
     
     private void Start()
     {
@@ -122,14 +150,19 @@ public class ShopManager : MonoBehaviour
             consumableTooltip.SetActive(false);
         }
 
+        ConfigureConsumableShopVisibility();
+
         UpdateShopUIState();
         
         // Initialize all consumable slots with reference to this manager
-        foreach (ConsumableSlot slot in consumableSlots)
+        if (enableConsumableShop)
         {
-            if (slot != null)
+            foreach (ConsumableSlot slot in consumableSlots)
             {
-                slot.Initialize(this);
+                if (slot != null)
+                {
+                    slot.Initialize(this);
+                }
             }
         }
 
@@ -138,7 +171,7 @@ public class ShopManager : MonoBehaviour
             inventoryUI = FindFirstObjectByType<InventoryUI>();
         }
 
-        if (itemInventoryUI == null)
+        if (enableConsumableShop && itemInventoryUI == null)
         {
             itemInventoryUI = FindFirstObjectByType<ItemInventoryUI>();
         }
@@ -146,9 +179,13 @@ public class ShopManager : MonoBehaviour
         // Initialize consumable slots with item inventory UI
         foreach (ConsumableSlot slot in consumableSlots)
         {
-            if (slot != null && itemInventoryUI != null)
+            if (enableConsumableShop && slot != null && itemInventoryUI != null)
             {
                 slot.InitializeInventory(itemInventoryUI);
+            }
+            else if (!enableConsumableShop && slot != null)
+            {
+                slot.Setup(null);
             }
         }
 
@@ -208,7 +245,10 @@ public class ShopManager : MonoBehaviour
             Debug.Log("[ShopManager] UnitUnlockManager ready, populating shop...");
         }
         
-        PopulateConsumableSlots();
+        if (enableConsumableShop)
+        {
+            PopulateConsumableSlots();
+        }
         PopulateTowerSlots();
     }
     
@@ -256,7 +296,10 @@ public class ShopManager : MonoBehaviour
 
     public void RefreshShopContents()
     {
-        PopulateConsumableSlots();
+        if (enableConsumableShop)
+        {
+            PopulateConsumableSlots();
+        }
         PopulateTowerSlots();
     }
 
@@ -421,7 +464,12 @@ public class ShopManager : MonoBehaviour
         Debug.Log($"[ShopManager] Rerolled shop for {rerollCost} gold!");
         rerollCost += 2; // Increase cost by 2 for next reroll
         UpdateRerollCostDisplay();
-        PopulateConsumableSlots();
+
+        if (enableConsumableShop)
+        {
+            PopulateConsumableSlots();
+        }
+
         PopulateTowerSlots();
     }
     
@@ -459,6 +507,77 @@ public class ShopManager : MonoBehaviour
     private void RerollShop()
     {
         PopulateTowerSlots();
+    }
+
+    private void ConfigureConsumableShopVisibility()
+    {
+        if (enableConsumableShop)
+        {
+            return;
+        }
+
+        if (itemInventoryUI == null)
+        {
+            itemInventoryUI = FindFirstObjectByType<ItemInventoryUI>();
+        }
+
+        if (consumableShopRoot == null)
+        {
+            consumableShopRoot = FindConsumableShopRoot();
+        }
+
+        if (itemInventoryRoot == null && itemInventoryUI != null)
+        {
+            itemInventoryRoot = itemInventoryUI.gameObject;
+        }
+
+        if (consumableShopRoot != null)
+        {
+            consumableShopRoot.SetActive(false);
+        }
+
+        for (int i = 0; i < consumableSlots.Length; i++)
+        {
+            if (consumableSlots[i] != null)
+            {
+                consumableSlots[i].gameObject.SetActive(false);
+            }
+        }
+
+        if (itemInventoryRoot != null)
+        {
+            itemInventoryRoot.SetActive(false);
+        }
+
+        if (consumableTooltip != null)
+        {
+            consumableTooltip.SetActive(false);
+        }
+    }
+
+    private GameObject FindConsumableShopRoot()
+    {
+        for (int i = 0; i < consumableSlots.Length; i++)
+        {
+            ConsumableSlot slot = consumableSlots[i];
+            if (slot == null)
+            {
+                continue;
+            }
+
+            Transform current = slot.transform;
+            while (current != null)
+            {
+                if (current.name.ToLower().Contains("consumable"))
+                {
+                    return current.gameObject;
+                }
+
+                current = current.parent;
+            }
+        }
+
+        return null;
     }
 
     private void PopulateConsumableSlots()
@@ -571,14 +690,12 @@ public class ShopManager : MonoBehaviour
             return;
         }
 
-        // We split units by rarity first so the shop can roll rarity before it rolls the exact troop.
-        List<UnitDefinition> commonPool = new List<UnitDefinition>();
-        List<UnitDefinition> rarePool = new List<UnitDefinition>();
-        List<UnitDefinition> epicPool = new List<UnitDefinition>();
+        // We keep a persistent pool for the whole run, then build temporary draw buckets from what's left.
+        Dictionary<UnitRarity, List<UnitDefinition>> rarityPools = CreateEmptyRarityPools();
 
         for (int i = 0; i < eligibleUnits.Count; i++)
         {
-            AddUnitToRarityPool(eligibleUnits[i], commonPool, rarePool, epicPool);
+            AddUnitToRarityPool(eligibleUnits[i], rarityPools);
         }
 
         for (int i = 0; i < towerSlots.Length; i++)
@@ -588,7 +705,8 @@ public class ShopManager : MonoBehaviour
                 continue;
             }
 
-            List<UnitDefinition> selectedPool = GetRandomTowerRarityPool(commonPool, rarePool, epicPool);
+            UnitRarity rolledRarity;
+            List<UnitDefinition> selectedPool = GetRandomTowerRarityPool(rarityPools, out rolledRarity);
             if (selectedPool == null || selectedPool.Count == 0)
             {
                 towerSlots[i].Setup(null);
@@ -597,6 +715,12 @@ public class ShopManager : MonoBehaviour
 
             UnitDefinition randomUnit = selectedPool[Random.Range(0, selectedPool.Count)];
             towerSlots[i].Setup(randomUnit);
+            selectedPool.Remove(randomUnit);
+
+            if (logTowerRarityRolls)
+            {
+                Debug.Log($"[ShopManager] Wave {GetCurrentShopRound()} slot {i + 1}: rolled {rolledRarity}, selected {randomUnit.UnitID} ({randomUnit.Name}).");
+            }
         }
     }
 
@@ -610,59 +734,144 @@ public class ShopManager : MonoBehaviour
         return Resources.Load<GameObject>(unitDef.PrefabPath) != null;
     }
 
-    private void AddUnitToRarityPool(UnitDefinition unitDef, List<UnitDefinition> commonPool, List<UnitDefinition> rarePool, List<UnitDefinition> epicPool)
+    private static Dictionary<UnitRarity, List<UnitDefinition>> CreateEmptyRarityPools()
     {
-        switch (unitDef.Rarity)
+        var rarityPools = new Dictionary<UnitRarity, List<UnitDefinition>>(TowerRarityOrder.Length);
+        for (int i = 0; i < TowerRarityOrder.Length; i++)
         {
-            case UnitRarity.Rare:
-                rarePool.Add(unitDef);
-                break;
-            case UnitRarity.Epic:
-                epicPool.Add(unitDef);
-                break;
-            default:
-                commonPool.Add(unitDef);
-                break;
+            rarityPools[TowerRarityOrder[i]] = new List<UnitDefinition>();
+        }
+
+        return rarityPools;
+    }
+
+    private void AddUnitToRarityPool(UnitDefinition unitDef, Dictionary<UnitRarity, List<UnitDefinition>> rarityPools)
+    {
+        if (unitDef == null || !rarityPools.TryGetValue(unitDef.Rarity, out List<UnitDefinition> targetPool))
+        {
+            return;
+        }
+
+        int remainingCopies = GetRemainingTowerPoolCount(unitDef);
+        for (int i = 0; i < remainingCopies; i++)
+        {
+            targetPool.Add(unitDef);
         }
     }
 
-    private List<UnitDefinition> GetRandomTowerRarityPool(List<UnitDefinition> commonPool, List<UnitDefinition> rarePool, List<UnitDefinition> epicPool)
+    private int GetRemainingTowerPoolCount(UnitDefinition unitDef)
     {
-        // If a rarity pool is empty it gets 0 weight, so we never roll into a dead pool.
-        float totalWeight = 0f;
-        float commonWeight = commonPool.Count > 0 ? Mathf.Max(0f, commonTowerOdds) : 0f;
-        float rareWeight = rarePool.Count > 0 ? Mathf.Max(0f, rareTowerOdds) : 0f;
-        float epicWeight = epicPool.Count > 0 ? Mathf.Max(0f, epicTowerOdds) : 0f;
+        if (unitDef == null || string.IsNullOrWhiteSpace(unitDef.UnitID))
+        {
+            return 0;
+        }
 
-        totalWeight += commonWeight;
-        totalWeight += rareWeight;
-        totalWeight += epicWeight;
+        if (!remainingTowerPoolCounts.TryGetValue(unitDef.UnitID, out int remainingCopies))
+        {
+            remainingCopies = Mathf.Max(0, GetCopiesPerTowerInPool(unitDef.Rarity));
+            remainingTowerPoolCounts[unitDef.UnitID] = remainingCopies;
+        }
+
+        return remainingCopies;
+    }
+
+    private int GetCopiesPerTowerInPool(UnitRarity rarity)
+    {
+        switch (rarity)
+        {
+            case UnitRarity.Uncommon:
+                return uncommonCopiesPerTowerInPool;
+            case UnitRarity.Rare:
+                return rareCopiesPerTowerInPool;
+            case UnitRarity.Epic:
+                return epicCopiesPerTowerInPool;
+            case UnitRarity.Legendary:
+                return legendaryCopiesPerTowerInPool;
+            default:
+                return commonCopiesPerTowerInPool;
+        }
+    }
+
+    private void DecrementTowerPool(UnitDefinition unitDef)
+    {
+        if (unitDef == null || string.IsNullOrWhiteSpace(unitDef.UnitID))
+        {
+            return;
+        }
+
+        int remainingCopies = GetRemainingTowerPoolCount(unitDef);
+        if (remainingCopies <= 0)
+        {
+            return;
+        }
+
+        remainingTowerPoolCounts[unitDef.UnitID] = remainingCopies - 1;
+    }
+
+    private List<UnitDefinition> GetRandomTowerRarityPool(Dictionary<UnitRarity, List<UnitDefinition>> rarityPools, out UnitRarity rolledRarity)
+    {
+        rolledRarity = UnitRarity.Common;
+        int shopRound = GetCurrentShopRound();
+        int oddsRowIndex = Mathf.Clamp(shopRound - 1, 0, TowerRarityOddsByRound.GetLength(0) - 1);
+        float totalWeight = 0f;
+        float[] enabledWeights = new float[TowerRarityOrder.Length];
+
+        // If a rarity pool is empty it gets 0 weight, so we never roll into a dead pool.
+        for (int i = 0; i < TowerRarityOrder.Length; i++)
+        {
+            UnitRarity rarity = TowerRarityOrder[i];
+            if (!rarityPools.TryGetValue(rarity, out List<UnitDefinition> pool) || pool.Count == 0)
+            {
+                enabledWeights[i] = 0f;
+                continue;
+            }
+
+            float weight = Mathf.Max(0f, TowerRarityOddsByRound[oddsRowIndex, i]);
+            enabledWeights[i] = weight;
+            totalWeight += weight;
+        }
 
         if (totalWeight <= 0f)
         {
-            if (commonPool.Count > 0) return commonPool;
-            if (rarePool.Count > 0) return rarePool;
-            if (epicPool.Count > 0) return epicPool;
+            // If every enabled rarity is empty, we want an empty shop slot, not a fallback into disabled rarities.
             return null;
         }
 
         float roll = Random.Range(0f, totalWeight);
-        if (roll < commonWeight)
+        for (int i = 0; i < TowerRarityOrder.Length; i++)
         {
-            return commonPool;
+            float weight = enabledWeights[i];
+            if (weight <= 0f)
+            {
+                continue;
+            }
+
+            if (roll < weight)
+            {
+                rolledRarity = TowerRarityOrder[i];
+                return rarityPools[TowerRarityOrder[i]];
+            }
+
+            roll -= weight;
         }
 
-        roll -= commonWeight;
-        if (roll < rareWeight)
-        {
-            return rarePool;
-        }
+        rolledRarity = TowerRarityOrder[TowerRarityOrder.Length - 1];
+        return rarityPools[TowerRarityOrder[TowerRarityOrder.Length - 1]];
+    }
 
-        return epicPool;
+    private int GetCurrentShopRound()
+    {
+        WaveManager waveManager = FindFirstObjectByType<WaveManager>();
+        return waveManager != null ? Mathf.Max(1, waveManager.currentWave) : 1;
     }
     
     public void ShowConsumableTooltip(string description)
     {
+        if (!enableConsumableShop)
+        {
+            return;
+        }
+
         Debug.Log($"ShowConsumableTooltip called with: {description}");
         
         if (consumableTooltip == null)
@@ -684,6 +893,11 @@ public class ShopManager : MonoBehaviour
     
     public void HideConsumableTooltip()
     {
+        if (!enableConsumableShop)
+        {
+            return;
+        }
+
         Debug.Log("HideConsumableTooltip called");
         
         if (consumableTooltip != null)
@@ -716,28 +930,12 @@ public class ShopManager : MonoBehaviour
 
     public void OnUnitPurchased(UnitDefinition unitDef)
     {
-        // Try to get currency manager if not already cached
-        if (currencyManager == null)
+        if (unitDef == null)
         {
-            currencyManager = CurrencyManager.Instance;
-        }
-        
-        if (currencyManager == null)
-        {
-            Debug.LogError("[ShopManager] CurrencyManager not found!");
             return;
         }
-        
-        // Check if player has enough currency
-        if (!currencyManager.TrySpendCurrency(unitDef.Cost))
-        {
-            Debug.Log($"Not enough currency! Need {unitDef.Cost}, have {currencyManager.GetCurrency()}");
-            // Show error message to player
-            return;
-        }
-        
-        // Unit purchased successfully
-        Debug.Log($"Purchased {unitDef.Name} for {unitDef.Cost} gold!");
-        // Proceed with adding unit to inventory
+
+        DecrementTowerPool(unitDef);
+        Debug.Log($"[ShopManager] Removed {unitDef.Name} from the remaining tower pool. Copies left: {GetRemainingTowerPoolCount(unitDef)}");
     }
 }

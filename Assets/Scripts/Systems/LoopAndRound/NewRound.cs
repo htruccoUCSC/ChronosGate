@@ -8,6 +8,11 @@ public class NewRound : MonoBehaviour
     public TileMapManager tileMapManager;
     public void startNewRound()
     {
+        if (board != null)
+        {
+            board.ClearDeathBlockedCells();
+        }
+
         RemoveAllBuffs();
         if (currency != null)
         {

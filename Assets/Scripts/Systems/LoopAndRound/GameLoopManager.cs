@@ -40,7 +40,7 @@ public class GameLoopManager : MonoBehaviour
         GameOver
     }
 
-    public GameState CurrentState { get; private set; } = GameState.AugmentSelection;
+    public GameState CurrentState { get; private set; } = GameState.Combat;
     public int CurrentWaveInCycle => currentWaveInCycle;
     public int WavesPerAugmentCycle => wavesPerAugmentCycle;
 
@@ -127,11 +127,11 @@ public class GameLoopManager : MonoBehaviour
         
         isGameActive = true;
         currentWaveInCycle = 0;
+        SetGameState(GameState.Combat);
         
         // Start the run in combat after a short pause. Augment selection still happens after a full cycle.
-            Debug.Log("Starting first combat phase...");
-            yield return new WaitForSeconds(Mathf.Max(0f, autoStartRoundDelay));   
-        SetGameState(GameState.Combat);
+        Debug.Log("Starting first combat phase...");
+
         StartCombatPhase();
     }
 
@@ -158,6 +158,11 @@ public class GameLoopManager : MonoBehaviour
         
         // Reset wave cycle counter
         currentWaveInCycle = 0;
+
+        if (FindFirstObjectByType<BoardManager>() is BoardManager boardManager)
+        {
+            boardManager.RestoreRespawnRoster();
+        }
         
         // Move to combat phase
         StartCombatPhase();
@@ -251,6 +256,8 @@ public class GameLoopManager : MonoBehaviour
             newRound.startNewRound();
         }
 
+        RefreshShopAfterWaveClear();
+
         // Increment AFTER completing the wave
         currentWaveInCycle++;
         Debug.Log($"Waves completed in cycle: {currentWaveInCycle}/{wavesPerAugmentCycle}");
@@ -309,6 +316,22 @@ public class GameLoopManager : MonoBehaviour
     public bool IsGameActive()
     {
         return isGameActive;
+    }
+
+    protected void RefreshShopAfterWaveClear()
+    {
+        if (shopManager == null)
+        {
+            return;
+        }
+
+        if (reopenShopEachRound)
+        {
+            shopManager.OpenShop();
+            return;
+        }
+
+        shopManager.RefreshShopContents();
     }
 
     protected void SetGameState(GameState newState)

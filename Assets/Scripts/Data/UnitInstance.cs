@@ -45,6 +45,34 @@ public class UnitInstance : ScriptableObject
         return instance;
     }
 
+    public static UnitInstance CloneRuntimeInstance(UnitInstance source)
+    {
+        if (source == null)
+        {
+            return null;
+        }
+
+        UnitInstance instance = ScriptableObject.CreateInstance<UnitInstance>();
+        instance.BaseDef = source.BaseDef;
+        instance.Faction = source.Faction;
+        instance.Name = source.Name;
+        instance.MaxHP = source.MaxHP;
+        instance.CurrentHP = source.CurrentHP;
+        instance.CurrentMana = source.CurrentMana;
+        instance.StartingMana = source.StartingMana;
+        instance.Level = source.Level;
+        instance.DamageMultMod = source.DamageMultMod;
+        instance.DamageFlatMod = source.DamageFlatMod;
+        instance.SpeedFlatMod = source.SpeedFlatMod;
+        instance.SpeedMultMod = source.SpeedMultMod;
+        instance.BaseAbilityPower = source.BaseAbilityPower;
+        instance.AbilityPowerFlatMod = source.AbilityPowerFlatMod;
+        instance.AbilityPowerMult = source.AbilityPowerMult;
+        instance.RangeFlatMod = source.RangeFlatMod;
+        instance.AttackType = source.AttackType;
+        return instance;
+    }
+
     // equations for modified stats with buffs
     //Clamp to prervent negative or zero values where it would break things
     public float GetModifiedAttackSpeed()
