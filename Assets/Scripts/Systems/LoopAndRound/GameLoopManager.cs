@@ -15,6 +15,7 @@ public class GameLoopManager : MonoBehaviour
     [SerializeField] protected ShopManager shopManager;
     [SerializeField] protected WaveManager waveManager;
     [SerializeField] protected MusicController musicController;
+    [SerializeField] protected EnemyPreviewManager enemyPreviewManager;
      public AugmentManager augmentManager;
 
     public NewRound newRound;
@@ -79,6 +80,10 @@ public class GameLoopManager : MonoBehaviour
         if (musicController == null)
         {
             musicController = FindFirstObjectByType<MusicController>();
+        }
+        if (enemyPreviewManager == null)
+        {
+            enemyPreviewManager = FindFirstObjectByType<EnemyPreviewManager>();
         }
         if (FindFirstObjectByType<GameSpeedButton>() == null)
         {
@@ -208,13 +213,28 @@ public class GameLoopManager : MonoBehaviour
             GameSpeedButton.Instance.SetPaused(false);
             GameSpeedButton.Instance.ResetToDefaultSpeed();
         }
-        
-        if (waveManager != null)
-        {
-            waveManager.StartNextWave();
-        }
 
-        // Monitor wave completion
+        // Show the enemy preview, then start the wave once it finishes.
+        // Keeping this as a void method means all callers (OnAugmentSelected,
+        // OnNextRoundPressed, etc.) continue to work without any changes.
+        StartCoroutine(StartCombatWithPreview());
+    }
+
+    /// <summary>
+    /// Runs the enemy preview pan, then starts the wave and begins monitoring it.
+    /// Separated from StartCombatPhase() so that method stays a plain void and
+    /// all its existing callers remain unchanged.
+    /// </summary>
+    private IEnumerator StartCombatWithPreview()
+    {
+        // Yield on the preview. If EnemyPreviewManager is not present in the
+        // scene the wave starts immediately with no additional delay.
+        if (enemyPreviewManager != null)
+            yield return StartCoroutine(enemyPreviewManager.RunPreview());
+
+        if (waveManager != null)
+            waveManager.StartNextWave();
+
         StartCoroutine(WaitForWaveCompletion());
     }
 
