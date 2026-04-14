@@ -6,7 +6,7 @@ public class CurrencyManager : MonoBehaviour
     public static CurrencyManager Instance { get; private set; }
 
     private int currency = 0;
-    public int startingCurrency = 10;
+    public int startingCurrency = 3;
     public int interestThreshold = 10;
     public int maxInterest = 10;
     public int income = 8;

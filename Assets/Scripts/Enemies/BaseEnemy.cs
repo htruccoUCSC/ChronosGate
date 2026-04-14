@@ -69,6 +69,8 @@ private const float DEBUFF_TICK_RATE = 1f;
     // damage accumulator so float DPS works with int HP
     private float damageCarry = 0f;
 
+    private bool m_IsLaunching = false;
+
     protected virtual void Awake()
     {
         rb = GetComponent<Rigidbody2D>();
@@ -88,6 +90,34 @@ private const float DEBUFF_TICK_RATE = 1f;
         m_Board = FindFirstObjectByType<BoardManager>();
     }
 
+    // Bayo Bandele - 4/11/2026: arc the enemy from the portal position to its lane so it looks like it's shot out
+    // start position is transform.position since the enemy is instantiated at the portal
+    public void LaunchFromPortal(Vector3 landingPos, float arcHeight = .9f, float duration = 0.6f)
+    {
+        StartCoroutine(ArcRoutine(transform.position, landingPos, arcHeight, duration));
+    }
+
+    private IEnumerator ArcRoutine(Vector3 start, Vector3 end, float arcHeight, float duration)
+    {
+        m_IsLaunching = true;
+        if (enemyCollider != null) enemyCollider.enabled = false;
+
+        float elapsed = 0f;
+        while (elapsed < duration)
+        {
+            elapsed += Time.deltaTime;
+            float t = Mathf.Clamp01(elapsed / duration);
+            Vector3 linear = Vector3.Lerp(start, end, t);
+            linear.y += arcHeight * Mathf.Sin(Mathf.PI * t);
+            rb.MovePosition(linear);
+            yield return null;
+        }
+
+        rb.MovePosition(end);
+        if (enemyCollider != null) enemyCollider.enabled = true;
+        m_IsLaunching = false;
+    }
+
     protected virtual void Start()
     {
         ApplyWaveScaling();
@@ -103,6 +133,9 @@ private const float DEBUFF_TICK_RATE = 1f;
 
     protected virtual void FixedUpdate()
     {
+        // Bayo Bandele - 4/11/2026: skip normal movement while enemy is arcing out of the portal
+        if (m_IsLaunching) return;
+
         // don't move while stunned
         if (m_StunTimeRemaining > 0f)
         {
@@ -343,6 +376,9 @@ private const float DEBUFF_TICK_RATE = 1f;
 
     protected virtual void OnDestroy()
     {
+        // Bayo Bandele - 4/11/2026: re-enable collider in case enemy is destroyed mid-arc, guards against future pooling issues
+        if (enemyCollider != null) enemyCollider.enabled = true;
+
         if (WaveManager.Instance != null)
         {
             WaveManager.Instance.UnregisterEnemy(this);
