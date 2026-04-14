@@ -5,10 +5,12 @@ using UnityEngine;
 /// <summary>
 /// Manages the pre-wave "enemy pan preview" sequence.
 ///
-/// Before each wave the camera pans right into an off-screen staging area where
-/// a small group of static enemy sprites is displayed, representing the *types*
-/// of enemies that will appear in the upcoming wave at their approximate spawn
-/// ratios.  The camera then pans back to the board and the normal wave begins.
+/// Before each wave the camera pans right into an off-screen staging area that
+/// shows a scaled-down sample of the incoming enemies.  The number of preview
+/// icons grows with wave size (controlled by previewRatio) up to a set maximum,
+/// and each slot is filled using the same random probabilities WaveManager uses
+/// when spawning real enemies — so frequent types appear more often and the
+/// ratios accurately reflect what the player is about to face.
 ///
 /// HOW IT FITS IN:
 ///   GameLoopManager.StartCombatWithPreview() yields on RunPreview() before
@@ -22,14 +24,22 @@ public class EnemyPreviewManager : MonoBehaviour
     [SerializeField] private WaveManager  waveManager;
     [SerializeField] private BoardManager boardManager;
 
-    [Header("Preview Layout")]
-    [Tooltip("Extra gap (world units) added between the board's right edge and the first " +
-             "preview enemy, on top of the automatic offset that hides the board.")]
-    [SerializeField] private float previewAreaPadding = 2f;
+    [Header("Preview Count Scaling")]
+    [Tooltip("Fraction of the real enemy count to show in the preview.\n" +
+             "E.g. 0.3 means a 10-enemy wave shows 3 preview icons.\n" +
+             "Always clamped between Min and Max Preview Enemies.")]
+    [Range(0.05f, 1f)]
+    [SerializeField] private float previewRatio = 0.3f;
 
-    [Tooltip("Maximum enemies shown in the preview. " +
-             "Small early waves show fewer (down to the real enemy count).")]
-    [SerializeField] private int maxPreviewEnemies = 6;
+    [Tooltip("Fewest icons ever shown, even on wave 1.")]
+    [SerializeField] private int minPreviewEnemies = 1;
+
+    [Tooltip("Most icons ever shown, no matter how large the wave gets.")]
+    [SerializeField] private int maxPreviewEnemies = 9;
+
+    [Header("Preview Layout")]
+    [Tooltip("Extra gap (world units) added on top of the automatic offset that hides the board.")]
+    [SerializeField] private float previewAreaPadding = 2f;
 
     [Tooltip("Horizontal gap between enemies in the preview grid.")]
     [SerializeField] private float enemySpacingX = 1.5f;
@@ -41,7 +51,7 @@ public class EnemyPreviewManager : MonoBehaviour
     [SerializeField] private int enemiesPerRow = 3;
 
     [Header("Camera Animation")]
-    [Tooltip("Seconds to pan from board → preview area (same duration for the return pan).")]
+    [Tooltip("Seconds to pan from board → preview area (and back).")]
     [SerializeField] private float panDuration = 1.0f;
 
     [Tooltip("Seconds the camera holds on the preview before panning back.")]
@@ -81,16 +91,15 @@ public class EnemyPreviewManager : MonoBehaviour
 
         // ── Step 1 · Board geometry ─────────────────────────────────────────
         //
-        // BoardManager places tiles starting at its GameObject's world position.
-        // Width × Height gives the grid size in tiles (each tile = 1 world unit).
-        // BoardManager.CenterCamera() puts the camera at:
-        //   (startX + Width/2,  startY + Height/2,  -10)
-        // We replicate that calculation so we know exactly where to pan *back* to.
+        // The board starts at boardManager.transform.position and extends
+        // Width tiles right / Height tiles up (1 tile = 1 world unit).
+        // We replicate BoardManager.CenterCamera()'s formula so we know exactly
+        // where to pan back to at the end.
 
-        float startX  = boardManager.transform.position.x;
-        float startY  = boardManager.transform.position.y;
-        int   boardW  = boardManager.Width;
-        int   boardH  = boardManager.Height;
+        float startX = boardManager.transform.position.x;
+        float startY = boardManager.transform.position.y;
+        int   boardW = boardManager.Width;
+        int   boardH = boardManager.Height;
 
         Vector3 boardCamPos = new Vector3(
             startX + boardW / 2f,
@@ -98,61 +107,88 @@ public class EnemyPreviewManager : MonoBehaviour
             -10f
         );
 
-        // ── Step 2 · Choose which enemy prefabs to display ──────────────────
+        // ── Step 2 · Refresh the spawnable pool for this wave ───────────────
         //
-        // We mirror WaveManager.TrySpawnEnemyOnTile() exactly, running the same
-        // random roll N times.  This means the ratio of shadow / colour variants
-        // in the preview automatically matches the real spawn probabilities.
+        // SpawnableManager.UpdateSpawnablesForRound() clears and rebuilds
+        // activeSpawnables based on which enemy types have unlocked so far.
+        // Calling it here guarantees the list is current even if WaveManager
+        // hasn't updated it yet for the incoming wave.
+
+        SpawnableManager sm = waveManager.spawnableManager;
+        if (sm != null)
+            sm.UpdateSpawnablesForRound(waveManager.currentWave);
+        else
+            Debug.LogWarning("[EnemyPreviewManager] SpawnableManager not assigned on WaveManager – preview may be incomplete.");
+
+        // ── Step 3 · Decide how many preview icons to show ──────────────────
         //
-        // previewCount scales with wave size:
-        //   • early wave (2 enemies)  → show 2 enemies
-        //   • large wave (50 enemies) → show up to maxPreviewEnemies (e.g. 6)
-        // This way the preview still looks meaningful without being overwhelming.
+        // previewCount = ceil(enemiesPerWave * previewRatio), clamped to [min, max].
+        //
+        // Examples with previewRatio = 0.3:
+        //   Wave 1 (2 enemies)  → ceil(0.6) = 1  (hits minPreviewEnemies)
+        //   Wave 2 (6 enemies)  → ceil(1.8) = 2
+        //   Wave 3 (10 enemies) → ceil(3.0) = 3
+        //   Wave 5 (18 enemies) → ceil(5.4) = 6
+        //   Wave 8 (30 enemies) → ceil(9.0) = 9  (hits maxPreviewEnemies)
+        //
+        // After that point the count stays at maxPreviewEnemies regardless of
+        // how many more enemies are added, so the preview never becomes crowded.
 
-        int previewCount = Mathf.Clamp(waveManager.enemiesPerWave, 1, maxPreviewEnemies);
-        List<GameObject> selectedPrefabs = ChoosePreviewPrefabs(previewCount);
+        int previewCount = Mathf.Clamp(
+            Mathf.CeilToInt(waveManager.enemiesPerWave * previewRatio),
+            minPreviewEnemies,
+            maxPreviewEnemies
+        );
 
-        if (selectedPrefabs.Count == 0)
+        // ── Step 4 · Sample the preview prefabs ─────────────────────────────
+        //
+        // Each slot is filled by running the same random decision WaveManager
+        // uses: roll for shadow vs. non-shadow, then pick randomly from the
+        // non-shadow pool.  Running this previewCount times means frequent types
+        // appear more often and duplicate icons emerge naturally, just like a
+        // real wave — without needing any extra ratio logic.
+
+        List<GameObject> prefabs = SamplePreviewPrefabs(previewCount, sm);
+
+        if (prefabs.Count == 0)
         {
-            Debug.LogWarning("[EnemyPreviewManager] No prefabs assigned on WaveManager – preview skipped.");
+            Debug.LogWarning("[EnemyPreviewManager] No prefabs found – preview skipped.");
             yield break;
         }
 
-        // ── Step 3 · Compute the preview area position ──────────────────────
+        // ── Step 5 · Compute the preview area position ──────────────────────
         //
-        // The preview area lives off the right side of the board, completely
-        // hidden during normal gameplay.
+        // Push the staging area far enough right that the board is completely
+        // off-camera during the hold phase:
         //
-        // camHalfWidth = how many world units are visible to one side of the camera.
+        //   previewOriginX = boardRightEdge + camHalfWidth + padding
         //
-        // Placing the preview origin at:
-        //   boardRightEdge + camHalfWidth + previewAreaPadding
-        // means that when the camera centres on the preview, the board's right
-        // edge is just at (or past) the camera's left edge – the board is hidden.
+        // When the camera centres on this X the board's right edge sits exactly
+        // at (or past) the camera's left edge – the board is hidden.
 
         float camHalfWidth   = Camera.main.orthographicSize * Camera.main.aspect;
         float boardRightEdge = startX + boardW;
         float previewOriginX = boardRightEdge + camHalfWidth + previewAreaPadding;
         float previewOriginY = startY + boardH / 2f; // vertically centred on the board
 
-        // ── Step 4 · Spawn the static preview enemies ───────────────────────
+        // ── Step 6 · Spawn the static preview enemies ───────────────────────
 
-        Vector3 gridCenter   = SpawnPreviewEnemies(selectedPrefabs, new Vector3(previewOriginX, previewOriginY, 0f));
+        Vector3 gridCenter    = SpawnPreviewEnemies(prefabs, new Vector3(previewOriginX, previewOriginY, 0f));
         Vector3 previewCamPos = new Vector3(gridCenter.x, gridCenter.y, -10f);
 
-        // ── Step 5 · Pan camera: board → preview ────────────────────────────
+        // ── Step 7 · Pan camera: board → preview ────────────────────────────
 
         yield return StartCoroutine(PanCamera(boardCamPos, previewCamPos, panDuration));
 
-        // ── Step 6 · Hold so the player can inspect the preview ─────────────
+        // ── Step 8 · Hold so the player can inspect the preview ─────────────
 
         yield return new WaitForSecondsRealtime(holdDuration);
 
-        // ── Step 7 · Pan camera: preview → board ────────────────────────────
+        // ── Step 9 · Pan camera: preview → board ────────────────────────────
 
         yield return StartCoroutine(PanCamera(previewCamPos, boardCamPos, panDuration));
 
-        // ── Step 8 · Destroy all preview objects ────────────────────────────
+        // ── Step 10 · Destroy all preview objects ───────────────────────────
 
         CleanupPreview();
     }
@@ -160,29 +196,22 @@ public class EnemyPreviewManager : MonoBehaviour
     // ─── Private helpers ───────────────────────────────────────────────────────
 
     /// <summary>
-    /// Mirrors the spawn-type selection from WaveManager.TrySpawnEnemyOnTile().
-    /// Running the same random roll <paramref name="count"/> times and collecting
-    /// the results produces a prefab list whose type ratios match the real wave.
+    /// Fills <paramref name="count"/> slots by running the same random decision
+    /// WaveManager uses for each spawn:
+    /// <list type="bullet">
+    ///   <item>Roll Random.value against shadowSpawnChance → shadow wins → use shadowEnemyPrefab.</item>
+    ///   <item>Otherwise pick randomly from SpawnableManager's activeSpawnables (the non-shadow pool).</item>
+    /// </list>
+    /// Because each slot is decided independently, common types appear multiple
+    /// times and the overall ratio across all slots matches the real spawn odds.
     /// </summary>
-    private List<GameObject> ChoosePreviewPrefabs(int count)
+    private List<GameObject> SamplePreviewPrefabs(int count, SpawnableManager sm)
     {
-        // Build the non-shadow pool the same way WaveManager does.
-        List<GameObject> nonShadowPool = new List<GameObject>();
-
-        if (waveManager.enemyPrefabs != null && waveManager.enemyPrefabs.Count > 0)
-        {
-            // Designer filled the generic list → use it exclusively.
-            nonShadowPool.AddRange(waveManager.enemyPrefabs);
-        }
-        else
-        {
-            // Fall back to the individually-assigned prefab slots.
-            if (waveManager.baseEnemyPrefab   != null) nonShadowPool.Add(waveManager.baseEnemyPrefab);
-            if (waveManager.enemyPrefab       != null) nonShadowPool.Add(waveManager.enemyPrefab);
-            if (waveManager.enemyRedPrefab    != null) nonShadowPool.Add(waveManager.enemyRedPrefab);
-            if (waveManager.enemyYellowPrefab != null) nonShadowPool.Add(waveManager.enemyYellowPrefab);
-            if (waveManager.enemyGreenPrefab  != null) nonShadowPool.Add(waveManager.enemyGreenPrefab);
-        }
+        // The non-shadow pool comes from SpawnableManager so it automatically
+        // reflects which enemy types are unlocked for this wave.
+        List<GameObject> nonShadowPool = (sm != null)
+            ? new List<GameObject>(sm.SpawnableList.activeSpawnables)
+            : new List<GameObject>();
 
         bool canSpawnShadow = waveManager.shadowEnemyPrefab != null;
 
@@ -193,7 +222,7 @@ public class EnemyPreviewManager : MonoBehaviour
 
             if (canSpawnShadow && Random.value < waveManager.shadowSpawnChance)
             {
-                // Same probability check as the real spawn
+                // Same probability check WaveManager uses
                 chosen = waveManager.shadowEnemyPrefab;
             }
             else if (nonShadowPool.Count > 0)
@@ -213,26 +242,22 @@ public class EnemyPreviewManager : MonoBehaviour
     }
 
     /// <summary>
-    /// Instantiates <paramref name="prefabs"/> as static display pieces arranged
-    /// in a grid centred on <paramref name="origin"/>.
-    ///
-    /// Returns the world-space centre of the spawned grid, which is where the
-    /// camera should point during the hold phase.
+    /// Instantiates the prefabs as static display pieces arranged in a centred
+    /// grid at <paramref name="origin"/>.  Returns the world-space centre of the
+    /// grid (used to aim the camera during the hold phase).
     /// </summary>
     private Vector3 SpawnPreviewEnemies(List<GameObject> prefabs, Vector3 origin)
     {
         int totalEnemies = prefabs.Count;
-
-        // How many columns the grid actually uses (never wider than enemiesPerRow)
         int cols = Mathf.Min(totalEnemies, enemiesPerRow);
         int rows = Mathf.CeilToInt((float)totalEnemies / enemiesPerRow);
 
-        // Total span of the grid, then offset so it's centred on origin
+        // Compute the grid's bounding box, then shift start so it centres on origin.
         float gridWidth  = (cols - 1) * enemySpacingX;
         float gridHeight = (rows - 1) * enemySpacingY;
 
         float startX = origin.x - gridWidth  / 2f;
-        float startY = origin.y + gridHeight / 2f; // row 0 is at the top; rows grow downward
+        float startY = origin.y + gridHeight / 2f; // rows grow downward from the top
 
         for (int i = 0; i < totalEnemies; i++)
         {
@@ -247,28 +272,28 @@ public class EnemyPreviewManager : MonoBehaviour
             _previewObjects.Add(preview);
         }
 
-        // Return the geometric centre of the grid (z = -10 for camera use)
+        // Return the geometric centre of the grid (z = -10 so it's camera-ready)
         return new Vector3(origin.x, origin.y, -10f);
     }
 
     /// <summary>
     /// Disables every component that would make a preview clone move, fight, or
-    /// register itself with WaveManager.  The SpriteRenderer is intentionally
-    /// left alone so the enemy still looks correct visually.
+    /// register itself with WaveManager.  SpriteRenderer is left enabled so the
+    /// enemy still looks correct visually.
     /// </summary>
     private void DisableEnemyBehaviours(GameObject go)
     {
-        // Stop physics – the Rigidbody2D is Kinematic, but simulated = false
-        // prevents any velocity or force from being applied.
+        // Stop physics – the body is Kinematic, but simulated = false prevents
+        // any velocity or force from being applied during the preview.
         Rigidbody2D rb = go.GetComponent<Rigidbody2D>();
         if (rb != null) rb.simulated = false;
 
         // Disable the BaseEnemy MonoBehaviour so it can't move left, attack
-        // towers, self-register with WaveManager, or trigger its own Awake logic.
+        // towers, self-register with WaveManager, or run its own Awake logic.
         BaseEnemy enemy = go.GetComponent<BaseEnemy>();
         if (enemy != null) enemy.enabled = false;
 
-        // Disable all colliders so preview enemies don't interact with towers.
+        // Disable colliders so preview enemies don't interact with anything.
         foreach (Collider2D col in go.GetComponentsInChildren<Collider2D>())
             col.enabled = false;
     }
@@ -276,9 +301,8 @@ public class EnemyPreviewManager : MonoBehaviour
     /// <summary>
     /// Smoothly moves the main camera from <paramref name="from"/> to
     /// <paramref name="to"/> over <paramref name="duration"/> seconds.
-    ///
-    /// Uses Time.unscaledDeltaTime so the animation runs at real-world speed
-    /// even when the player has the in-game speed multiplier active.
+    /// Uses Time.unscaledDeltaTime so the pan is unaffected by the in-game
+    /// speed multiplier.
     /// </summary>
     private IEnumerator PanCamera(Vector3 from, Vector3 to, float duration)
     {
@@ -291,12 +315,11 @@ public class EnemyPreviewManager : MonoBehaviour
             Camera.main.transform.position = Vector3.LerpUnclamped(from, to, easedT);
             yield return null;
         }
-        // Snap to the exact destination to remove any floating-point drift.
-        Camera.main.transform.position = to;
+        Camera.main.transform.position = to; // snap to remove floating-point drift
     }
 
     /// <summary>
-    /// Destroys every GameObject that was spawned for the current preview cycle.
+    /// Destroys every GameObject spawned for the current preview cycle.
     /// </summary>
     private void CleanupPreview()
     {
