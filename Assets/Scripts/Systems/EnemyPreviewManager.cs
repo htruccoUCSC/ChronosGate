@@ -39,7 +39,7 @@ public class EnemyPreviewManager : MonoBehaviour
 
     [Header("Preview Layout")]
     [Tooltip("Extra gap (world units) added on top of the automatic offset that hides the board.")]
-    [SerializeField] private float previewAreaPadding = 2f;
+    [SerializeField] private float previewAreaPadding = 12f;
 
     [Tooltip("Horizontal gap between enemies in the preview grid.")]
     [SerializeField] private float enemySpacingX = 1.5f;
@@ -168,17 +168,12 @@ public class EnemyPreviewManager : MonoBehaviour
 
         // ── Step 5 · Compute the preview area position ──────────────────────
         //
-        // Push the staging area far enough right that the board is completely
-        // off-camera during the hold phase:
-        //
-        //   previewOriginX = boardRightEdge + camHalfWidth + padding
-        //
-        // When the camera centres on this X the board's right edge sits exactly
-        // at (or past) the camera's left edge – the board is hidden.
+        // Enemies are placed just to the right of the board with previewAreaPadding
+        // as the gap.  The camera centres on the enemy grid, so the board's right
+        // edge stays visible on the left side of the frame.
 
-        float camHalfWidth   = Camera.main.orthographicSize * Camera.main.aspect;
         float boardRightEdge = startX + boardW;
-        float previewOriginX = boardRightEdge + camHalfWidth + previewAreaPadding;
+        float previewOriginX = boardRightEdge + previewAreaPadding;
         float previewOriginY = startY + boardH / 2f; // vertically centred on the board
 
         // ── Step 6 · Spawn the static preview enemies ───────────────────────
