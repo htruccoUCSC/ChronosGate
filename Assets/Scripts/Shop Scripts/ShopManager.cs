@@ -20,26 +20,18 @@ public class ShopManager : MonoBehaviour
     [SerializeField] private Color openShopButtonColor = new Color(0.2f, 0.8f, 0.2f, 1f);
     [SerializeField] private Color closeShopButtonColor = new Color(0.85f, 0.25f, 0.25f, 1f);
     
-    [Header("Shop Slots")]
-    [SerializeField] private ConsumableSlot[] consumableSlots = new ConsumableSlot[2];
-    [SerializeField] private TowerSlot[] towerSlots = new TowerSlot[6];
+    [Header("Tower Slot Spawning")]
+    [SerializeField] private Transform m_TowerSlotContainer;
+    [SerializeField] private GameObject m_TowerSlotPrefab;
+    [SerializeField] private int m_TowerSlotCount = 6;
+    [SerializeField] private Vector2 m_SlotCellSize = new Vector2(120f, 160f);
+    [SerializeField] private Vector2 m_SlotSpacing = new Vector2(100f, 0f);
+
+    private TowerSlot[] towerSlots;
 
     [Header("Data Sources")]
     [SerializeField] private DatabaseLoader databaseLoader;
     [SerializeField] private InventoryUI inventoryUI;
-    [SerializeField] private ItemInventoryUI itemInventoryUI;
-    [SerializeField] private GameObject itemInventoryRoot;
-    
-    [Header("Tooltip")]
-    [SerializeField] private GameObject consumableTooltip;
-    [SerializeField] private TextMeshProUGUI tooltipText;
-    
-    [Header("Item Definition Source")]
-    [SerializeField] private ItemDefinition[] availableItems;
-
-    [Header("Consumable Shop")]
-    [SerializeField] private bool enableConsumableShop = false;
-    [SerializeField] private GameObject consumableShopRoot;
     
     [Header("Progression Settings")]
     [SerializeField] private bool useProgressionFiltering = true;
@@ -145,49 +137,9 @@ public class ShopManager : MonoBehaviour
             shopPanel.SetActive(false);
         }
 
-        if (consumableTooltip != null)
-        {
-            consumableTooltip.SetActive(false);
-        }
-
-        ConfigureConsumableShopVisibility();
+        BuildTowerSlots();
 
         UpdateShopUIState();
-        
-        // Initialize all consumable slots with reference to this manager
-        if (enableConsumableShop)
-        {
-            foreach (ConsumableSlot slot in consumableSlots)
-            {
-                if (slot != null)
-                {
-                    slot.Initialize(this);
-                }
-            }
-        }
-
-        if (inventoryUI == null)
-        {
-            inventoryUI = FindFirstObjectByType<InventoryUI>();
-        }
-
-        if (enableConsumableShop && itemInventoryUI == null)
-        {
-            itemInventoryUI = FindFirstObjectByType<ItemInventoryUI>();
-        }
-
-        // Initialize consumable slots with item inventory UI
-        foreach (ConsumableSlot slot in consumableSlots)
-        {
-            if (enableConsumableShop && slot != null && itemInventoryUI != null)
-            {
-                slot.InitializeInventory(itemInventoryUI);
-            }
-            else if (!enableConsumableShop && slot != null)
-            {
-                slot.Setup(null);
-            }
-        }
 
         foreach (TowerSlot slot in towerSlots)
         {
@@ -206,6 +158,40 @@ public class ShopManager : MonoBehaviour
         
         // Wait for progression system to initialize before populating (WebGL compatibility)
         StartCoroutine(WaitAndPopulateShop());
+    }
+
+    private void BuildTowerSlots()
+    {
+        if (m_TowerSlotContainer == null || m_TowerSlotPrefab == null)
+        {
+            Debug.LogWarning("[ShopManager] TowerSlotContainer or TowerSlotPrefab not assigned. Cannot build tower slots.");
+            towerSlots = new TowerSlot[0];
+            return;
+        }
+
+        foreach (Transform child in m_TowerSlotContainer)
+            Destroy(child.gameObject);
+
+        GridLayoutGroup grid = m_TowerSlotContainer.GetComponent<GridLayoutGroup>();
+        if (grid == null)
+            grid = m_TowerSlotContainer.gameObject.AddComponent<GridLayoutGroup>();
+
+        grid.cellSize = m_SlotCellSize;
+        grid.spacing = m_SlotSpacing;
+        grid.childAlignment = TextAnchor.MiddleCenter;
+        grid.constraint = GridLayoutGroup.Constraint.FixedRowCount;
+        grid.constraintCount = 1;
+
+        towerSlots = new TowerSlot[m_TowerSlotCount];
+        for (int i = 0; i < m_TowerSlotCount; i++)
+        {
+            GameObject slotObject = Instantiate(m_TowerSlotPrefab, m_TowerSlotContainer);
+            slotObject.name = $"TowerSlot_{i}";
+            TowerSlot slot = slotObject.GetComponent<TowerSlot>();
+            if (slot == null)
+                Debug.LogWarning($"[ShopManager] TowerSlotPrefab is missing a TowerSlot component on slot {i}.");
+            towerSlots[i] = slot;
+        }
     }
 
     private void Update()
@@ -245,10 +231,6 @@ public class ShopManager : MonoBehaviour
             Debug.Log("[ShopManager] UnitUnlockManager ready, populating shop...");
         }
         
-        if (enableConsumableShop)
-        {
-            PopulateConsumableSlots();
-        }
         PopulateTowerSlots();
     }
     
@@ -273,11 +255,6 @@ public class ShopManager : MonoBehaviour
 
         isShopOpen = !isShopOpen;
         UpdateShopUIState();
-
-        if (!isShopOpen)
-        {
-            HideConsumableTooltip();
-        }
     }
 
     // method for gameloopmanger to open a new shop at the start of each round - also rerolls the shop to show new options
@@ -296,17 +273,12 @@ public class ShopManager : MonoBehaviour
 
     public void RefreshShopContents()
     {
-        if (enableConsumableShop)
-        {
-            PopulateConsumableSlots();
-        }
         PopulateTowerSlots();
     }
 
     public void CloseShopPanel()
     {
         isShopOpen = false;
-        HideConsumableTooltip();
         UpdateShopUIState();
     }
 
@@ -317,7 +289,6 @@ public class ShopManager : MonoBehaviour
         if (!visible)
         {
             isShopOpen = false;
-            HideConsumableTooltip();
         }
         else if (alwaysVisibleDuringGameplay)
         {
@@ -462,13 +433,8 @@ public class ShopManager : MonoBehaviour
         }
 
         Debug.Log($"[ShopManager] Rerolled shop for {rerollCost} gold!");
-        rerollCost += 2; // Increase cost by 2 for next reroll
+        rerollCost += 2;
         UpdateRerollCostDisplay();
-
-        if (enableConsumableShop)
-        {
-            PopulateConsumableSlots();
-        }
 
         PopulateTowerSlots();
     }
@@ -477,7 +443,7 @@ public class ShopManager : MonoBehaviour
     {
         if (rerollCostText != null)
         {
-            rerollCostText.text = $"Reroll: {rerollCost}";
+            rerollCostText.text = $"{rerollCost}";
         }
     }
     
@@ -508,113 +474,6 @@ public class ShopManager : MonoBehaviour
     {
         PopulateTowerSlots();
     }
-
-    private void ConfigureConsumableShopVisibility()
-    {
-        if (enableConsumableShop)
-        {
-            return;
-        }
-
-        if (itemInventoryUI == null)
-        {
-            itemInventoryUI = FindFirstObjectByType<ItemInventoryUI>();
-        }
-
-        if (consumableShopRoot == null)
-        {
-            consumableShopRoot = FindConsumableShopRoot();
-        }
-
-        if (itemInventoryRoot == null && itemInventoryUI != null)
-        {
-            itemInventoryRoot = itemInventoryUI.gameObject;
-        }
-
-        if (consumableShopRoot != null)
-        {
-            consumableShopRoot.SetActive(false);
-        }
-
-        for (int i = 0; i < consumableSlots.Length; i++)
-        {
-            if (consumableSlots[i] != null)
-            {
-                consumableSlots[i].gameObject.SetActive(false);
-            }
-        }
-
-        if (itemInventoryRoot != null)
-        {
-            itemInventoryRoot.SetActive(false);
-        }
-
-        if (consumableTooltip != null)
-        {
-            consumableTooltip.SetActive(false);
-        }
-    }
-
-    private GameObject FindConsumableShopRoot()
-    {
-        for (int i = 0; i < consumableSlots.Length; i++)
-        {
-            ConsumableSlot slot = consumableSlots[i];
-            if (slot == null)
-            {
-                continue;
-            }
-
-            Transform current = slot.transform;
-            while (current != null)
-            {
-                if (current.name.ToLower().Contains("consumable"))
-                {
-                    return current.gameObject;
-                }
-
-                current = current.parent;
-            }
-        }
-
-        return null;
-    }
-
-    private void PopulateConsumableSlots()
-    {
-        if (consumableSlots == null || consumableSlots.Length == 0)
-        {
-            return;
-        }
-
-        if (availableItems == null || availableItems.Length == 0)
-        {
-            Debug.LogWarning("No available items assigned to populate consumable slots.");
-            for (int i = 0; i < consumableSlots.Length; i++)
-            {
-                if (consumableSlots[i] != null)
-                {
-                    consumableSlots[i].Setup(null);
-                }
-            }
-            return;
-        }
-
-        for (int i = 0; i < consumableSlots.Length; i++)
-        {
-            if (consumableSlots[i] == null)
-            {
-                continue;
-            }
-
-            ItemDefinition randomItem = availableItems[Random.Range(0, availableItems.Length)];
-            consumableSlots[i].Setup(randomItem);
-        }
-    }
-
-    // This method populates tower slots with random eligible UnitDefinitions from the database
-    // We could consider chaning this to take a list of UnitDefinitions as a parameter if we want more control over what gets shown in the shop
-    // For now, it will just pull all UnitDefinitions that have valid prefabs and randomly assign them to the tower slots so as we add units theyll show up in the shop without needing to update this code
 
     private void PopulateTowerSlots()
     {
@@ -872,69 +731,6 @@ public class ShopManager : MonoBehaviour
         return Mathf.Max(1, ((Mathf.Max(1, waveManager.currentWave) - 1) / wavesPerCycle) + 1);
     }
     
-    public void ShowConsumableTooltip(string description)
-    {
-        if (!enableConsumableShop)
-        {
-            return;
-        }
-
-        Debug.Log($"ShowConsumableTooltip called with: {description}");
-        
-        if (consumableTooltip == null)
-        {
-            Debug.LogError("consumableTooltip is null!");
-            return;
-        }
-        
-        if (tooltipText == null)
-        {
-            Debug.LogError("tooltipText is null!");
-            return;
-        }
-        
-        tooltipText.text = description;
-        consumableTooltip.SetActive(true);
-        Debug.Log("Tooltip should now be visible");
-    }
-    
-    public void HideConsumableTooltip()
-    {
-        if (!enableConsumableShop)
-        {
-            return;
-        }
-
-        Debug.Log("HideConsumableTooltip called");
-        
-        if (consumableTooltip != null)
-        {
-            consumableTooltip.SetActive(false);
-        }
-    }
-    
-    [ContextMenu("Auto-Assign Slots")]
-    private void AutoAssignSlots()
-    {
-        ConsumableSlot[] foundConsumables = shopPanel.GetComponentsInChildren<ConsumableSlot>();
-        if (foundConsumables.Length > 0)
-        {
-            consumableSlots = foundConsumables;
-            Debug.Log($"Assigned {consumableSlots.Length} consumable slots");
-        }
-        
-        TowerSlot[] foundTowers = shopPanel.GetComponentsInChildren<TowerSlot>();
-        if (foundTowers.Length > 0)
-        {
-            towerSlots = foundTowers;
-            Debug.Log($"Assigned {towerSlots.Length} tower slots");
-        }
-        
-        #if UNITY_EDITOR
-        UnityEditor.EditorUtility.SetDirty(this);
-        #endif
-    }
-
     public void OnUnitPurchased(UnitDefinition unitDef)
     {
         if (unitDef == null)

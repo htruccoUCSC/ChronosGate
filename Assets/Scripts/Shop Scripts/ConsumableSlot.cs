@@ -138,37 +138,19 @@ public class ConsumableSlot : MonoBehaviour, IPointerEnterHandler, IPointerExitH
             return;
         }
 
-        if (shopManager != null)
+        if (shopManagerOld != null && shopManagerOld.UsesTooltipOverlay())
         {
-            shopManager.ShowConsumableTooltip(itemDefinition.Description);
-            return;
-        }
-
-        if (shopManagerOld != null)
-        {
-            if (shopManagerOld.UsesTooltipOverlay())
-            {
-                shopManagerOld.ShowConsumableTooltip(itemDefinition.Description);
-            }
+            shopManagerOld.ShowConsumableTooltip(itemDefinition.Description);
         }
     }
     
     public void OnPointerExit(PointerEventData eventData)
     {
         Debug.Log($"Pointer exited {gameObject.name}");
-        
-        if (shopManager != null)
-        {
-            shopManager.HideConsumableTooltip();
-            return;
-        }
 
-        if (shopManagerOld != null)
+        if (shopManagerOld != null && shopManagerOld.UsesTooltipOverlay())
         {
-            if (shopManagerOld.UsesTooltipOverlay())
-            {
-                shopManagerOld.HideConsumableTooltip();
-            }
+            shopManagerOld.HideConsumableTooltip();
         }
     }
     
