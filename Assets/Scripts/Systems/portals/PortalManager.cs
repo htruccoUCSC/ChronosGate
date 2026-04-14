@@ -8,6 +8,7 @@ public class PortalManager : MonoBehaviour
     public BoardManager BoardManager;
 
     [Header("Portal Visuals")]
+    [SerializeField] private GameObject m_PortalVisualPrefab;
     [SerializeField] private Sprite m_Level1Sprite;
     [SerializeField] private Sprite m_Level2Sprite;
     [SerializeField] private Sprite m_Level3Sprite;
@@ -19,6 +20,11 @@ public class PortalManager : MonoBehaviour
     private Portal[] m_PortalArray;
     private readonly List<int> m_ViableIndices = new List<int>();
     private readonly Dictionary<int, SpriteRenderer> m_PortalRenderers = new Dictionary<int, SpriteRenderer>();
+    // Bayo Bandele - 4/11/2026: added to track each lane's Animator so pre-spawn and spawn clips can be triggered
+    private readonly Dictionary<int, Animator> m_PortalAnimators = new Dictionary<int, Animator>();
+    // Bayo Bandele - 4/13/2026: tracks when each portal's spawn animation finishes so pre-spawn won't overlap it
+    private readonly Dictionary<int, float> m_PortalSpawnReadyTimes = new Dictionary<int, float>();
+    private float m_SpawnClipLength = 0f;
     private Transform m_PortalVisualRoot;
 
     public void init()
@@ -81,6 +87,15 @@ public class PortalManager : MonoBehaviour
         RefreshPortalVisuals();
     }
 
+    // Bayo Bandele - 4/11/2026: trigger the pre-spawn warning animation on a portal before an enemy exits
+    public void TriggerPortalPreSpawn(int index)
+    {
+        if (m_PortalAnimators.TryGetValue(index, out Animator anim) && anim != null)
+        {
+            anim.SetTrigger("PreSpawn");
+        }
+    }
+
     public Portal GetPortal(int index)
     {
         EnsureInitialized();
@@ -97,6 +112,12 @@ public class PortalManager : MonoBehaviour
     {
         EnsureInitialized();
         return m_PortalArray;
+    }
+
+    // Bayo Bandele - 4/11/2026: Gets the portal animators dictionary as read only.
+        public IReadOnlyDictionary<int, Animator> GetPortalAnimators()
+    {
+        return m_PortalAnimators;
     }
 
     private void RefreshPortalVisuals()
@@ -136,7 +157,7 @@ public class PortalManager : MonoBehaviour
             return;
         }
 
-        SpriteRenderer renderer = GetOrCreatePortalRenderer(index);
+        bool isNewPortal = GetOrCreatePortalRenderer(index, out SpriteRenderer renderer, out Animator animator);
         Vector3 worldPosition = GetPortalWorldPosition(portal);
         Sprite sprite = GetSpriteForTier(portal.tier);
 
@@ -153,22 +174,51 @@ public class PortalManager : MonoBehaviour
         renderer.gameObject.SetActive(true);
         renderer.sortingLayerName = m_SortingLayerName;
         renderer.sortingOrder = m_SortingOrder;
+
+        // Bayo Bandele - 4/11/2026: play the spawn animation only when a portal is first created, not on refresh
+        // Bayo Bandele - 4/13/2026: record when the spawn clip will finish so WaveManager can wait before triggering pre-spawn
+        if (isNewPortal && animator != null)
+        {
+            CacheSpawnClipLength(animator);
+            m_PortalSpawnReadyTimes[index] = Time.time + m_SpawnClipLength;
+            animator.SetTrigger("Spawn");
+        }
+
         Debug.Log($"[PortalManager] Visual active for index {index}. Tier={portal.tier}, Cell=({portal.x}, {portal.y}), World={worldPosition}, Sprite={(sprite != null ? sprite.name : "NULL")}.");
     }
 
-    private SpriteRenderer GetOrCreatePortalRenderer(int index)
+    // Returns true if this is a newly created portal (so caller can trigger spawn animation).
+    // Bayo Bandele - 4/11/2026: added out Animator parameter so the spawn clip can be triggered on new portals
+    private bool GetOrCreatePortalRenderer(int index, out SpriteRenderer renderer, out Animator animator)
     {
         if (m_PortalRenderers.TryGetValue(index, out SpriteRenderer existingRenderer) && existingRenderer != null)
         {
-            return existingRenderer;
+            renderer = existingRenderer;
+            m_PortalAnimators.TryGetValue(index, out animator);
+            return false;
         }
 
-        GameObject visualObject = new GameObject($"Portal_{index}", typeof(SpriteRenderer));
+        GameObject visualObject = m_PortalVisualPrefab != null
+            ? Instantiate(m_PortalVisualPrefab)
+            : new GameObject($"Portal_{index}", typeof(SpriteRenderer));
+
+        visualObject.name = $"Portal_{index}";
         visualObject.transform.SetParent(m_PortalVisualRoot, false);
-        SpriteRenderer renderer = visualObject.GetComponent<SpriteRenderer>();
+
+        renderer = visualObject.GetComponent<SpriteRenderer>() ?? visualObject.AddComponent<SpriteRenderer>();
+
+        // Bayo Bandele - 4/11/2026: grab the Animator off the portal prefab for clip control
+        animator = visualObject.GetComponent<Animator>();
+
         m_PortalRenderers[index] = renderer;
-        Debug.Log($"[PortalManager] Created renderer object {visualObject.name}.");
-        return renderer;
+        // Bayo Bandele - 4/11/2026: cache the animator by lane index so TriggerPortalPreSpawn can look it up
+        if (animator != null)
+        {
+            m_PortalAnimators[index] = animator;
+        }
+
+        Debug.Log($"[PortalManager] Created portal visual {visualObject.name} (prefab={m_PortalVisualPrefab != null}).");
+        return true;
     }
 
     private Sprite GetSpriteForTier(float tier)
@@ -187,7 +237,28 @@ public class PortalManager : MonoBehaviour
         }
     }
 
-    private Vector3 GetPortalWorldPosition(Portal portal)
+    // Bayo Bandele - 4/13/2026: returns true once the portal spawn animation has finished, so pre-spawn won't overlap it
+    public bool IsPortalSpawnComplete(int index)
+    {
+        return !m_PortalSpawnReadyTimes.ContainsKey(index) || Time.time >= m_PortalSpawnReadyTimes[index];
+    }
+
+    // Bayo Bandele - 4/13/2026: reads the Portal1Spawn clip length once and caches it so we don't walk the clip list every spawn
+    private void CacheSpawnClipLength(Animator animator)
+    {
+        if (m_SpawnClipLength > 0f) return;
+        foreach (AnimationClip clip in animator.runtimeAnimatorController.animationClips)
+        {
+            if (clip.name == "Portal1Spawn")
+            {
+                m_SpawnClipLength = clip.length;
+                return;
+            }
+        }
+    }
+
+    // Bayo Bandele - 4/11/2026: added so WaveManager can get the portal's world position from one place instead of computing it inline
+    public Vector3 GetPortalWorldPosition(Portal portal)
     {
         return new Vector3(portal.x, portal.y + 0.5f, 0f);
     }
