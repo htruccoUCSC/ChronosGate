@@ -24,6 +24,8 @@ public class GameSpeedButton : MonoBehaviour
     [Header("Fast Forward Button")]
     [SerializeField, Tooltip("Assign your fast-forward (>>) button here.")]
     private Button m_FastForwardButton;
+    [SerializeField, Tooltip("Optional TMP label on the FF button that shows current speed.")]
+    private TextMeshProUGUI m_SpeedLabel;
 
     private int m_CurrentSpeedIndex;
     private bool m_IsPaused;
@@ -49,6 +51,7 @@ public class GameSpeedButton : MonoBehaviour
         EnsureButtonExists();
         ApplyTimeScale();
         RefreshPauseSprite();
+        RefreshSpeedLabel();
         UpdateVisibility();
     }
 
@@ -111,11 +114,13 @@ public class GameSpeedButton : MonoBehaviour
         if (m_IsPaused)
         {
             Time.timeScale = 0f;
-            return;
         }
-
-        float speed = GetCurrentSpeed();
-        Time.timeScale = Mathf.Max(0.01f, speed);
+        else
+        {
+            float speed = GetCurrentSpeed();
+            Time.timeScale = Mathf.Max(0.01f, speed);
+        }
+        RefreshSpeedLabel();
     }
 
     private float GetCurrentSpeed()
@@ -132,8 +137,14 @@ public class GameSpeedButton : MonoBehaviour
     private void RefreshPauseSprite()
     {
         if (m_PauseButtonImage == null) return;
-
         m_PauseButtonImage.sprite = m_IsPaused ? m_ResumeSprite : m_PauseSprite;
+    }
+
+    private void RefreshSpeedLabel()
+    {
+        if (m_SpeedLabel == null) return;
+        float speed = GetCurrentSpeed();
+        m_SpeedLabel.text = m_IsPaused ? "||" : $"{speed:0.#}x";
     }
 
     private void UpdateVisibility()

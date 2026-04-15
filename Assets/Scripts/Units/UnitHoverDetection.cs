@@ -2,105 +2,87 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 
 /// <summary>
-/// Attach this to placed unit GameObjects to enable tooltip display on hover
-/// Works with 2D colliders using Physics2D raycasting
+/// Right-click a placed unit to open/close the detail tooltip.
 /// </summary>
 [RequireComponent(typeof(Collider2D))]
 public class UnitHoverDetection : MonoBehaviour
 {
-    private bool isHovering = false;
     private BaseUnit baseUnit;
     private Collider2D col2D;
-    
-    private static UnitHoverDetection currentHoveredUnit = null;
+
+    // Track which unit currently has the tooltip open so a second right-click
+    // on anything (or a right-click on empty space) can close it.
+    private static UnitHoverDetection s_OpenUnit = null;
 
     private void Awake()
     {
         baseUnit = GetComponent<BaseUnit>();
         col2D = GetComponent<Collider2D>();
-        
-        if (baseUnit == null)
-        {
-            Debug.LogWarning($"[UnitHoverDetection] No BaseUnit component found on {gameObject.name}. Tooltip will not work.");
-        }
 
+        if (baseUnit == null)
+            Debug.LogWarning($"[UnitHoverDetection] No BaseUnit on {gameObject.name}.");
         if (col2D == null)
-        {
-            Debug.LogWarning($"[UnitHoverDetection] No Collider2D found on {gameObject.name}. Tooltip will not work.");
-        }
+            Debug.LogWarning($"[UnitHoverDetection] No Collider2D on {gameObject.name}.");
     }
 
     private void Update()
     {
         if (baseUnit == null || col2D == null || Mouse.current == null) return;
 
-        // Get mouse position in world space
-        Vector2 mousePosition = Mouse.current.position.ReadValue();
-        Vector3 worldPosition = Camera.main.ScreenToWorldPoint(mousePosition);
-        worldPosition.z = 0f;
-
-        // Check if mouse is over this unit's collider
-        bool isMouseOver = col2D.OverlapPoint(worldPosition);
-
-        if (isMouseOver && !isHovering)
+        if (Mouse.current.rightButton.wasPressedThisFrame)
         {
-            // Mouse entered
-            OnMouseEnter();
-        }
-        else if (!isMouseOver && isHovering)
-        {
-            // Mouse exited
-            OnMouseExit();
+            Vector2 mousePos = Mouse.current.position.ReadValue();
+            Vector3 world = Camera.main.ScreenToWorldPoint(mousePos);
+            world.z = 0f;
+
+            bool overThis = col2D.OverlapPoint(world);
+
+            if (overThis)
+            {
+                // Toggle: if this unit is already open, close it; otherwise open it.
+                if (s_OpenUnit == this)
+                    CloseTooltip();
+                else
+                    OpenTooltip();
+            }
+            else if (s_OpenUnit == this)
+            {
+                // Right-clicked somewhere else while this tooltip is open — close.
+                CloseTooltip();
+            }
         }
     }
 
-    private void OnMouseEnter()
+    private void OpenTooltip()
     {
-        // If another unit is already hovered, tell it to exit first
-        if (currentHoveredUnit != null && currentHoveredUnit != this)
-        {
-            currentHoveredUnit.OnMouseExit();
-        }
+        // Close whatever was previously open
+        if (s_OpenUnit != null && s_OpenUnit != this)
+            s_OpenUnit.CloseTooltip();
 
-        isHovering = true;
-        currentHoveredUnit = this;
+        s_OpenUnit = this;
 
         if (baseUnit.myData != null && TowerTooltipUI.Instance != null)
-        {
             TowerTooltipUI.Instance.ShowTooltip(baseUnit.myData);
-        }
     }
 
-    private void OnMouseExit()
+    private void CloseTooltip()
     {
-        if (!isHovering) return;
-
-        isHovering = false;
-        
-        if (currentHoveredUnit == this)
-        {
-            currentHoveredUnit = null;
-        }
+        if (s_OpenUnit == this)
+            s_OpenUnit = null;
 
         if (TowerTooltipUI.Instance != null)
-        {
             TowerTooltipUI.Instance.HideTooltip();
-        }
     }
 
     private void OnDisable()
     {
-        if (isHovering)
-        {
-            OnMouseExit();
-        }
+        if (s_OpenUnit == this)
+            CloseTooltip();
     }
 
     private void OnDestroy()
     {
-        if (isHovering && TowerTooltipUI.Instance != null)
-        {
-            TowerTooltipUI.Instance.HideTooltip();
-        }
+        if (s_OpenUnit == this)
+            CloseTooltip();
     }
 }

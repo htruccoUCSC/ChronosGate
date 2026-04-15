@@ -80,11 +80,9 @@ public class GameLoopManager : MonoBehaviour
         {
             musicController = FindFirstObjectByType<MusicController>();
         }
-        if (FindFirstObjectByType<GameSpeedButton>() == null)
-        {
-            GameObject speedButtonObject = new GameObject("GameSpeedButtonController");
-            speedButtonObject.AddComponent<GameSpeedButton>();
-        }
+        // GameSpeedButton is expected to be present in the scene on an existing GameObject.
+        // Do not auto-create one here as it would trigger the singleton duplicate-destroy
+        // and could take out the parent GameObject (e.g. -Managers-) with it.
         if (FindFirstObjectByType<WaveCycleProgressUI>() == null)
         {
             GameObject waveProgressObject = new GameObject("WaveCycleProgressUI");
