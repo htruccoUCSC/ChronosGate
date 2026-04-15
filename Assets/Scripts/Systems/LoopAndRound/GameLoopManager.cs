@@ -15,6 +15,7 @@ public class GameLoopManager : MonoBehaviour
     [SerializeField] protected ShopManager shopManager;
     [SerializeField] protected WaveManager waveManager;
     [SerializeField] protected MusicController musicController;
+    [SerializeField] protected EnemyPreviewManager enemyPreviewManager;
      public AugmentManager augmentManager;
 
     public NewRound newRound;
@@ -80,9 +81,15 @@ public class GameLoopManager : MonoBehaviour
         {
             musicController = FindFirstObjectByType<MusicController>();
         }
-        // GameSpeedButton is expected to be present in the scene on an existing GameObject.
-        // Do not auto-create one here as it would trigger the singleton duplicate-destroy
-        // and could take out the parent GameObject (e.g. -Managers-) with it.
+        if (enemyPreviewManager == null)
+        {
+            enemyPreviewManager = FindFirstObjectByType<EnemyPreviewManager>();
+        }
+        if (FindFirstObjectByType<GameSpeedButton>() == null)
+        {
+            GameObject speedButtonObject = new GameObject("GameSpeedButtonController");
+            speedButtonObject.AddComponent<GameSpeedButton>();
+        }
         if (FindFirstObjectByType<WaveCycleProgressUI>() == null)
         {
             GameObject waveProgressObject = new GameObject("WaveCycleProgressUI");
@@ -206,7 +213,25 @@ public class GameLoopManager : MonoBehaviour
             GameSpeedButton.Instance.SetPaused(false);
             GameSpeedButton.Instance.ResetToDefaultSpeed();
         }
-        
+
+        // Show the enemy preview, then start the wave once it finishes.
+        // Keeping this as a void method means all callers (OnAugmentSelected,
+        // OnNextRoundPressed, etc.) continue to work without any changes.
+        StartCoroutine(StartCombatWithPreview());
+    }
+
+    /// <summary>
+    /// Runs the enemy preview pan, then starts the wave and begins monitoring it.
+    /// Separated from StartCombatPhase() so that method stays a plain void and
+    /// all its existing callers remain unchanged.
+    /// </summary>
+    private IEnumerator StartCombatWithPreview()
+    {
+        // Yield on the preview. If EnemyPreviewManager is not present in the
+        // scene the wave starts immediately with no additional delay.
+        if (enemyPreviewManager != null)
+            yield return StartCoroutine(enemyPreviewManager.RunPreview());
+
         if (waveManager != null)
         {
             waveManager.StartNextWave();
