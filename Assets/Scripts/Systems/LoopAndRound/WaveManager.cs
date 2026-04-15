@@ -213,10 +213,20 @@ public class WaveManager : MonoBehaviour
         waveActive = true;
         Debug.Log($"--- WAVE {currentWave} START ---");
         UpdateSpawnablesForCurrentWave();
-        BeginWaveTracking();
+
+        // EnemyCountMult scales the number of enemies this wave.
+        // Captured as a local so it stays constant for the whole wave even if context
+        // changes mid-wave. Does NOT permanently modify enemiesPerWave — the base value
+        // is preserved so future waves scale correctly from the unmodified baseline.
+        RoundModifierContext ctx = RoundModifierContext.Instance;
+        int effectiveEnemyCount = ctx != null && ctx.EnemyCountMult != 1f
+            ? Mathf.Max(1, Mathf.RoundToInt(enemiesPerWave * ctx.EnemyCountMult))
+            : enemiesPerWave;
+
+        BeginWaveTracking(effectiveEnemyCount);
 
         // spawn enemies for this wave
-        for (int i = 0; i < enemiesPerWave; i++)
+        for (int i = 0; i < effectiveEnemyCount; i++)
         {
             if (gameOver)
             {
@@ -226,7 +236,14 @@ public class WaveManager : MonoBehaviour
             }
 
             yield return StartCoroutine(TrySpawnEnemyOnTile());
-            yield return new WaitForSeconds(Random.Range(spawnDelayMinimum, spawnDelayMaximum));
+
+            // EnemySpawnIntervalMult scales the delay between spawns.
+            // Below 1.0 = enemies swarm in faster; above 1.0 = they trickle in slower.
+            float spawnDelay = Random.Range(spawnDelayMinimum, spawnDelayMaximum);
+            if (ctx != null && ctx.EnemySpawnIntervalMult != 1f)
+                spawnDelay *= ctx.EnemySpawnIntervalMult;
+
+            yield return new WaitForSeconds(spawnDelay);
         }
 
         yield return new WaitUntil(() => AliveEnemyCount() == 0 || gameOver);
@@ -588,7 +605,14 @@ public class WaveManager : MonoBehaviour
 
     private void BeginWaveTracking()
     {
-        m_CurrentWaveTotalEnemies = Mathf.Max(0, enemiesPerWave);
+        BeginWaveTracking(enemiesPerWave);
+    }
+
+    // Overload used by RunSingleWave when a round modifier has adjusted enemy count.
+    // The RunWaves() auto-wave path still calls the no-arg version above.
+    private void BeginWaveTracking(int totalEnemies)
+    {
+        m_CurrentWaveTotalEnemies   = Mathf.Max(0, totalEnemies);
         m_CurrentWaveSpawnedEnemies = 0;
     }
 

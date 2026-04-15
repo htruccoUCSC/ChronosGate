@@ -74,23 +74,57 @@ public class UnitInstance : ScriptableObject
     }
 
     // equations for modified stats with buffs
-    //Clamp to prervent negative or zero values where it would break things
+    // Clamp to prevent negative or zero values where it would break things.
+    // RoundModifierContext multipliers are applied as a final layer on top of all
+    // augment/buff modifications, so they never interfere with the existing math.
+
     public float GetModifiedAttackSpeed()
     {
-        float baseSpeed = Mathf.Max(0.1f, BaseDef.AttackSpeed);
+        float baseSpeed   = Mathf.Max(0.1f, BaseDef.AttackSpeed);
         float linearSpeed = Mathf.Max(0.1f, (BaseDef.AttackSpeed + SpeedFlatMod) * SpeedMultMod);
 
+        float result;
         if (linearSpeed <= baseSpeed)
         {
-            return linearSpeed;
+            result = linearSpeed;
+        }
+        else
+        {
+            // Log-scaling keeps augment stacking from becoming infinite
+            float normalizedBonus = (linearSpeed - baseSpeed) / baseSpeed;
+            result = baseSpeed * (1f + Mathf.Log(1f + normalizedBonus));
         }
 
-        float normalizedBonus = (linearSpeed - baseSpeed) / baseSpeed;
-        float logScaledSpeed = baseSpeed * (1f + Mathf.Log(1f + normalizedBonus));
+        // Round modifier multiplier applied after the curve so it is always a clean
+        // percentage reduction/boost (e.g. 0.9 = exactly 10% slower, every time)
+        float ctxMult = RoundModifierContext.Instance != null
+            ? RoundModifierContext.Instance.TowerAttackSpeedMult
+            : 1f;
 
-        return Mathf.Max(0.1f, logScaledSpeed);
+        return Mathf.Max(0.1f, result * ctxMult);
     }
-    public float GetModifiedDamage() => Mathf.Max(1f, (BaseDef.AttackDamage + DamageFlatMod) * DamageMultMod);
-    public float GetModifiedAbilityPower() => Mathf.Max(0f, (BaseDef.AbilityPower + AbilityPowerFlatMod) * AbilityPowerMult);
-    public float GetModifiedRange() => Mathf.Max(0f, BaseDef.Range + RangeFlatMod);
+
+    public float GetModifiedDamage()
+    {
+        float ctxMult = RoundModifierContext.Instance != null
+            ? RoundModifierContext.Instance.TowerAttackDamageMult
+            : 1f;
+        return Mathf.Max(1f, (BaseDef.AttackDamage + DamageFlatMod) * DamageMultMod * ctxMult);
+    }
+
+    public float GetModifiedAbilityPower()
+    {
+        float ctxMult = RoundModifierContext.Instance != null
+            ? RoundModifierContext.Instance.TowerAbilityPowerMult
+            : 1f;
+        return Mathf.Max(0f, (BaseDef.AbilityPower + AbilityPowerFlatMod) * AbilityPowerMult * ctxMult);
+    }
+
+    public float GetModifiedRange()
+    {
+        float ctxMult = RoundModifierContext.Instance != null
+            ? RoundModifierContext.Instance.TowerRangeMult
+            : 1f;
+        return Mathf.Max(0f, (BaseDef.Range + RangeFlatMod) * ctxMult);
+    }
 }

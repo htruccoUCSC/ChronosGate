@@ -16,7 +16,12 @@ public class GameLoopManager : MonoBehaviour
     [SerializeField] protected WaveManager waveManager;
     [SerializeField] protected MusicController musicController;
     [SerializeField] protected EnemyPreviewManager enemyPreviewManager;
-     public AugmentManager augmentManager;
+    public AugmentManager augmentManager;
+
+    // Round modifier manager — found automatically if not assigned in the Inspector.
+    // Drives SelectModifiersForCycle() + ApplyModifiers() at the start of each cycle
+    // and RemoveModifiers() at the end, before augment selection.
+    protected RoundModifierManager modifierManager;
 
     public NewRound newRound;
 
@@ -85,6 +90,10 @@ public class GameLoopManager : MonoBehaviour
         {
             enemyPreviewManager = FindFirstObjectByType<EnemyPreviewManager>();
         }
+        if (modifierManager == null)
+        {
+            modifierManager = RoundModifierManager.Instance;
+        }
         if (FindFirstObjectByType<GameSpeedButton>() == null)
         {
             GameObject speedButtonObject = new GameObject("GameSpeedButtonController");
@@ -128,10 +137,12 @@ public class GameLoopManager : MonoBehaviour
         isGameActive = true;
         currentWaveInCycle = 0;
         SetGameState(GameState.Combat);
-        
+
         // Start the run in combat after a short pause. Augment selection still happens after a full cycle.
         Debug.Log("Starting first combat phase...");
 
+        // Select and apply modifiers for the very first cycle
+        SelectAndApplyModifiers();
         StartCombatPhase();
     }
 
@@ -155,7 +166,7 @@ public class GameLoopManager : MonoBehaviour
     private void OnAugmentSelected(int augmentIndex)
     {
         Debug.Log($"Player selected augment {augmentIndex}. Starting combat phase.");
-        
+
         // Reset wave cycle counter
         currentWaveInCycle = 0;
 
@@ -163,9 +174,29 @@ public class GameLoopManager : MonoBehaviour
         {
             boardManager.RestoreRespawnRoster();
         }
-        
+
+        // Select and apply fresh modifiers for the incoming cycle
+        SelectAndApplyModifiers();
+
         // Move to combat phase
         StartCombatPhase();
+    }
+
+    /// <summary>
+    /// Selects a new set of random modifiers for the upcoming cycle and applies them.
+    /// Protected so subclasses (e.g. a tutorial GameLoopManager variant) can override
+    /// to force specific modifiers or skip the system entirely.
+    /// </summary>
+    protected virtual void SelectAndApplyModifiers()
+    {
+        // Re-fetch in case it wasn't ready during Start()
+        if (modifierManager == null)
+            modifierManager = RoundModifierManager.Instance;
+
+        if (modifierManager == null) return;
+
+        modifierManager.SelectModifiersForCycle();
+        modifierManager.ApplyModifiers();
     }
 
     protected void StartShoppingPhase()
@@ -268,6 +299,12 @@ public class GameLoopManager : MonoBehaviour
             // Return to augment selection
             Debug.Log("Cycle complete! Returning to augment selection...");
             yield return new WaitForSeconds(1f); // Brief pause
+
+            // Remove round modifiers before augment selection so the board is
+            // clean when the player makes their augment choice. OnRoundEnd callbacks
+            // fire first (reverting direct tower changes), then Context.Reset() runs.
+            modifierManager?.RemoveModifiers();
+
             ShowAugmentSelection();
 
             

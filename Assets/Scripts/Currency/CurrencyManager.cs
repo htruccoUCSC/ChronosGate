@@ -83,12 +83,27 @@ public class CurrencyManager : MonoBehaviour
         {
             addAmount = maxInterest;
         }
+
+        // InterestMult scales the interest payout (e.g. 0.5 = half interest).
+        // Only applied when interest is not fully suppressed by NoInterest.
+        RoundModifierContext ctx = RoundModifierContext.Instance;
+        if (ctx != null && ctx.InterestMult != 1f)
+            addAmount = Mathf.RoundToInt(addAmount * ctx.InterestMult);
+
         AddCurrency(addAmount);
     }
+
     public void newRound()
     {
-        GetInterest();
-        AddCurrency(income);
+        // NoInterest completely suppresses interest for this round (e.g. Recession modifier).
+        // InterestMult fine-tunes the payout when interest is not fully blocked.
+        RoundModifierContext ctx = RoundModifierContext.Instance;
+        if (ctx == null || !ctx.NoInterest)
+            GetInterest();
+
+        // IncomeMult scales the flat gold income awarded each wave.
+        float incomeMult = ctx != null ? ctx.IncomeMult : 1f;
+        AddCurrency(Mathf.RoundToInt(income * incomeMult));
     }
 
     private void HandleCurrencyCollected(int amount)

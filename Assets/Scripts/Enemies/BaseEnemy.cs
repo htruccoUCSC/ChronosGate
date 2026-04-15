@@ -241,30 +241,48 @@ private const float DEBUFF_TICK_RATE = 1f;
 
     private void ApplyWaveScaling()
     {
-        if (WaveManager.Instance == null) return;
+        // Step 1: standard difficulty ramp (wave-based scaling)
+        if (WaveManager.Instance != null)
+        {
+            int wave = WaveManager.Instance.currentWave;
 
-        int wave = WaveManager.Instance.currentWave;
+            // no base scaling on waves 1..START_AFTER_WAVE
+            if (wave > START_AFTER_WAVE)
+            {
+                // how many waves past the "no scale" period?
+                int wavesPast = wave - START_AFTER_WAVE; // wave 4 => 1
 
-        // no scaling on waves 1..START_AFTER_WAVE
-        if (wave <= START_AFTER_WAVE) return;
+                // scale happens in chunks of SCALE_EVERY_N_WAVES
+                // wave 4..6 => steps = 1, wave 7..9 => steps = 2, etc.
+                int steps = Mathf.CeilToInt(wavesPast / (float)SCALE_EVERY_N_WAVES);
 
-        // how many waves past the "no scale" period?
-        int wavesPast = wave - START_AFTER_WAVE; // wave 4 => 1
+                float multiplier = COMPOUND
+                    ? Mathf.Pow(1f + SCALE_PER_STEP, steps)
+                    : 1f + (SCALE_PER_STEP * steps);
 
-        // scale happens in chunks of SCALE_EVERY_N_WAVES
-        // wave 4..6 => steps = 1
-        // wave 7..9 => steps = 2
-        int steps = Mathf.CeilToInt(wavesPast / (float)SCALE_EVERY_N_WAVES);
+                maxHealth       = Mathf.RoundToInt(maxHealth * multiplier);
+                moveSpeed      *= multiplier;
+                damagePerSecond *= multiplier;
 
-        float multiplier = COMPOUND
-            ? Mathf.Pow(1f + SCALE_PER_STEP, steps)
-            : 1f + (SCALE_PER_STEP * steps);
+                // Debug.Log($"[BaseEnemy] Wave {wave} steps={steps} multiplier={multiplier:F3}");
+            }
+        }
 
-        maxHealth = Mathf.RoundToInt(maxHealth * multiplier);
-        moveSpeed *= multiplier;
-        damagePerSecond *= multiplier;
+        // Step 2: round modifier context — applied on top of wave scaling so modifiers
+        // stack with the normal difficulty ramp rather than replacing it.
+        // Runs even on early waves (wave <= START_AFTER_WAVE) where base scaling is skipped.
+        RoundModifierContext ctx = RoundModifierContext.Instance;
+        if (ctx != null)
+        {
+            maxHealth = Mathf.RoundToInt(maxHealth * ctx.EnemyHealthMult);
+            moveSpeed *= ctx.EnemySpeedMult;
 
-        // Debug.Log($"[BaseEnemy] Wave {wave} steps={steps} multiplier={multiplier:F3}");
+            // EnemyDamageMult  = scales per-hit damage value
+            // EnemyAttackSpeedMult = scales attack cadence / frequency
+            // Both map to damagePerSecond now; they are separate fields so that
+            // when enemies get a discrete hit system, only EnemyAttackSpeedMult moves.
+            damagePerSecond *= ctx.EnemyDamageMult * ctx.EnemyAttackSpeedMult;
+        }
     }
 
     private void ApplyContinuousDamageAsInt(float dmgFloat)
@@ -304,16 +322,29 @@ private const float DEBUFF_TICK_RATE = 1f;
 
     public virtual void ApplySlow(float slowPercent, float duration)
     {
-        float clampedPercent = Mathf.Clamp(slowPercent, 0f, 0.95f);
-        float newMultiplier = 1f - clampedPercent;
+        // SlowStrengthMult is applied here (enemy side) so that ALL slow sources —
+        // direct ability calls (e.g. Wizard), debuff callbacks, and future sources —
+        // are all scaled. Applying it here avoids double-multiplying with BaseUnit.ApplySlow.
+        RoundModifierContext ctx = RoundModifierContext.Instance;
+        float adjustedPercent = slowPercent * (ctx != null ? ctx.SlowStrengthMult : 1f);
 
-        m_SlowMultiplier = Mathf.Min(m_SlowMultiplier, newMultiplier);
+        float clampedPercent = Mathf.Clamp(adjustedPercent, 0f, 0.95f);
+        float newMultiplier  = 1f - clampedPercent;
+
+        m_SlowMultiplier    = Mathf.Min(m_SlowMultiplier, newMultiplier);
         m_SlowTimeRemaining = Mathf.Max(m_SlowTimeRemaining, duration);
     }
+
     public virtual void ApplyStun(float duration)
     {
         if (duration <= 0f) return;
-        m_StunTimeRemaining = Mathf.Max(m_StunTimeRemaining, duration);
+
+        // StunDurationMult lengthens or shortens all stun effects.
+        // Applied here so every stun source benefits automatically.
+        RoundModifierContext ctx = RoundModifierContext.Instance;
+        float adjustedDuration = duration * (ctx != null ? ctx.StunDurationMult : 1f);
+
+        m_StunTimeRemaining = Mathf.Max(m_StunTimeRemaining, adjustedDuration);
     }
 
     protected virtual void Die()
@@ -446,8 +477,14 @@ foreach (var key in toRemove)
     }
     public void ApplyFire(float stacks)
 {
-      int damage = Mathf.RoundToInt(stacks);
-      Debug.Log("enemy takes fire Damage");
+    // FireDamageMult scales the damage dealt per burn tick.
+    // Applied here (enemy side) so ALL fire damage sources — towers, augments,
+    // FirePriestess buffs — benefit without any changes to those systems.
+    RoundModifierContext ctx = RoundModifierContext.Instance;
+    float multipliedStacks = stacks * (ctx != null ? ctx.FireDamageMult : 1f);
+
+    int damage = Mathf.RoundToInt(multipliedStacks);
+    Debug.Log("enemy takes fire Damage");
     TakeDamage(null, damage);
     HitTint hitTint = GetComponent<HitTint>();
     if (hitTint != null)

@@ -111,6 +111,12 @@ public class UnitSpawner : MonoBehaviour
             augmentManager.ReapplyPlacementAugments();
         }
 
+        // Notify round modifiers that a new tower was placed mid-round.
+        // Direct modifiers (e.g. HealthAndFireBuff) use this to extend their
+        // effect to the new tower. Context-only modifiers ignore it automatically.
+        if (RoundModifierManager.Instance != null)
+            RoundModifierManager.Instance.NotifyTowerPlaced(unit);
+
         if (SfxManager.Instance != null)
         {
             SfxManager.Instance.PlayTowerDrop();
