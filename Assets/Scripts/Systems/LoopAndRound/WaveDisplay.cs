@@ -10,6 +10,6 @@ public class WaveDisplay : MonoBehaviour
         if (waveText == null) return;
         if (WaveManager.Instance == null) return;
 
-        waveText.text = "Round # " + WaveManager.Instance.currentWave;
+        waveText.text = "" + WaveManager.Instance.currentWave;
     }
 }

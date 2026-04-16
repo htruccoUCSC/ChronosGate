@@ -25,6 +25,15 @@ public class WaveCycleProgressUI : MonoBehaviour
     private readonly List<TextMeshProUGUI> m_SegmentLabels = new List<TextMeshProUGUI>();
     private TextMeshProUGUI m_TitleLabel;
 
+    private bool m_ForceHidden = false;
+
+    public void SetForceHidden(bool hidden)
+    {
+        m_ForceHidden = hidden;
+        if (m_RootRect != null)
+            m_RootRect.gameObject.SetActive(!hidden);
+    }
+
     private void Start()
     {
         EnsureUiExists();
@@ -183,7 +192,7 @@ public class WaveCycleProgressUI : MonoBehaviour
 
     private void Refresh()
     {
-        if (m_RootRect == null)
+        if (m_RootRect == null || m_ForceHidden)
         {
             return;
         }

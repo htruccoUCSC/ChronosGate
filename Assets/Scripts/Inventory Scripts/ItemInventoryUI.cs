@@ -10,7 +10,8 @@ public class ItemInventoryUI : MonoBehaviour
 {
     [SerializeField] private ItemSpawner m_ItemSpawner;
     [SerializeField] private int m_Capacity = 4;       //number of inventory slots
-    [SerializeField] private Sprite m_SlotBackground;   //slot background
+    [SerializeField] private Sprite m_SlotBackground;   //unfilled slot background
+    [SerializeField] private Sprite m_SlotFilledBackground; //filled slot background
     [SerializeField] private Vector2 m_CellSize = new Vector2(64f, 64f);
     [SerializeField] private Vector2 m_Spacing = new Vector2(8f, 8f);
 
@@ -42,7 +43,8 @@ public class ItemInventoryUI : MonoBehaviour
             slotObject.transform.SetParent(transform, false);
 
             var bg = slotObject.AddComponent<Image>();
-            if (m_SlotBackground) bg.sprite = m_SlotBackground;
+            if (m_SlotBackground && m_Items[i] == null) bg.sprite = m_SlotBackground;
+            if (m_SlotFilledBackground && m_Items[i] != null) bg.sprite = m_SlotFilledBackground;
 
             var iconObject = new GameObject("Icon", typeof(RectTransform));
             iconObject.transform.SetParent(slotObject.transform, false);

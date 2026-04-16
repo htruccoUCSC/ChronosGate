@@ -1,3 +1,5 @@
+using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
@@ -17,13 +19,18 @@ public class TowerTooltipUI : MonoBehaviour
     [SerializeField] private TextMeshProUGUI towerNameText;
     [SerializeField] private TextMeshProUGUI factionText;
     [SerializeField] private TextMeshProUGUI levelText;
+    [SerializeField] private TextMeshProUGUI rarityText;
+    [SerializeField] private TextMeshProUGUI rangeText;
+    [SerializeField] private TextMeshProUGUI descriptionText;
+    [SerializeField] private TextMeshProUGUI modifiersText;
 
     [Header("Tooltip Settings")]
-    [SerializeField] private float offsetFromCursor = 20f;
-    [SerializeField] private float screenEdgeBuffer = 10f;
+    [SerializeField] private float animateToCenterDuration = 0.35f;
 
     private UnitInstance currentDisplayedUnit;
     private Canvas canvas;
+    private bool m_IsOpen = false;
+    private Coroutine m_AnimateCoroutine;
     
     // Static instance for easy access from other scripts
     public static TowerTooltipUI Instance { get; private set; }
@@ -51,31 +58,39 @@ public class TowerTooltipUI : MonoBehaviour
 
     private void Start()
     {
-        // Ensure the tooltip starts hidden
         if (tooltipPanel != null)
         {
-            tooltipPanel.gameObject.SetActive(false);
+            // If tooltipPanel is a child object, deactivate it safely.
+            // If it's this same GameObject, we cannot deactivate it — hide via CanvasGroup instead.
+            if (tooltipPanel.gameObject != this.gameObject)
+                tooltipPanel.gameObject.SetActive(false);
+            else
+                DisableTooltipRaycasts(); // CanvasGroup alpha=0 handled below
         }
         else
         {
             Debug.LogError("[TowerTooltipUI] tooltipPanel NOT assigned in inspector!");
         }
 
-        // Verify all required UI elements are assigned
         ValidateUIReferences();
         DisableTooltipRaycasts();
+
+        // Hide panel visually if it shares this GO
+        if (tooltipPanel != null && tooltipPanel.gameObject == this.gameObject)
+        {
+            var cg = GetComponent<CanvasGroup>();
+            if (cg == null) cg = gameObject.AddComponent<CanvasGroup>();
+            cg.alpha = 0f;
+            cg.interactable = false;
+            cg.blocksRaycasts = false;
+        }
     }
 
     private void Update()
     {
-        if (tooltipPanel != null && tooltipPanel.gameObject.activeSelf)
-        {
-            UpdateTooltipPosition();
-            if (currentDisplayedUnit != null)
-            {
-                UpdateTooltipDisplay();
-            }
-        }
+        // Live-update stats while open
+        if (m_IsOpen && currentDisplayedUnit != null)
+            UpdateTooltipDisplay();
     }
 
     private void ValidateUIReferences()
@@ -100,6 +115,12 @@ public class TowerTooltipUI : MonoBehaviour
             Debug.LogError("[TowerTooltipUI] factionText NOT assigned!");
         if (levelText == null)
             Debug.LogWarning("[TowerTooltipUI] levelText NOT assigned! Level will append to faction text.");
+        if (rarityText == null)
+            Debug.LogWarning("[TowerTooltipUI] rarityText NOT assigned!");
+        if (rangeText == null)
+            Debug.LogWarning("[TowerTooltipUI] rangeText NOT assigned!");
+        if (descriptionText == null)
+            Debug.LogWarning("[TowerTooltipUI] descriptionText NOT assigned!");
     }
 
     private void DisableTooltipRaycasts()
@@ -120,38 +141,147 @@ public class TowerTooltipUI : MonoBehaviour
     }
 
     /// <summary>
-    /// Displays the tooltip with the given tower's information
+    /// Opens the tooltip: snap to cursor, pause, dim, hide other UI, then animate to center.
     /// </summary>
     public void ShowTooltip(UnitInstance unitInstance)
     {
-        if (unitInstance == null)
-        {
-            Debug.LogWarning("[TowerTooltipUI] Attempted to show tooltip with null UnitInstance!");
-            return;
-        }
+        if (unitInstance == null) return;
 
         currentDisplayedUnit = unitInstance;
+        m_IsOpen = true;
         UpdateTooltipDisplay();
 
-        // Ensure panel is visible
-        if (tooltipPanel != null && !tooltipPanel.gameObject.activeSelf)
+        if (tooltipPanel != null)
         {
-            tooltipPanel.gameObject.SetActive(true);
+            if (tooltipPanel.gameObject != this.gameObject)
+                tooltipPanel.gameObject.SetActive(true);
+            else
+            {
+                var cg = GetComponent<CanvasGroup>();
+                if (cg != null) { cg.alpha = 1f; cg.blocksRaycasts = false; cg.interactable = false; }
+            }
         }
 
-        UpdateTooltipPosition();
+        // Ensure this GameObject is active so coroutines can run
+        // (tooltipPanel may be the same GO as TowerTooltipUI's own GameObject)
+        if (!gameObject.activeSelf)
+            gameObject.SetActive(true);
+
+        // Place at cursor first
+        SnapToCursor();
+
+        // Pause the game
+        if (GameSpeedButton.Instance != null)
+            GameSpeedButton.Instance.SetPaused(true);
+
+        // Hide all other canvas siblings
+        SetOtherUIVisible(false);
+
+        // Animate to center
+        if (m_AnimateCoroutine != null) StopCoroutine(m_AnimateCoroutine);
+        m_AnimateCoroutine = StartCoroutine(AnimateToCenter());
     }
 
     /// <summary>
-    /// Hides the tooltip panel
+    /// Closes the tooltip and restores game state.
     /// </summary>
     public void HideTooltip()
     {
+        if (!m_IsOpen) return;
+        m_IsOpen = false;
+        currentDisplayedUnit = null;
+
+        if (m_AnimateCoroutine != null) { StopCoroutine(m_AnimateCoroutine); m_AnimateCoroutine = null; }
+
         if (tooltipPanel != null)
         {
-            tooltipPanel.gameObject.SetActive(false);
+            if (tooltipPanel.gameObject != this.gameObject)
+                tooltipPanel.gameObject.SetActive(false);
+            else
+            {
+                var cg = GetComponent<CanvasGroup>();
+                if (cg != null) { cg.alpha = 0f; cg.blocksRaycasts = false; cg.interactable = false; }
+            }
         }
-        currentDisplayedUnit = null;
+
+        // Resume game
+        if (GameSpeedButton.Instance != null)
+            GameSpeedButton.Instance.SetPaused(false);
+
+        // Restore other UI
+        SetOtherUIVisible(true);
+    }
+
+    // ── Helpers ──────────────────────────────────────────────────────────
+
+    private void SnapToCursor()
+    {
+        if (tooltipPanel == null || canvas == null) return;
+        if (Mouse.current == null) return;
+
+        Vector2 mousePos = Mouse.current.position.ReadValue();
+        RectTransformUtility.ScreenPointToLocalPointInRectangle(
+            canvas.transform as RectTransform, mousePos,
+            canvas.renderMode == RenderMode.ScreenSpaceOverlay ? null : canvas.worldCamera,
+            out Vector2 local);
+        tooltipPanel.localPosition = local;
+    }
+
+    private IEnumerator AnimateToCenter()
+    {
+        if (tooltipPanel == null) yield break;
+
+        Vector3 startPos = tooltipPanel.localPosition;
+        Vector3 endPos = Vector3.zero; // canvas center
+        float elapsed = 0f;
+
+        while (elapsed < animateToCenterDuration)
+        {
+            elapsed += Time.unscaledDeltaTime;
+            float t = Mathf.SmoothStep(0f, 1f, elapsed / animateToCenterDuration);
+            tooltipPanel.localPosition = Vector3.Lerp(startPos, endPos, t);
+            yield return null;
+        }
+        tooltipPanel.localPosition = endPos;
+        m_AnimateCoroutine = null;
+    }
+
+    private readonly List<GameObject> m_HiddenUI = new List<GameObject>();
+
+    private void SetOtherUIVisible(bool visible)
+    {
+        // WaveCycleProgressUI re-shows itself every Update frame, so handle it explicitly.
+        var waveProgress = FindFirstObjectByType<WaveCycleProgressUI>();
+        if (waveProgress != null)
+            waveProgress.SetForceHidden(!visible);
+
+        if (canvas == null) return;
+
+        if (!visible)
+        {
+            // Find the direct canvas child that contains this component (may be a parent of us).
+            Transform selfRoot = transform;
+            while (selfRoot.parent != null && selfRoot.parent != canvas.transform)
+                selfRoot = selfRoot.parent;
+
+            m_HiddenUI.Clear();
+            foreach (Transform child in canvas.transform)
+            {
+                if (child == tooltipPanel.transform) continue;
+                if (child == selfRoot) continue;
+                if (!child.gameObject.activeSelf) continue;
+                m_HiddenUI.Add(child.gameObject);
+                child.gameObject.SetActive(false);
+            }
+        }
+        else
+        {
+            foreach (var go in m_HiddenUI)
+            {
+                if (go != null) go.SetActive(true);
+            }
+            m_HiddenUI.Clear();
+        }
     }
 
     /// <summary>
@@ -177,11 +307,11 @@ public class TowerTooltipUI : MonoBehaviour
 
         if (levelText != null)
         {
-            levelText.text = $"LVL: {level}";
+            levelText.text = $"{level}";
         }
         else if (factionText != null)
         {
-            factionText.text = $"{currentDisplayedUnit.Faction}  LVL: {level}";
+            factionText.text = $"{currentDisplayedUnit.Faction}  {level}";
         }
 
         // Update tower icon
@@ -229,56 +359,43 @@ public class TowerTooltipUI : MonoBehaviour
         {
             manaCostText.text = $"{currentDisplayedUnit.BaseDef.AbilityManaCost:F0}";
         }
+
+        if (rangeText != null)
+        {
+            rangeText.text = $"{currentDisplayedUnit.GetModifiedRange():F1}";
+        }
+
+        if (rarityText != null && currentDisplayedUnit.BaseDef != null)
+        {
+            rarityText.text = currentDisplayedUnit.BaseDef.Rarity.ToString();
+        }
+
+        if (descriptionText != null && currentDisplayedUnit.BaseDef != null)
+        {
+            descriptionText.text = currentDisplayedUnit.BaseDef.Description;
+        }
+
+        if (modifiersText != null)
+        {
+            modifiersText.text = BuildModifiersString(currentDisplayedUnit);
+        }
     }
 
-    /// <summary>
-    /// Updates the tooltip's position to follow the cursor, adjusting for screen edges
-    /// </summary>
-    private void UpdateTooltipPosition()
+    private string BuildModifiersString(UnitInstance unit)
     {
-        if (tooltipPanel == null || canvas == null) return;
-
-        // Use new Input System to get mouse position
-        if (Mouse.current == null) return;
-
-        Vector2 mousePosition = Mouse.current.position.ReadValue();
-
-        Vector2 localPoint;
-        RectTransformUtility.ScreenPointToLocalPointInRectangle(
-            canvas.transform as RectTransform,
-            mousePosition,
-            canvas.renderMode == RenderMode.ScreenSpaceOverlay ? null : canvas.worldCamera,
-            out localPoint
-        );
-
-        Vector2 tooltipSize = tooltipPanel.sizeDelta;
-        Vector2 canvasSize = (canvas.transform as RectTransform).sizeDelta;
-
-        float halfScreenWidth = canvasSize.x / 2f;
-        bool showOnRight = localPoint.x < 0;
-
-        Vector2 tooltipPosition = localPoint;
-
-        if (showOnRight)
-        {
-            tooltipPosition.x += offsetFromCursor;
-            tooltipPosition.x = Mathf.Min(tooltipPosition.x, halfScreenWidth - tooltipSize.x / 2f - screenEdgeBuffer);
-        }
-        else
-        {
-            tooltipPosition.x -= offsetFromCursor;
-            tooltipPosition.x = Mathf.Max(tooltipPosition.x, -halfScreenWidth + tooltipSize.x / 2f + screenEdgeBuffer);
-        }
-
-        float halfScreenHeight = canvasSize.y / 2f;
-        tooltipPosition.y = Mathf.Clamp(
-            tooltipPosition.y,
-            -halfScreenHeight + tooltipSize.y / 2f + screenEdgeBuffer,
-            halfScreenHeight - tooltipSize.y / 2f - screenEdgeBuffer
-        );
-
-        tooltipPanel.localPosition = tooltipPosition;
+        var sb = new System.Text.StringBuilder();
+        if (unit.DamageMultMod != 1f || unit.DamageFlatMod != 0f)
+            sb.AppendLine($"DMG ×{unit.DamageMultMod:F2}  +{unit.DamageFlatMod:F0}");
+        if (unit.SpeedMultMod != 1f || unit.SpeedFlatMod != 0f)
+            sb.AppendLine($"SPD ×{unit.SpeedMultMod:F2}  +{unit.SpeedFlatMod:F2}");
+        if (unit.AbilityPowerMult != 1f || unit.AbilityPowerFlatMod != 0f)
+            sb.AppendLine($"AP ×{unit.AbilityPowerMult:F2}  +{unit.AbilityPowerFlatMod:F1}");
+        if (unit.RangeFlatMod != 0f)
+            sb.AppendLine($"RNG +{unit.RangeFlatMod:F1}");
+        return sb.Length > 0 ? sb.ToString().TrimEnd() : "None";
     }
+
+    // UpdateTooltipPosition is no longer used (tooltip animates to center on open).
 
     /// <summary>
     /// Gets the currently displayed unit (useful for checking if a new tooltip should be shown)

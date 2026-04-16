@@ -233,8 +233,11 @@ public class GameLoopManager : MonoBehaviour
             yield return StartCoroutine(enemyPreviewManager.RunPreview());
 
         if (waveManager != null)
+        {
             waveManager.StartNextWave();
+        }
 
+        // Monitor wave completion
         StartCoroutine(WaitForWaveCompletion());
     }
 
