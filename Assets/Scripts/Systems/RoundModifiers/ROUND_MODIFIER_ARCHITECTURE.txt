@@ -1,0 +1,172 @@
+================================================================================
+ROUND MODIFIER SYSTEM - ARCHITECTURE OVERVIEW
+================================================================================
+
+OVERVIEW
+--------
+The Round Modifier system applies temporary gameplay rule changes for the
+duration of a cycle (typically 3 waves). Each cycle, a weighted random
+selection of modifiers is chosen and applied. Modifiers are cleared and
+the context is reset when the cycle ends.
+
+The system has two fundamental approaches to modifying gameplay:
+  1. Context-only modifiers  - write multipliers to RoundModifierContext
+  2. Direct modifiers        - also modify tower/unit fields directly
+
+
+FILES & RESPONSIBILITIES
+------------------------
+
+RoundModifier.cs
+    Base data class for all modifiers. Contains:
+      - Name, Description, Category, SelectionWeight (metadata)
+      - OnRoundStart  (Action)  - fired when the cycle begins
+      - OnRoundEnd    (Action)  - fired when the cycle ends
+      - OnTowerPlaced (Action<GameObject>) - fired when a tower is placed mid-round
+      - IsMutuallyExclusiveWith(other) - returns true if two modifiers cannot
+        coexist; defaults to same-category exclusion, can be overridden.
+
+    RoundModifierCategory enum (8 values):
+      TowerDebuff, TowerBuff, EnemyBuff, EnemyDebuff,
+      EconomyDebuff, EconomyBuff, WaveModifier, Mixed
+
+RoundModifierContext.cs
+    Singleton multiplier bag. All game systems that respect modifiers
+    read from this object rather than from the modifiers themselves.
+    Resets to neutral defaults (1.0 / false) when RemoveModifiers() runs.
+
+    Tower Stats:   TowerAttackDamageMult, TowerAttackSpeedMult,
+                   TowerAbilityPowerMult, TowerRangeMult,
+                   TowerAbilityCostMult, TowerManaGainMult,
+                   TowerMaxHealthMult, ProjectileSpeedMult
+
+    Enemy Stats:   EnemyHealthMult, EnemySpeedMult, EnemyDamageMult,
+                   EnemyAttackSpeedMult, EnemyDamageAmpMult
+
+    Status Effects: FireDamageMult, FireDurationMult, FireStacksMult,
+                    PoisonDamageMult, PoisonDurationMult,
+                    SlowStrengthMult, SlowDurationMult,
+                    StunDurationMult, DamageAmpStrengthMult,
+                    DamageAmpDurationMult, OnHitEffectChanceMult,
+                    DebuffTickRateMult
+
+    Economy:       NoInterest (bool), InterestMult, IncomeMult,
+                   TowerShopCostMult, RerollCostMult, SellValueMult
+
+    Wave/Spawn:    EnemyCountMult, EnemySpawnIntervalMult
+
+RoundModifierManager.cs
+    Central controller. Key responsibilities:
+      - Holds the full modifier pool and the currently-active list
+      - SelectModifiersForCycle()   - weighted random draw with mutual exclusion
+      - ApplyModifiers()            - calls OnRoundStart on each active modifier,
+                                      then fires OnModifiersApplied event (UI hook)
+      - RemoveModifiers()           - calls OnRoundEnd on each modifier,
+                                      then calls Context.Reset()
+      - NotifyTowerPlaced(tower)    - relays placement events to active modifiers
+      - ForEachTower(action)        - iterates all living board towers
+      - WeightedRandomPick()        - implements weighted random selection
+      - ForceModifierByName()       - debug helper
+
+RoundModifierSetup.cs
+    Single registration point. Called on Start() after the manager is ready.
+    Instantiates each concrete modifier and calls manager.AddModifier().
+    To add a new modifier to the pool, register it here.
+
+RoundModifierDebugger.cs
+    Context-menu testing utilities (Inspector only):
+      - Force specific modifiers by name
+      - Apply / remove / run full cycles
+      - Print context values, active modifier list, tower stats
+
+RoundModifierUI.cs  (Scripts/UI/)
+    Subscribes to RoundModifierManager.OnModifiersApplied.
+    Animates a name/description panel (fade-in → hold → fade-out).
+    Exposes WaitUntilHidden() coroutine for GameLoopManager coordination.
+
+
+LIFECYCLE
+---------
+
+    GameLoopManager signals cycle start
+           |
+           v
+    RoundModifierManager.SelectModifiersForCycle()
+        - Builds weighted pool excluding already-active categories
+        - Picks N modifiers via WeightedRandomPick()
+           |
+           v
+    RoundModifierManager.ApplyModifiers()
+        - Calls modifier.OnRoundStart() for each active modifier
+          (context-only: sets multipliers in RoundModifierContext)
+          (direct:       modifies tower fields + subscribes OnTowerPlaced)
+        - Fires OnModifiersApplied event -> RoundModifierUI shows panel
+           |
+           v
+    [3 waves play out]
+    Tower placement -> RoundModifierManager.NotifyTowerPlaced(tower)
+                    -> each active modifier's OnTowerPlaced(tower) is called
+           |
+           v
+    RoundModifierManager.RemoveModifiers()
+        - Calls modifier.OnRoundEnd() for each active modifier
+          (direct modifiers undo their changes here)
+        - Calls RoundModifierContext.Reset()  (resets all multipliers)
+
+
+HOW GAME SYSTEMS CONSUME THE CONTEXT
+-------------------------------------
+Systems do NOT import or reference modifiers directly. They read from the
+singleton context at the moment they need a value.
+
+Examples:
+  - BaseEnemy.ApplyWaveScaling()      reads EnemySpeedMult, EnemyHealthMult
+  - BaseUnit.Update()                 reads TowerAbilityCostMult
+  - CurrencyManager.newRound()        reads NoInterest, InterestMult
+  - BaseEnemy.ApplyFire()             reads FireDamageMult
+  - UnitInstance.GetModifiedAttackSpeed() reads TowerAttackSpeedMult
+
+This means context multipliers apply automatically to all present and
+future enemies/towers without any extra code in the modifier itself.
+
+
+TWO MODIFIER ARCHETYPES
+------------------------
+
+Context-Only (simpler, most modifiers)
+    OnRoundStart  -> set one or more fields on RoundModifierContext
+    OnRoundEnd    -> nothing (Reset() handles cleanup automatically)
+    OnTowerPlaced -> not needed
+
+    Examples: Blitzkrieg, Mana Tax, Recession, Sluggish Arsenal
+
+Direct (for changes that cannot be expressed as a multiplier)
+    OnRoundStart  -> set context AND directly modify existing tower fields;
+                     subscribe a lambda to OnTowerPlaced to handle mid-round placements
+    OnRoundEnd    -> reverse the direct changes (e.g. restore HP)
+    OnTowerPlaced -> apply the change to the newly-placed tower
+
+    Example: Bulwark Flame (adds +25% MaxHP to towers, tracked in a dictionary
+             so the exact delta can be subtracted on cleanup)
+
+
+MUTUAL EXCLUSION
+-----------------
+By default, IsMutuallyExclusiveWith() returns true when two modifiers share
+the same RoundModifierCategory. Override the method in a concrete modifier
+to express finer-grained incompatibility (e.g., two modifiers in different
+categories that logically conflict).
+
+SelectModifiersForCycle() will never place two mutually-exclusive modifiers
+in the same active set.
+
+
+WEIGHTED SELECTION
+-------------------
+Each modifier has a float SelectionWeight (default 1.0).
+Higher weight = more likely to be chosen.
+WeightedRandomPick() sums all eligible weights and draws a uniform random
+value to select one modifier per pick, removing it from the eligible pool
+before picking the next one.
+
+================================================================================
