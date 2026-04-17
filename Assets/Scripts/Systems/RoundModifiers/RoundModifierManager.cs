@@ -36,6 +36,13 @@ public class RoundModifierManager : MonoBehaviour
     // Modifiers selected and currently active for the ongoing cycle
     private readonly List<RoundModifier> activeModifiers = new List<RoundModifier>();
 
+    /// <summary>
+    /// Fired after modifiers are selected and applied at the start of each cycle.
+    /// Subscribe to this in any UI component that needs to display the active modifiers.
+    /// The list passed is the same reference as GetActiveModifiers() — read only, do not modify.
+    /// </summary>
+    public static event Action<IReadOnlyList<RoundModifier>> OnModifiersApplied;
+
     private void Awake()
     {
         if (Instance != null && Instance != this)
@@ -127,6 +134,9 @@ public class RoundModifierManager : MonoBehaviour
             activeModifiers[i].OnRoundStart?.Invoke();
             Debug.Log($"[RoundModifierManager] Applied: {activeModifiers[i].Name}");
         }
+
+        // Notify any subscribed UI components so they can display the active modifiers
+        OnModifiersApplied?.Invoke(activeModifiers);
     }
 
     /// <summary>
@@ -194,6 +204,33 @@ public class RoundModifierManager : MonoBehaviour
                     action(unit);
             }
         }
+    }
+
+    // =========================================================================
+    // DEBUG / TESTING  (safe to call in-editor; does nothing in a build)
+    // =========================================================================
+
+    /// <summary>
+    /// Forces a specific modifier to be the only active modifier and immediately applies it.
+    /// Used by RoundModifierDebugger. Searches by exact Name string (case-sensitive).
+    /// Clears any previously active modifiers first without calling their OnRoundEnd,
+    /// so call RemoveModifiers() before this if you need clean cleanup.
+    /// </summary>
+    public void ForceModifierByName(string name)
+    {
+        activeModifiers.Clear();
+
+        RoundModifier found = modifierPool.Find(m => m.Name == name);
+        if (found == null)
+        {
+            Debug.LogWarning($"[RoundModifierManager] ForceModifierByName: '{name}' not found in pool. " +
+                             "Check that RoundModifierSetup has run and the name matches exactly.");
+            return;
+        }
+
+        activeModifiers.Add(found);
+        found.OnRoundStart?.Invoke();
+        Debug.Log($"[RoundModifierManager] Force-applied: {found.Name}");
     }
 
     // =========================================================================

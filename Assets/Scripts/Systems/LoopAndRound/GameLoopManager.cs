@@ -258,8 +258,15 @@ public class GameLoopManager : MonoBehaviour
     /// </summary>
     private IEnumerator StartCombatWithPreview()
     {
-        // Yield on the preview. If EnemyPreviewManager is not present in the
-        // scene the wave starts immediately with no additional delay.
+        // Wait for the round modifier notification to finish before panning the
+        // camera to the enemy preview, so the two never overlap on screen.
+        // WaitUntilHidden() returns immediately if no modifier UI is present or
+        // if no modifier is active this cycle — so this never causes a hang.
+        if (RoundModifierUI.Instance != null)
+            yield return StartCoroutine(RoundModifierUI.Instance.WaitUntilHidden());
+
+        // Pan camera to enemy preview. If EnemyPreviewManager is not present
+        // in the scene the wave starts immediately with no additional delay.
         if (enemyPreviewManager != null)
             yield return StartCoroutine(enemyPreviewManager.RunPreview());
 
