@@ -15,9 +15,22 @@ public class GameSpeedButton : MonoBehaviour
     [SerializeField] private Vector2 m_BottomRightOffset = new Vector2(-20f, 20f);
     [SerializeField] private string m_ButtonName = "GameSpeedButton";
 
+    [Header("Pause / Resume Button")]
+    [SerializeField, Tooltip("Assign your Pause/Resume button here.")]
+    private Button m_ExternalButton;
+    [SerializeField] private Sprite m_PauseSprite;
+    [SerializeField] private Sprite m_ResumeSprite;
+
+    [Header("Fast Forward Button")]
+    [SerializeField, Tooltip("Assign your fast-forward (>>) button here.")]
+    private Button m_FastForwardButton;
+    [SerializeField, Tooltip("Optional TMP label on the FF button that shows current speed.")]
+    private TextMeshProUGUI m_SpeedLabel;
+
     private int m_CurrentSpeedIndex;
     private bool m_IsPaused;
     private Button m_Button;
+    private Image m_PauseButtonImage;
     private TextMeshProUGUI m_Label;
     private RectTransform m_ButtonRect;
 
@@ -37,7 +50,8 @@ public class GameSpeedButton : MonoBehaviour
     {
         EnsureButtonExists();
         ApplyTimeScale();
-        RefreshLabel();
+        RefreshPauseSprite();
+        RefreshSpeedLabel();
         UpdateVisibility();
     }
 
@@ -50,7 +64,7 @@ public class GameSpeedButton : MonoBehaviour
     {
         m_IsPaused = isPaused;
         ApplyTimeScale();
-        RefreshLabel();
+        RefreshPauseSprite();
     }
 
     public bool IsPaused()
@@ -67,7 +81,6 @@ public class GameSpeedButton : MonoBehaviour
     {
         m_CurrentSpeedIndex = Mathf.Clamp(m_DefaultSpeedIndex, 0, m_Speeds.Length - 1);
         ApplyTimeScale();
-        RefreshLabel();
     }
 
     private void OnSpeedButtonClicked()
@@ -84,7 +97,16 @@ public class GameSpeedButton : MonoBehaviour
 
         m_CurrentSpeedIndex = (m_CurrentSpeedIndex + 1) % m_Speeds.Length;
         ApplyTimeScale();
-        RefreshLabel();
+    }
+
+    private void OnPauseButtonClicked()
+    {
+        if (SfxManager.Instance != null)
+        {
+            SfxManager.Instance.PlayUiClick();
+        }
+
+        TogglePaused();
     }
 
     private void ApplyTimeScale()
@@ -92,11 +114,13 @@ public class GameSpeedButton : MonoBehaviour
         if (m_IsPaused)
         {
             Time.timeScale = 0f;
-            return;
         }
-
-        float speed = GetCurrentSpeed();
-        Time.timeScale = Mathf.Max(0.01f, speed);
+        else
+        {
+            float speed = GetCurrentSpeed();
+            Time.timeScale = Mathf.Max(0.01f, speed);
+        }
+        RefreshSpeedLabel();
     }
 
     private float GetCurrentSpeed()
@@ -110,29 +134,21 @@ public class GameSpeedButton : MonoBehaviour
         return m_Speeds[safeIndex];
     }
 
-    private void RefreshLabel()
+    private void RefreshPauseSprite()
     {
-        if (m_Label == null)
-        {
-            return;
-        }
+        if (m_PauseButtonImage == null) return;
+        m_PauseButtonImage.sprite = m_IsPaused ? m_ResumeSprite : m_PauseSprite;
+    }
 
-        if (m_IsPaused)
-        {
-            m_Label.text = "Paused";
-            return;
-        }
-
-        m_Label.text = $"{GetCurrentSpeed():0.##}x";
+    private void RefreshSpeedLabel()
+    {
+        if (m_SpeedLabel == null) return;
+        float speed = GetCurrentSpeed();
+        m_SpeedLabel.text = m_IsPaused ? "||" : $"{speed:0.#}x";
     }
 
     private void UpdateVisibility()
     {
-        if (m_Button == null)
-        {
-            return;
-        }
-
         bool show = true;
         if (GameLoopManagerOld.Instance != null)
         {
@@ -145,14 +161,31 @@ public class GameSpeedButton : MonoBehaviour
                 && GameLoopManager.Instance.CurrentState != GameLoopManager.GameState.GameOver;
         }
 
-        if (m_Button.gameObject.activeSelf != show)
-        {
+        if (m_Button != null && m_Button.gameObject.activeSelf != show)
             m_Button.gameObject.SetActive(show);
-        }
+
+        if (m_FastForwardButton != null && m_FastForwardButton.gameObject.activeSelf != show)
+            m_FastForwardButton.gameObject.SetActive(show);
     }
 
     private void EnsureButtonExists()
     {
+        if (m_ExternalButton != null)
+        {
+            m_Button = m_ExternalButton;
+            m_PauseButtonImage = m_Button.GetComponent<Image>();
+            m_ButtonRect = m_Button.GetComponent<RectTransform>();
+            m_Button.onClick.RemoveListener(OnPauseButtonClicked);
+            m_Button.onClick.AddListener(OnPauseButtonClicked);
+        }
+
+        if (m_FastForwardButton != null)
+        {
+            m_FastForwardButton.onClick.RemoveListener(OnSpeedButtonClicked);
+            m_FastForwardButton.onClick.AddListener(OnSpeedButtonClicked);
+            return;
+        }
+
         Canvas canvas = FindFirstObjectByType<Canvas>();
         if (canvas == null)
         {

@@ -11,6 +11,7 @@ public class TowerSlot : MonoBehaviour, IPointerEnterHandler, IPointerExitHandle
     [SerializeField] private Image iconImage;
     [SerializeField] private Image backgroundImage;
     [SerializeField] private TextMeshProUGUI costText;
+    [SerializeField] private Image costIconImage;
     [SerializeField] private TextMeshProUGUI descriptionText;
     [SerializeField] private Button button;
     [SerializeField] private bool active = false;
@@ -66,11 +67,11 @@ public class TowerSlot : MonoBehaviour, IPointerEnterHandler, IPointerExitHandle
                 iconImage.color = iconImage.sprite != null ? Color.white : new Color(1f, 1f, 1f, 0f);
             }
             if (costText != null) costText.text = $"{data.Cost}";
-            if (descriptionText != null) descriptionText.text = useInlineDescription ? data.Description : "";
+            if (descriptionText != null) descriptionText.text = data.Description;
             if (button != null) button.interactable = true;
             active = true;
 
-            // Set faction color on background image
+            // Set faction color on background image only — cost icon stays gold
             if (backgroundImage != null)
             {
                 backgroundImage.color = GetFactionColor(data.Faction);
@@ -218,53 +219,27 @@ public class TowerSlot : MonoBehaviour, IPointerEnterHandler, IPointerExitHandle
             return;
         }
 
-        if (shopManager == null)
-        {
-            shopManager = FindFirstObjectByType<ShopManager>();
-        }
         if (shopManagerOld == null)
         {
             shopManagerOld = FindFirstObjectByType<ShopManagerOld>();
         }
 
-        if (shopManager != null)
+        if (shopManagerOld != null && shopManagerOld.UsesTooltipOverlay())
         {
-            shopManager.ShowConsumableTooltip(unitDefinition.Description);
-            return;
-        }
-
-        if (shopManagerOld != null)
-        {
-            if (shopManagerOld.UsesTooltipOverlay())
-            {
-                shopManagerOld.ShowConsumableTooltip(unitDefinition.Description);
-            }
+            shopManagerOld.ShowConsumableTooltip(unitDefinition.Description);
         }
     }
 
     public void OnPointerExit(PointerEventData eventData)
     {
-        if (shopManager == null)
-        {
-            shopManager = FindFirstObjectByType<ShopManager>();
-        }
         if (shopManagerOld == null)
         {
             shopManagerOld = FindFirstObjectByType<ShopManagerOld>();
         }
 
-        if (shopManager != null)
+        if (shopManagerOld != null && shopManagerOld.UsesTooltipOverlay())
         {
-            shopManager.HideConsumableTooltip();
-            return;
-        }
-
-        if (shopManagerOld != null)
-        {
-            if (shopManagerOld.UsesTooltipOverlay())
-            {
-                shopManagerOld.HideConsumableTooltip();
-            }
+            shopManagerOld.HideConsumableTooltip();
         }
     }
 
