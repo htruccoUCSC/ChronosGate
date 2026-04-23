@@ -115,12 +115,6 @@ public class Fairy : BaseUnit
 
     private void SpawnCurrency(int amount)
     {
-        if (CurrencyManager.Instance == null)
-        {
-            Debug.LogWarning("Fairy could not add currency because CurrencyManager is missing.");
-            return;
-        }
-
-        CurrencyManager.Instance.AddCurrency(amount, transform.position);
+        CoinDropSpawner.Spawn(transform.position, amount);
     }
 }

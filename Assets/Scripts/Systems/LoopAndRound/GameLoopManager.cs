@@ -254,6 +254,9 @@ public class GameLoopManager : MonoBehaviour
 
         Debug.Log("Wave cleared!");
 
+        if (SfxManager.Instance != null)
+            SfxManager.Instance.PlayRoundComplete();
+
         if (newRound != null)
         {
             newRound.startNewRound();

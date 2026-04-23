@@ -57,6 +57,10 @@ public class BaseEnemy : MonoBehaviour
     public float DamageAmp=1;
 private float debuffTickTimer = 0f;
 private const float DEBUFF_TICK_RATE = 1f;
+    [Header("Coin Drop Vfx")]
+    [SerializeField, Tooltip("Prefab with SpriteRenderer, Animator, and CoinDropVfx component.")]
+    private GameObject m_CoinDropPrefab;
+
     [Header("Status Overlay Vfx")]
     [SerializeField] private Sprite m_DebuffOverlaySprite;
     [SerializeField] private Vector3 m_DebuffOverlayOffset = new Vector3(0f, 0.6f, 0f);
@@ -328,6 +332,13 @@ private const float DEBUFF_TICK_RATE = 1f;
         {
             hitTint.Flash();
         }
+
+        if (m_CoinDropPrefab != null)
+        {
+            GameObject coin = Instantiate(m_CoinDropPrefab, transform.position, Quaternion.identity);
+            coin.GetComponent<CoinDropVfx>()?.Launch();
+        }
+
         Destroy(gameObject);
     }
 
