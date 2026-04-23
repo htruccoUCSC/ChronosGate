@@ -24,13 +24,7 @@ public class Farmer : BaseUnit
     private void SpawnCurrency()
     {
         int amount = Mathf.Max(1, Mathf.RoundToInt(m_BaseCurrencyAmount + myData.GetModifiedAbilityPower())/40);
-        if (CurrencyManager.Instance == null)
-        {
-            Debug.LogWarning("Farmer could not add currency because CurrencyManager is missing.");
-            return;
-        }
-
-        CurrencyManager.Instance.AddCurrency(amount, transform.position);
+        CoinDropSpawner.Spawn(transform.position, amount);
     }
 
     private void GivePlayerOnionItem()

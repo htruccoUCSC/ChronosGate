@@ -195,13 +195,7 @@ public class FirePriestess : BaseUnit
 
     private void SpawnCurrency(int amount)
     {
-        if (CurrencyManager.Instance == null)
-        {
-            Debug.LogWarning("Fire Priestess could not add currency because CurrencyManager is missing.");
-            return;
-        }
-
-        CurrencyManager.Instance.AddCurrency(amount, transform.position);
+        CoinDropSpawner.Spawn(transform.position, amount);
     }
 }
 

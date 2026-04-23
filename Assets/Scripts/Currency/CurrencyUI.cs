@@ -46,6 +46,9 @@ public class CurrencyUI : MonoBehaviour
         }
     }
 
+    // Expose the position of the currency text for coin vfx
+    public RectTransform CurrencyTextRect => currencyText != null ? currencyText.rectTransform : null;
+
     public void PlayCurrencyGainAnimation(Vector3 worldOrigin, int amount)
     {
         if (amount <= 0 || currencyText == null || m_Canvas == null)
