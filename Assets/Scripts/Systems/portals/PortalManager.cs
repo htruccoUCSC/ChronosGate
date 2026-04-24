@@ -27,6 +27,20 @@ public class PortalManager : MonoBehaviour
     private float m_SpawnClipLength = 0f;
     private Transform m_PortalVisualRoot;
 
+#if UNITY_EDITOR
+    private void OnValidate()
+    {
+        if (m_PortalVisualPrefab == null)
+        {
+            m_PortalVisualPrefab = UnityEditor.AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Images/Portals/Animations/PortalVisual.prefab");
+            if (m_PortalVisualPrefab != null)
+                Debug.Log("[PortalManager] Auto-assigned PortalVisual prefab via OnValidate.");
+            else
+                Debug.LogError("[PortalManager] Could not find PortalVisual prefab at Assets/Prefabs/PortalVisual.prefab.");
+        }
+    }
+#endif
+
     public void init()
     {
         Debug.Log("[PortalManager] init() called.");
