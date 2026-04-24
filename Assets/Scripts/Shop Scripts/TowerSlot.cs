@@ -20,6 +20,7 @@ public class TowerSlot : MonoBehaviour, IPointerEnterHandler, IPointerExitHandle
     private InventoryUI inventoryUI;
     private ShopManager shopManager;
     private ShopManagerOld shopManagerOld;
+    private UIButtonAnimator m_ButtonAnimator;
     private GameObject m_DragObject;
     private BoardManager m_Board;
     private UnitRangePreview m_RangePreview;
@@ -36,6 +37,8 @@ public class TowerSlot : MonoBehaviour, IPointerEnterHandler, IPointerExitHandle
         
         button.onClick.RemoveListener(OnSlotClicked);
         button.onClick.AddListener(OnSlotClicked);
+
+        m_ButtonAnimator = button.GetComponent<UIButtonAnimator>();
     }
 
     public void Initialize(InventoryUI inventory)
@@ -121,6 +124,7 @@ public class TowerSlot : MonoBehaviour, IPointerEnterHandler, IPointerExitHandle
 
         if (TryPurchaseToInventory())
         {
+            m_ButtonAnimator?.TriggerPurchasePop();
             ClearSlot();
         }
     }
@@ -208,6 +212,7 @@ public class TowerSlot : MonoBehaviour, IPointerEnterHandler, IPointerExitHandle
 
         if (TryPurchaseToBoard(eventData.position))
         {
+            m_ButtonAnimator?.TriggerPurchasePop();
             ClearSlot();
         }
     }

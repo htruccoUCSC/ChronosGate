@@ -21,6 +21,16 @@ public class UIButtonAnimator : MonoBehaviour,
     [SerializeField, Tooltip("Seconds for the scale to animate between states.")]
     private float m_TransitionDuration = 0.08f;
 
+    [Header("Purchase Pop")]
+    [SerializeField, Tooltip("Peak scale multiplier for the purchase confirmation pop.")]
+    private float m_PurchasePopScale = 1.2f;
+
+    [SerializeField, Tooltip("Seconds to reach the peak of the purchase pop.")]
+    private float m_PurchasePopUpDuration = 0.08f;
+
+    [SerializeField, Tooltip("Seconds to return to base scale after the purchase pop.")]
+    private float m_PurchasePopDownDuration = 0.12f;
+
     [Header("Press Highlight")]
     [SerializeField, Tooltip("Optional Image used as a white overlay on press. " +
         "Create a child Image named 'PressHighlight', set its color to white with ~0.25 alpha, " +
@@ -41,6 +51,7 @@ public class UIButtonAnimator : MonoBehaviour,
     private Vector3 m_BaseScale;
     private Coroutine m_ScaleCoroutine;
     private bool m_WasInteractable = true;
+    private bool m_IsPoppingPurchase = false;
 
     private void Awake()
     {
@@ -75,8 +86,12 @@ public class UIButtonAnimator : MonoBehaviour,
 
         if (!interactable)
         {
-            SetScale(m_BaseScale);
-            if (m_PressHighlightOverlay != null) m_PressHighlightOverlay.enabled = false;
+            // Don't interrupt a purchase pop — let it finish first.
+            if (!m_IsPoppingPurchase)
+            {
+                SetScale(m_BaseScale);
+                if (m_PressHighlightOverlay != null) m_PressHighlightOverlay.enabled = false;
+            }
         }
 
         ApplyDisabledVisual(!interactable);
@@ -137,6 +152,42 @@ public class UIButtonAnimator : MonoBehaviour,
         if (m_ScaleCoroutine != null) StopCoroutine(m_ScaleCoroutine);
 
         m_RectTransform.localScale = target;
+    }
+
+    // Plays a punch-scale pop, intended to be called on a successful purchase.
+    public void TriggerPurchasePop()
+    {
+        if (m_ScaleCoroutine != null) StopCoroutine(m_ScaleCoroutine);
+        m_ScaleCoroutine = StartCoroutine(PurchasePopRoutine());
+    }
+
+    private IEnumerator PurchasePopRoutine()
+    {
+        m_IsPoppingPurchase = true;
+        Vector3 popTarget = m_BaseScale * m_PurchasePopScale;
+
+        // Scale up to pop peak.
+        float elapsed = 0f;
+        Vector3 start = m_RectTransform.localScale;
+        while (elapsed < m_PurchasePopUpDuration)
+        {
+            elapsed += Time.unscaledDeltaTime;
+            m_RectTransform.localScale = Vector3.Lerp(start, popTarget, elapsed / m_PurchasePopUpDuration);
+            yield return null;
+        }
+        m_RectTransform.localScale = popTarget;
+
+        // Scale back to base.
+        elapsed = 0f;
+        while (elapsed < m_PurchasePopDownDuration)
+        {
+            elapsed += Time.unscaledDeltaTime;
+            m_RectTransform.localScale = Vector3.Lerp(popTarget, m_BaseScale, elapsed / m_PurchasePopDownDuration);
+            yield return null;
+        }
+        m_RectTransform.localScale = m_BaseScale;
+        m_IsPoppingPurchase = false;
+        m_ScaleCoroutine = null;
     }
 
     private IEnumerator ScaleTo(Vector3 target)

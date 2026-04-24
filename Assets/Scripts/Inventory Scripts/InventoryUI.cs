@@ -48,7 +48,9 @@ public class InventoryUI : MonoBehaviour
             slotObject.transform.SetParent(transform, false);
 
             var bg = slotObject.AddComponent<Image>();
+            
             if (m_SlotBackground && m_Units[i] == null) bg.sprite = m_SlotBackground;
+
             if (m_SlotFilledBackground && m_Units[i] != null) bg.sprite = m_SlotFilledBackground;
 
 
