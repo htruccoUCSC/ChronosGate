@@ -1,0 +1,209 @@
+================================================================================
+HOW TO CREATE A NEW ROUND MODIFIER
+================================================================================
+
+There are two modifier types. Choose one before you start:
+
+  TYPE A - Context-Only
+    You only need to set multipliers on RoundModifierContext.
+    The existing game systems will pick them up automatically.
+    Use this for stat buffs/debuffs, economy changes, wave changes.
+
+  TYPE B - Direct
+    You also need to modify tower/unit fields directly at runtime
+    (e.g., changing MaxHP, adding a component, swapping a visual).
+    Use this when there is no context field that covers your effect.
+
+--------------------------------------------------------------------------------
+STEP 1 - Create the modifier file
+--------------------------------------------------------------------------------
+
+Create a new .cs file in:
+    Assets/Scripts/RoundModifiers/
+
+Name it after the modifier's mechanical effect, e.g.:
+    DoublePoisonDuration.cs
+
+--------------------------------------------------------------------------------
+STEP 2 - Write the class
+--------------------------------------------------------------------------------
+
+The class is NOT a MonoBehaviour. It is a plain C# class.
+Instantiate a RoundModifier struct/object and populate its fields.
+
+--- TYPE A TEMPLATE ---
+
+using UnityEngine;
+
+public class DoublePoisonDuration
+{
+    public RoundModifier Create()
+    {
+        return new RoundModifier
+        {
+            Name             = "Venomous Age",
+            Description      = "All poison effects last twice as long.",
+            Category         = RoundModifierCategory.EnemyDebuff,
+            SelectionWeight  = 1.0f,
+
+            OnRoundStart = () =>
+            {
+                RoundModifierContext ctx = RoundModifierContext.Instance;
+                ctx.PoisonDurationMult = 2.0f;
+            },
+
+            OnRoundEnd = () =>
+            {
+                // Nothing needed — RoundModifierContext.Reset() handles cleanup.
+            }
+        };
+    }
+}
+
+--- TYPE B TEMPLATE ---
+
+using System.Collections.Generic;
+using UnityEngine;
+
+public class ExtraMaxHealth
+{
+    private readonly Dictionary<GameObject, float> _appliedDeltas = new();
+    private RoundModifier _modifier;
+
+    public RoundModifier Create()
+    {
+        _modifier = new RoundModifier
+        {
+            Name             = "Iron Will",
+            Description      = "All towers gain 40% more maximum health.",
+            Category         = RoundModifierCategory.TowerBuff,
+            SelectionWeight  = 0.9f,
+
+            OnRoundStart = () =>
+            {
+                // Apply to all towers currently on the board.
+                RoundModifierManager.Instance.ForEachTower(ApplyToTower);
+
+                // Subscribe so newly placed towers also get the buff.
+                _modifier.OnTowerPlaced = ApplyToTower;
+            },
+
+            OnRoundEnd = () =>
+            {
+                // Reverse the direct changes before the context is reset.
+                foreach (var kvp in _appliedDeltas)
+                {
+                    if (kvp.Key == null) continue;
+                    var unit = kvp.Key.GetComponent<BaseUnit>();
+                    if (unit != null)
+                    {
+                        unit.maxHealth -= kvp.Value;
+                        unit.currentHealth = Mathf.Min(unit.currentHealth, unit.maxHealth);
+                    }
+                }
+                _appliedDeltas.Clear();
+                _modifier.OnTowerPlaced = null;
+            }
+        };
+        return _modifier;
+    }
+
+    private void ApplyToTower(GameObject tower)
+    {
+        var unit = tower.GetComponent<BaseUnit>();
+        if (unit == null || _appliedDeltas.ContainsKey(tower)) return;
+
+        float delta = unit.maxHealth * 0.4f;
+        unit.maxHealth     += delta;
+        unit.currentHealth += delta;
+        _appliedDeltas[tower] = delta;
+    }
+}
+
+--------------------------------------------------------------------------------
+STEP 3 - Register the modifier
+--------------------------------------------------------------------------------
+
+Open:
+    Assets/Scripts/Systems/RoundModifiers/RoundModifierSetup.cs
+
+Inside the Start() or RegisterAll() method, add one line:
+
+    manager.AddModifier(new DoublePoisonDuration().Create());
+
+For Type B modifiers that hold instance state, keep a local variable
+so the lambdas can close over it:
+
+    var ironWill = new ExtraMaxHealth();
+    manager.AddModifier(ironWill.Create());
+
+That's all that is required to add the modifier to the selection pool.
+
+--------------------------------------------------------------------------------
+STEP 4 - Choose the right category
+--------------------------------------------------------------------------------
+
+RoundModifierCategory controls mutual exclusion. Two modifiers in the same
+category will never be active at the same time by default.
+
+    TowerDebuff    - nerfs tower stats (attack speed, range, cost, etc.)
+    TowerBuff      - buffs tower stats (damage, health, ability power, etc.)
+    EnemyBuff      - makes enemies stronger (speed, health, damage)
+    EnemyDebuff    - weakens enemies (reduced health, slower spawns)
+    EconomyDebuff  - hurts the player's gold income (no interest, higher costs)
+    EconomyBuff    - helps the player's gold income (more interest, cheaper shops)
+    WaveModifier   - changes spawn parameters (count, interval)
+    Mixed          - use when the modifier spans multiple categories
+
+If two modifiers in DIFFERENT categories should still be mutually exclusive,
+override IsMutuallyExclusiveWith() in the RoundModifier:
+
+    IsMutuallyExclusiveWith = (other) =>
+        other.Category == RoundModifierCategory.EconomyBuff ||
+        other.Name == "Some Other Modifier";
+
+--------------------------------------------------------------------------------
+STEP 5 - Pick a SelectionWeight
+--------------------------------------------------------------------------------
+
+The weight controls relative likelihood of selection compared to other modifiers.
+
+    ~1.2   - slightly more common    (strong but straightforward effect)
+    ~1.0   - baseline                (default for most modifiers)
+    ~0.9   - slightly rarer          (strong effects, complex interactions)
+    ~0.5   - rare                    (very powerful or niche effects)
+
+--------------------------------------------------------------------------------
+STEP 6 - Test with RoundModifierDebugger
+--------------------------------------------------------------------------------
+
+1. Add a RoundModifierDebugger component to the same GameObject as
+   RoundModifierManager in your scene (if not already present).
+
+2. In Play mode, right-click the component in the Inspector.
+
+3. Use "Force [Modifier Name]" context menu entries to activate
+   your modifier in isolation.
+
+4. Use "Print Context Values" to confirm your multipliers are set.
+
+5. Use "Print All Tower Stats" (Type B) to verify direct field changes.
+
+6. Use "Remove Modifiers And Reset" to verify cleanup is correct.
+
+--------------------------------------------------------------------------------
+QUICK CHECKLIST
+--------------------------------------------------------------------------------
+
+[ ] File created in Assets/Scripts/RoundModifiers/
+[ ] Class is plain C#, not MonoBehaviour
+[ ] Name and Description are player-readable
+[ ] Category chosen (controls mutual exclusion)
+[ ] SelectionWeight set
+[ ] OnRoundStart sets context multipliers and/or modifies tower fields
+[ ] OnRoundEnd reverses any direct changes (context cleanup is automatic)
+[ ] OnTowerPlaced implemented if direct changes must apply to mid-round towers
+[ ] Modifier registered in RoundModifierSetup.cs
+[ ] Tested with RoundModifierDebugger: apply, verify, remove, verify cleanup
+
+================================================================================

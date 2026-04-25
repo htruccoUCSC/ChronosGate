@@ -367,7 +367,13 @@ public abstract class BaseUnit : MonoBehaviour
         UpdateMeleeStamina(Time.deltaTime);
         ScanTargeting();
 
-        if (myData.CurrentMana >= myData.BaseDef.AbilityManaCost)
+        // TowerAbilityCostMult raises the mana threshold required to fire an ability.
+        // Default 1.0 (no change). AbilitiesCostMore modifier sets it to 1.3 (+30%).
+        float abilityCostMult = RoundModifierContext.Instance != null
+            ? RoundModifierContext.Instance.TowerAbilityCostMult
+            : 1f;
+
+        if (myData.CurrentMana >= myData.BaseDef.AbilityManaCost * abilityCostMult)
                 {
                     CastAbility();
                     myData.CurrentMana = 0;
@@ -383,7 +389,12 @@ public abstract class BaseUnit : MonoBehaviour
 
                 PerformBasicAttack();
 
-                myData.CurrentMana += manaPerShot;
+                // TowerManaGainMult scales how much mana is gained per shot.
+                // Default 1.0. Lower values slow down ability charging.
+                float manaGainMult = RoundModifierContext.Instance != null
+                    ? RoundModifierContext.Instance.TowerManaGainMult
+                    : 1f;
+                myData.CurrentMana += manaPerShot * manaGainMult;
 
                 attackTimer = (1f / myData.GetModifiedAttackSpeed()) + GetAdditionalAttackDelay();
             }
@@ -1013,28 +1024,44 @@ protected void SpawnSniperProjectile(GameObject prefab, float damage, bool isAOE
 
 public void ApplySlow(float stacks)
 {
-        if (enemyHit == null) return;
-        float amount = Mathf.Max(0f, stacks);
-        if (amount <= 0f) return;
+    if (enemyHit == null) return;
+    float amount = Mathf.Max(0f, stacks);
+    if (amount <= 0f) return;
 
-        enemyHit.ApplyDebuff(
-            BaseEnemy.DebuffType.Slow,
-            amount,
-            DebuffDuration.SlowDuration,
-            s => enemyHit.ApplySlow(s, DebuffDuration.SlowDuration)
-        );
-    }
-    // added this so that baseEnemy works
+    // SlowDurationMult extends how long the debuff object lives on the enemy.
+    // SlowStrengthMult is applied in BaseEnemy.ApplySlow() (the enemy side) so that
+    // ALL slow sources — including direct ability calls like the Wizard — are scaled
+    // without double-applying when the debuff callback fires.
+    RoundModifierContext ctx = RoundModifierContext.Instance;
+    float duration = DebuffDuration.SlowDuration * (ctx != null ? ctx.SlowDurationMult : 1f);
+
+    enemyHit.ApplyDebuff(
+        BaseEnemy.DebuffType.Slow,
+        amount,
+        duration,
+        s => enemyHit.ApplySlow(s, duration)
+    );
+}
+
+// added this so that baseEnemy works
 public void ApplyFire(float stacks)
 {
     if (enemyHit == null) return;
     float amount = Mathf.Max(0f, stacks);
     if (amount <= 0f) return;
 
+    // FireStacksMult scales how many stacks are applied per hit.
+    // FireDurationMult extends how long the burn debuff persists.
+    // FireDamageMult is applied in BaseEnemy.ApplyFire() (the enemy side) so that
+    // every source of fire damage — towers, augments, and abilities — is scaled.
+    RoundModifierContext ctx = RoundModifierContext.Instance;
+    float stacksToApply = amount * (ctx != null ? ctx.FireStacksMult : 1f);
+    float duration      = DebuffDuration.BurnDuration * (ctx != null ? ctx.FireDurationMult : 1f);
+
     enemyHit.ApplyDebuff(
         BaseEnemy.DebuffType.Burn,
-        amount,
-        DebuffDuration.BurnDuration,
+        stacksToApply,
+        duration,
         enemyHit.ApplyFire
     );
 }
@@ -1050,10 +1077,16 @@ public void ApplyAmp(float stacks)
     float amount = Mathf.Max(0f, stacks);
     if (amount <= 0f) return;
 
+    // DamageAmpStrengthMult scales how many amp stacks are applied per hit.
+    // DamageAmpDurationMult extends how long the amp debuff lasts.
+    RoundModifierContext ctx = RoundModifierContext.Instance;
+    float ampStacks = amount * (ctx != null ? ctx.DamageAmpStrengthMult : 1f);
+    float duration  = DebuffDuration.AmpDuration * (ctx != null ? ctx.DamageAmpDurationMult : 1f);
+
     enemyHit.ApplyDebuff(
         BaseEnemy.DebuffType.DamageAmp,
-        amount,
-        DebuffDuration.AmpDuration,
+        ampStacks,
+        duration,
         enemyHit.ApplyAmp
     );
 }
