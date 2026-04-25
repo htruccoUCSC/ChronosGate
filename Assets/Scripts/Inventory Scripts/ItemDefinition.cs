@@ -2,9 +2,10 @@ using UnityEngine;
 
 public enum ItemEffectType
 {
-    AreaDamage,
-    TowerLevelUp,
-    None
+    AreaDamage = 0,
+    TowerLevelUp = 1,
+    None = 2,
+    TowerPoolRestock = 3
 }
 
 [CreateAssetMenu(fileName = "ItemDefinition", menuName = "ChronosGate/Items/Item Definition")]

@@ -178,6 +178,9 @@ public class ItemSpawner : MonoBehaviour
             case ItemEffectType.TowerLevelUp:
                 ApplyTowerLevelUp(item, worldCenter);
                 break;
+            case ItemEffectType.TowerPoolRestock:
+                ApplyTowerPoolRestock(item, worldCenter);
+                break;
             case ItemEffectType.None:
             default:
                 break;
@@ -226,30 +229,7 @@ public class ItemSpawner : MonoBehaviour
 
     private void ApplyTowerLevelUp(ItemDefinition item, Vector3 worldCenter)
     {
-        // Find all nearby units (towers)
-        BaseUnit[] allUnits = FindObjectsByType<BaseUnit>(FindObjectsSortMode.None);
-        
-        if (allUnits == null || allUnits.Length == 0)
-        {
-            Debug.LogWarning("No towers found to level up.");
-            return;
-        }
-
-        // Find the closest tower to the item placement location
-        BaseUnit closestTower = null;
-        float closestDistance = Mathf.Infinity;
-
-        foreach (BaseUnit unit in allUnits)
-        {
-            if (unit == null || unit.myData == null) continue;
-
-            float distance = Vector3.Distance(unit.transform.position, worldCenter);
-            if (distance < closestDistance)
-            {
-                closestDistance = distance;
-                closestTower = unit;
-            }
-        }
+        BaseUnit closestTower = FindClosestTower(worldCenter);
 
         // Apply merge upgrade (level up) to the closest tower
         if (closestTower != null)
@@ -262,6 +242,63 @@ public class ItemSpawner : MonoBehaviour
         {
             Debug.LogWarning("Could not find a tower to level up.");
         }
+    }
+
+    private void ApplyTowerPoolRestock(ItemDefinition item, Vector3 worldCenter)
+    {
+        BaseUnit closestTower = FindClosestTower(worldCenter);
+        if (closestTower == null || closestTower.myData == null || closestTower.myData.BaseDef == null)
+        {
+            Debug.LogWarning("Could not find a tower to restock in the pool.");
+            return;
+        }
+
+        UnitDefinition towerDefinition = closestTower.myData.BaseDef;
+
+        ShopManager shopManager = FindFirstObjectByType<ShopManager>();
+        if (shopManager != null)
+        {
+            shopManager.AddTowerPoolCopies(towerDefinition, 1);
+            return;
+        }
+
+        ShopManagerOld shopManagerOld = FindFirstObjectByType<ShopManagerOld>();
+        if (shopManagerOld != null)
+        {
+            shopManagerOld.AddTowerPoolCopies(towerDefinition, 1);
+            return;
+        }
+
+        Debug.LogWarning("Could not restock tower pool because no shop manager was found.");
+    }
+
+    private static BaseUnit FindClosestTower(Vector3 worldCenter)
+    {
+        BaseUnit[] allUnits = FindObjectsByType<BaseUnit>(FindObjectsSortMode.None);
+        if (allUnits == null || allUnits.Length == 0)
+        {
+            return null;
+        }
+
+        BaseUnit closestTower = null;
+        float closestDistance = Mathf.Infinity;
+
+        foreach (BaseUnit unit in allUnits)
+        {
+            if (unit == null || unit.myData == null)
+            {
+                continue;
+            }
+
+            float distance = Vector3.Distance(unit.transform.position, worldCenter);
+            if (distance < closestDistance)
+            {
+                closestDistance = distance;
+                closestTower = unit;
+            }
+        }
+
+        return closestTower;
     }
 
     private IEnumerator DelayedItemEffect(ItemDefinition item, Vector3 worldCenter, GameObject placedItem)

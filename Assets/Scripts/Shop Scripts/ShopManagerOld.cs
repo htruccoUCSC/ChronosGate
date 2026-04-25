@@ -604,4 +604,22 @@ public class ShopManagerOld : MonoBehaviour
         DecrementTowerPool(unitDef);
         Debug.Log($"[ShopManagerOld] Removed {unitDef.Name} from the remaining tower pool. Copies left: {GetRemainingTowerPoolCount(unitDef)}");
     }
+
+    public void AddTowerPoolCopies(UnitDefinition unitDef, int amount)
+    {
+        if (unitDef == null || string.IsNullOrWhiteSpace(unitDef.UnitID))
+        {
+            return;
+        }
+
+        int safeAmount = Mathf.Max(0, amount);
+        if (safeAmount <= 0)
+        {
+            return;
+        }
+
+        int remainingCopies = GetRemainingTowerPoolCount(unitDef);
+        remainingTowerPoolCounts[unitDef.UnitID] = remainingCopies + safeAmount;
+        Debug.Log($"[ShopManagerOld] Added {safeAmount} copy to {unitDef.Name}. Copies left: {GetRemainingTowerPoolCount(unitDef)}");
+    }
 }
