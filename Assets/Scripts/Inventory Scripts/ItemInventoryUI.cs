@@ -8,6 +8,8 @@ using UnityEngine.UI;
 [RequireComponent(typeof(RectTransform))]
 public class ItemInventoryUI : MonoBehaviour
 {
+    private const string StartingTowerPoolItemPath = "TowerPoolRestockItemDefinition";
+
     [SerializeField] private ItemSpawner m_ItemSpawner;
     [SerializeField] private int m_Capacity = 4;       //number of inventory slots
     [SerializeField] private Sprite m_SlotBackground;   //unfilled slot background
@@ -22,6 +24,7 @@ public class ItemInventoryUI : MonoBehaviour
     {
         m_Items = new ItemDefinition[m_Capacity];
         Build();
+        AddStartingTowerPoolItem();
     }
 
     // Build the inventory UI
@@ -160,6 +163,17 @@ public class ItemInventoryUI : MonoBehaviour
     {
         if (m_ItemSpawner == null) return;
         m_ItemSpawner.SetPreviewItem(item);
+    }
+
+    private void AddStartingTowerPoolItem()
+    {
+        ItemDefinition startingItem = Resources.Load<ItemDefinition>(StartingTowerPoolItemPath);
+        if (startingItem == null)
+        {
+            return;
+        }
+
+        AddItem(startingItem);
     }
 }
 
