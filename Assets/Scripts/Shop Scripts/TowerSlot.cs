@@ -19,6 +19,10 @@ public class TowerSlot : MonoBehaviour, IPointerEnterHandler, IPointerExitHandle
     private UnitDefinition unitDefinition;
     private InventoryUI inventoryUI;
     private ShopManager shopManager;
+    private Board m_Board;
+private UnitRangePreview m_RangePreview;
+private IUnitDragPreviewProvider m_PreviewProvider;
+private GameObject m_DragObject;
     private ShopManagerOld shopManagerOld;
     private UIButtonAnimator m_ButtonAnimator;
     private GameObject m_DragObject;
